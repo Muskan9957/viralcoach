@@ -29,7 +29,11 @@ export const AuthProvider = ({ children }) => {
     if (!token) { setLoading(false); return }
     api.getMe()
       .then(d => setUser(d.user))
-      .catch(() => localStorage.removeItem('arc_token'))
+      .catch((err) => {
+        console.error('getMe failed:', err.message)
+        alert('Login error: ' + err.message)
+        localStorage.removeItem('arc_token')
+      })
       .finally(() => setLoading(false))
   }, [])
 
