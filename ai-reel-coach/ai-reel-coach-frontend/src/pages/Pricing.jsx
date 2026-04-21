@@ -1,0 +1,645 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../store'
+import { api } from '../api'
+import { useToast } from '../components/Toast'
+import Logo from '../components/Logo'
+
+const PLANS = [
+  {
+    id:       'free',
+    name:     'Free',
+    tagline:  'Start creating today',
+    priceM:   0,
+    priceY:   0,
+    badge:    null,
+    accent:   '#6B6B90',
+    accentBg: 'rgba(107,107,144,0.10)',
+    cta:      'Get started free',
+    ctaStyle: 'ghost',
+    features: [
+      { text: '10 AI scripts / month',         ok: true  },
+      { text: '5 hook scores / month',          ok: true  },
+      { text: 'Caption Generator',              ok: true  },
+      { text: 'Hook Library (40 templates)',    ok: true  },
+      { text: 'Basic trending topics',          ok: true  },
+      { text: 'Content Remix',                  ok: false },
+      { text: 'AI Coach (unlimited chat)',      ok: false },
+      { text: 'Voice assistant',                ok: false },
+      { text: 'Performance analytics',          ok: false },
+      { text: 'Priority AI (faster)',           ok: false },
+    ],
+  },
+  {
+    id:       'pro',
+    name:     'Pro',
+    tagline:  'For serious creators',
+    priceM:   799,
+    priceY:   599,
+    badge:    'Most Popular',
+    accent:   '#00C8FF',
+    accentBg: 'rgba(0,200,255,0.10)',
+    cta:      'Start Pro — 7 days free',
+    ctaStyle: 'primary',
+    features: [
+      { text: 'Unlimited AI scripts',           ok: true  },
+      { text: 'Unlimited hook scores',          ok: true  },
+      { text: 'Caption Generator',              ok: true  },
+      { text: 'Hook Library (40 templates)',    ok: true  },
+      { text: 'Live trending topics',           ok: true  },
+      { text: 'Content Remix (all platforms)',  ok: true  },
+      { text: 'AI Coach (unlimited chat)',      ok: true  },
+      { text: 'Voice assistant',                ok: true  },
+      { text: 'Performance analytics',          ok: true  },
+      { text: 'Priority AI (faster)',           ok: false },
+    ],
+  },
+  {
+    id:       'studio',
+    name:     'Studio',
+    tagline:  'For agencies & teams',
+    priceM:   1999,
+    priceY:   1499,
+    badge:    'Best Value',
+    accent:   '#7B5CF0',
+    accentBg: 'rgba(123,92,240,0.10)',
+    cta:      'Start Studio — 7 days free',
+    ctaStyle: 'gradient',
+    features: [
+      { text: 'Everything in Pro',              ok: true  },
+      { text: 'Priority AI (2× faster)',        ok: true  },
+      { text: 'Up to 5 team members',           ok: true  },
+      { text: 'Custom brand voice',             ok: true  },
+      { text: 'Bulk script generation',         ok: true  },
+      { text: 'Advanced performance reports',   ok: true  },
+      { text: 'Dedicated creator success call', ok: true  },
+      { text: 'Early access to new features',   ok: true  },
+      { text: 'White-label exports',            ok: true  },
+      { text: 'API access (coming soon)',        ok: true  },
+    ],
+  },
+]
+
+const FAQS = [
+  {
+    q: 'Can I cancel anytime?',
+    a: 'Yes — cancel from your profile, no questions asked. You keep access until the end of your billing period.',
+  },
+  {
+    q: 'Do you support Hindi scripts?',
+    a: 'Absolutely. Select Hindi or Hinglish in your settings and the AI writes in your chosen language with native expressions.',
+  },
+  {
+    q: 'What is the 7-day free trial?',
+    a: 'Start Pro or Studio without entering a card. After 7 days, you decide whether to continue — we send you a reminder first.',
+  },
+  {
+    q: 'Can I upgrade or downgrade later?',
+    a: 'Yes, any time. Upgrades are prorated. Downgrades take effect at the next billing cycle.',
+  },
+]
+
+// ─── Load Razorpay script dynamically ─────────────────────────────
+function loadRazorpayScript() {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true)
+    const script = document.createElement('script')
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.onload  = () => resolve(true)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
+}
+
+export default function Pricing() {
+  const [annual, setAnnual]           = useState(true)
+  const [openFaq, setOpenFaq]         = useState(null)
+  const [checkingOut, setCheckingOut] = useState(null)
+  const { user, login }               = useAuth()
+  const navigate                      = useNavigate()
+  const toast                         = useToast()
+
+  const handleCta = async (plan) => {
+    if (!user) return navigate('/auth')
+    if (plan.id === 'free') return navigate('/dashboard')
+
+    try {
+      setCheckingOut(plan.id)
+
+      // 1. Ask backend to create a Razorpay subscription
+      const data = await api.createCheckout(plan.id.toUpperCase())
+
+      // If not configured yet, show friendly message
+      if (!data?.subscriptionId) {
+        toast('Payments launching soon — we\'ll notify you! 🚀', 'success')
+        return
+      }
+
+      // 2. Load Razorpay checkout.js
+      const loaded = await loadRazorpayScript()
+      if (!loaded) {
+        toast('Could not load payment gateway. Check your connection.', 'error')
+        return
+      }
+
+      // 3. Open Razorpay modal
+      const options = {
+        key             : data.keyId,
+        subscription_id : data.subscriptionId,
+        name            : 'ViralCoach',
+        description     : `${plan.name} Plan — ₹${plan.priceM}/month`,
+        image           : '/logo.png',
+        prefill         : {
+          email : data.userEmail || user?.email || '',
+          name  : data.userName  || user?.name  || '',
+        },
+        theme           : { color: '#00C8FF' },
+        modal           : {
+          ondismiss: () => {
+            setCheckingOut(null)
+            toast('Payment cancelled.', 'error')
+          },
+        },
+        handler: async (response) => {
+          try {
+            // 4. Verify payment signature on backend
+            const verified = await api.verifyPayment({
+              paymentId      : response.razorpay_payment_id,
+              subscriptionId : response.razorpay_subscription_id,
+              signature      : response.razorpay_signature,
+              plan           : plan.id.toUpperCase(),
+            })
+            if (verified.success) {
+              toast(`🎉 Welcome to ${plan.name}! Your plan is now active.`, 'success')
+              // Refresh user data then redirect
+              setTimeout(() => navigate('/dashboard'), 1500)
+            }
+          } catch {
+            toast('Payment received but verification failed — contact support.', 'error')
+          } finally {
+            setCheckingOut(null)
+          }
+        },
+      }
+
+      new window.Razorpay(options).open()
+
+    } catch (err) {
+      if (err.message?.includes('not configured')) {
+        toast('Payments are being set up — stay tuned! 🚀', 'success')
+      } else {
+        toast(err.message || 'Something went wrong.', 'error')
+      }
+      setCheckingOut(null)
+    }
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', padding: '0 20px 80px' }}>
+
+      {/* Nav */}
+      <div style={{
+        maxWidth: 1080, margin: '0 auto',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '24px 0',
+      }}>
+        <button onClick={() => navigate(user ? '/dashboard' : '/')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+          <Logo size={36} />
+        </button>
+        {user ? (
+          <button onClick={() => navigate('/dashboard')} className="btn btn-ghost btn-sm">
+            ← Dashboard
+          </button>
+        ) : (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={() => navigate('/auth')} className="btn btn-ghost btn-sm">Sign in</button>
+            <button onClick={() => navigate('/auth')} className="btn btn-primary btn-sm">Get started free</button>
+          </div>
+        )}
+      </div>
+
+      {/* Hero */}
+      <div style={{ textAlign: 'center', maxWidth: 600, margin: '0 auto 56px', padding: '20px 0' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          background: 'rgba(0,200,255,0.1)',
+          border: '1px solid rgba(0,200,255,0.25)',
+          borderRadius: 99,
+          padding: '5px 14px',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          color: 'var(--accent)',
+          fontFamily: 'var(--font-mono)',
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          marginBottom: 20,
+        }}>
+          🌍 Creator-First Pricing
+        </div>
+
+        <h1 style={{
+          fontFamily: 'var(--font-head)',
+          fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+          fontWeight: 900,
+          letterSpacing: '-0.04em',
+          lineHeight: 1.1,
+          color: 'var(--text)',
+          marginBottom: 16,
+        }}>
+          Invest in your{' '}
+          <span style={{
+            background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>
+            viral growth
+          </span>
+        </h1>
+
+        <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.7, marginBottom: 32 }}>
+          Every plan comes with a 7-day free trial. No credit card required.
+        </p>
+
+        {/* Toggle */}
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 12,
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          borderRadius: 99,
+          padding: '5px',
+        }}>
+          <button
+            onClick={() => setAnnual(false)}
+            style={{
+              padding: '8px 20px', borderRadius: 99, border: 'none', cursor: 'pointer',
+              background: !annual ? 'var(--surface3)' : 'transparent',
+              color: !annual ? 'var(--text)' : 'var(--text-muted)',
+              fontSize: '0.875rem', fontWeight: 600,
+              fontFamily: 'var(--font-body)',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setAnnual(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '8px 20px', borderRadius: 99, border: 'none', cursor: 'pointer',
+              background: annual ? 'linear-gradient(135deg, #00C8FF, #7B5CF0)' : 'transparent',
+              color: annual ? '#fff' : 'var(--text-muted)',
+              fontSize: '0.875rem', fontWeight: 600,
+              fontFamily: 'var(--font-body)',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            Annual
+            <span style={{
+              background: annual ? 'rgba(255,255,255,0.2)' : 'rgba(0,200,255,0.15)',
+              color: annual ? '#fff' : 'var(--accent)',
+              fontSize: '0.65rem', fontWeight: 800, fontFamily: 'var(--font-mono)',
+              padding: '2px 7px', borderRadius: 99,
+              letterSpacing: '0.05em',
+            }}>
+              −25%
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Cards */}
+      <div style={{
+        maxWidth: 1040,
+        margin: '0 auto 72px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: 20,
+        alignItems: 'start',
+      }}>
+        {PLANS.map((plan, i) => {
+          const price = annual ? plan.priceY : plan.priceM
+          const isPopular = plan.id === 'pro'
+          return (
+            <div
+              key={plan.id}
+              style={{
+                background: isPopular
+                  ? 'linear-gradient(180deg, rgba(0,200,255,0.07) 0%, rgba(11,15,46,0.95) 40%)'
+                  : 'rgba(11,15,46,0.92)',
+                backdropFilter: 'blur(20px)',
+                border: isPopular
+                  ? '1.5px solid rgba(0,200,255,0.35)'
+                  : '1px solid var(--border)',
+                borderRadius: 24,
+                padding: isPopular ? '32px 28px' : '28px 24px',
+                position: 'relative',
+                boxShadow: isPopular ? '0 0 60px rgba(0,200,255,0.12), 0 24px 60px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.3)',
+                transform: isPopular ? 'translateY(-8px)' : 'none',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                animation: `fadeUp 0.4s ease ${i * 0.1}s both`,
+              }}
+              onMouseEnter={e => { if (!isPopular) e.currentTarget.style.transform = 'translateY(-4px)' }}
+              onMouseLeave={e => { if (!isPopular) e.currentTarget.style.transform = 'none' }}
+            >
+              {/* Badge */}
+              {plan.badge && (
+                <div style={{
+                  position: 'absolute',
+                  top: -14,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  background: isPopular
+                    ? 'linear-gradient(135deg, #00C8FF, #7B5CF0)'
+                    : 'linear-gradient(135deg, #7B5CF0, #9B72FF)',
+                  color: '#fff',
+                  fontSize: '0.68rem',
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-mono)',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  padding: '4px 14px',
+                  borderRadius: 99,
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 16px rgba(255,95,31,0.4)',
+                }}>
+                  {plan.badge}
+                </div>
+              )}
+
+              {/* Plan header */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: plan.accentBg,
+                  borderRadius: 8,
+                  padding: '5px 12px',
+                  marginBottom: 12,
+                }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: plan.accent }} />
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, color: plan.accent, fontFamily: 'var(--font-mono)' }}>
+                    {plan.name}
+                  </span>
+                </div>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: 16 }}>{plan.tagline}</p>
+
+                {/* Price */}
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', fontWeight: 500 }}>₹</span>
+                  <span style={{
+                    fontFamily: 'var(--font-head)',
+                    fontSize: price === 0 ? '2.6rem' : '2.6rem',
+                    fontWeight: 900,
+                    letterSpacing: '-0.04em',
+                    color: 'var(--text)',
+                  }}>
+                    {price === 0 ? '0' : price.toLocaleString('en-IN')}
+                  </span>
+                  {price > 0 && (
+                    <span style={{ color: 'var(--text-faint)', fontSize: '0.85rem' }}>/ mo</span>
+                  )}
+                </div>
+                {annual && price > 0 && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: 3 }}>
+                    Billed ₹{(price * 12).toLocaleString('en-IN')}/year &nbsp;
+                    <span style={{ color: '#22C55E', fontWeight: 600 }}>
+                      (save ₹{((plan.priceM - plan.priceY) * 12).toLocaleString('en-IN')})
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* CTA */}
+              <button
+                onClick={() => handleCta(plan)}
+                disabled={checkingOut === plan.id}
+                style={{ opacity: checkingOut && checkingOut !== plan.id ? 0.6 : 1,
+                  width: '100%',
+                  padding: '13px',
+                  borderRadius: 12,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  marginBottom: 24,
+                  transition: 'all 0.2s ease',
+                  ...(plan.ctaStyle === 'primary' ? {
+                    background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
+                    color: '#fff',
+                    boxShadow: '0 4px 20px rgba(0,200,255,0.35)',
+                  } : plan.ctaStyle === 'gradient' ? {
+                    background: 'linear-gradient(135deg, #7B5CF0, #9B72FF)',
+                    color: '#fff',
+                    boxShadow: '0 4px 20px rgba(123,92,240,0.3)',
+                  } : {
+                    background: 'var(--surface2)',
+                    color: 'var(--text)',
+                    border: '1px solid var(--border)',
+                  }),
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.filter = 'brightness(1.1)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.filter = 'none' }}
+              >
+                {checkingOut === plan.id ? 'Redirecting…' : plan.cta}
+              </button>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: 'var(--border)', marginBottom: 20 }} />
+
+              {/* Features */}
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {plan.features.map((f, j) => (
+                  <li key={j} style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 10,
+                    opacity: f.ok ? 1 : 0.35,
+                  }}>
+                    <div style={{
+                      width: 18, height: 18,
+                      borderRadius: '50%',
+                      background: f.ok
+                        ? (isPopular ? 'rgba(0,200,255,0.18)' : 'rgba(107,140,192,0.15)')
+                        : 'var(--surface2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                      marginTop: 2,
+                    }}>
+                      {f.ok ? (
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                          <path d="M2 5l2.5 2.5L8 3" stroke={isPopular ? '#00C8FF' : '#6B8FC0'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      ) : (
+                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                          <path d="M2 2l4 4M6 2L2 6" stroke="#3A3A5C" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                      )}
+                    </div>
+                    <span style={{
+                      fontSize: '0.84rem',
+                      color: f.ok ? 'var(--text-muted)' : 'var(--text-faint)',
+                      lineHeight: 1.4,
+                    }}>
+                      {f.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Social proof */}
+      <div style={{ maxWidth: 800, margin: '0 auto 72px', textAlign: 'center' }}>
+        <p style={{ color: 'var(--text-faint)', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 28 }}>
+          Trusted by creators worldwide
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          {[
+            { name: 'Priya S.',    handle: '@priyalifestyle', avatar: 'P', text: '"Went from 2K to 47K followers in 3 months using ViralCoach scripts. The hook scorer is insane."', niche: 'Lifestyle' },
+            { name: 'Rohan M.',   handle: '@rohanfinance',   avatar: 'R', text: '"Finally an AI that understands my audience. My finance reels now get 5x more saves."',       niche: 'Finance' },
+            { name: 'Ananya K.',  handle: '@ananyafitness',  avatar: 'A', text: '"The AI Coach helped me fix my CTA game. My first viral reel hit 2.3 million views!"',               niche: 'Fitness' },
+          ].map(t => (
+            <div key={t.name} style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 18,
+              padding: '20px',
+              textAlign: 'left',
+            }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 800, color: '#fff', fontSize: '0.9rem',
+                  fontFamily: 'var(--font-head)',
+                }}>
+                  {t.avatar}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text)' }}>{t.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>{t.handle} · {t.niche}</div>
+                </div>
+              </div>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>{t.text}</p>
+              <div style={{ display: 'flex', gap: 2, marginTop: 12 }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{ color: '#FFD60A', fontSize: '0.75rem' }}>★</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* FAQ */}
+      <div style={{ maxWidth: 640, margin: '0 auto 72px' }}>
+        <h2 style={{
+          fontFamily: 'var(--font-head)',
+          fontSize: '1.8rem',
+          fontWeight: 800,
+          letterSpacing: '-0.03em',
+          color: 'var(--text)',
+          textAlign: 'center',
+          marginBottom: 32,
+        }}>
+          Questions? Answered.
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {FAQS.map((f, i) => (
+            <div
+              key={i}
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 16,
+                overflow: 'hidden',
+                transition: 'border-color 0.2s',
+                borderColor: openFaq === i ? 'rgba(0,200,255,0.3)' : 'var(--border)',
+              }}
+            >
+              <button
+                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                style={{
+                  width: '100%', padding: '18px 20px',
+                  background: 'transparent', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  cursor: 'pointer', fontFamily: 'var(--font-body)',
+                  textAlign: 'left',
+                }}
+              >
+                <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.9rem' }}>{f.q}</span>
+                <span style={{
+                  color: openFaq === i ? 'var(--accent)' : 'var(--text-faint)',
+                  fontSize: '1.2rem',
+                  transform: openFaq === i ? 'rotate(45deg)' : 'none',
+                  transition: 'transform 0.2s ease, color 0.2s ease',
+                  lineHeight: 1,
+                  flexShrink: 0,
+                }}>
+                  +
+                </span>
+              </button>
+              {openFaq === i && (
+                <div style={{ padding: '0 20px 18px' }}>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', lineHeight: 1.7 }}>{f.a}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom CTA */}
+      <div style={{
+        maxWidth: 600, margin: '0 auto',
+        textAlign: 'center',
+        background: 'linear-gradient(135deg, rgba(0,200,255,0.08), rgba(123,92,240,0.06))',
+        border: '1px solid rgba(0,200,255,0.2)',
+        borderRadius: 28,
+        padding: '48px 32px',
+      }}>
+        <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🚀</div>
+        <h2 style={{
+          fontFamily: 'var(--font-head)',
+          fontSize: '1.8rem',
+          fontWeight: 900,
+          letterSpacing: '-0.04em',
+          color: 'var(--text)',
+          marginBottom: 10,
+        }}>
+          Ready to go viral?
+        </h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 28, fontSize: '0.9rem' }}>
+          Start with the free plan. No credit card needed.
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => navigate(user ? '/dashboard' : '/auth')}
+            className="btn btn-primary btn-lg"
+          >
+            Start for free →
+          </button>
+          <button
+            onClick={() => navigate(user ? '/dashboard' : '/auth')}
+            className="btn btn-ghost btn-lg"
+          >
+            See Pro features
+          </button>
+        </div>
+        <p style={{ color: 'var(--text-faint)', fontSize: '0.78rem', marginTop: 16 }}>
+          🌍 Made for creators worldwide &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Multi-language support
+        </p>
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,176 @@
+// AI Reel Coach - Database Schema (SQLite for local dev)
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  passwordHash     String?
+  name             String?
+  googleId         String?  @unique
+  twitterId        String?  @unique
+  avatar           String?
+  plan             String   @default("FREE")   // FREE | STARTER | PRO
+  stripeCustomerId String?  @unique
+  stripeSubId      String?  @unique
+  generationsUsed  Int      @default(0)
+  generationsReset DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  streak               Int       @default(0)
+  lastActiveDate       String?
+  language             String    @default("en")
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  onboarded            Boolean   @default(false)
+
+  scripts          Script[]
+  hookScores       HookScore[]
+  performanceLogs  PerformanceLog[]
+  badges           Badge[]
+  calendarEntries  CalendarEntry[]
+  templates        Template[]
+  weeklyReports    WeeklyReport[]
+  chatMessages     ChatMessage[]
+}
+
+model Script {
+  id         String   @id @default(cuid())
+  userId     String
+  topic      String
+  niche      String?
+  tone       String?
+  hook       String
+  body       String
+  cta        String
+  fullScript String
+  hookScore  Int?
+  createdAt  DateTime @default(now())
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hookScores HookScore[]
+  rewrites   Rewrite[]
+}
+
+model HookScore {
+  id        String   @id @default(cuid())
+  userId    String
+  scriptId  String?
+  hookText  String
+  score     Int
+  grade     String
+  status    String
+  reasons   String   // stored as JSON string — parsed in app code
+  createdAt DateTime @default(now())
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  script    Script? @relation(fields: [scriptId], references: [id])
+}
+
+model Rewrite {
+  id            String   @id @default(cuid())
+  scriptId      String
+  originalHook  String
+  rewrittenHook String
+  originalScore Int
+  newScore      Int
+  changes       String
+  accepted      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  script        Script   @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+}
+
+model PerformanceLog {
+  id               String   @id @default(cuid())
+  userId           String
+  topic            String
+  hookUsed         String
+  views            Int
+  watchTimePercent Float
+  likes            Int
+  shares           Int
+  comments         Int
+  feedback         String
+  createdAt        DateTime @default(now())
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CalendarEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  date      String   // YYYY-MM-DD
+  title     String
+  status    String   @default("PLANNED") // PLANNED | DRAFTED | PUBLISHED
+  scriptId  String?
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Badge {
+  id       String   @id @default(cuid())
+  userId   String
+  type     String   // FIRST_SCRIPT | STREAK_7 | STREAK_30 | SCRIPTS_10 | SCRIPTS_50 | PERFECT_HOOK | ANALYZER_5
+  earnedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, type])
+}
+
+model Template {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  type      String   // SCRIPT | HOOK | CTA
+  content   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TrendingCache {
+  id        String   @id @default(cuid())
+  niche     String
+  language  String   @default("en")
+  topics    String   // JSON array of topic strings
+  date      String   // YYYY-MM-DD — one cache per niche per day
+  @@unique([niche, language, date])
+}
+
+model WeeklyReport {
+  id         String   @id @default(cuid())
+  userId     String
+  weekStart  String   // YYYY-MM-DD (Monday)
+  report     String   // AI-generated text
+  stats      String   // JSON: { scripts, avgHookScore, analyses, topTopic }
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, weekStart])
+}
+
+model HookTemplate {
+  id       String @id @default(cuid())
+  category String  // Fitness, Finance, Food, Tech, Motivation, Relationships, etc.
+  type     String  // Question, Bold Claim, Story, Statistic, Controversy, How-To
+  template String  // e.g. "I tried [X] for [Y] days and here's what happened..."
+  example  String  // filled example
+  tags     String  // comma-separated
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String   // user | assistant
+  content   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
