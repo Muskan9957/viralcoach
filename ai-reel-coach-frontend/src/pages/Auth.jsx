@@ -114,7 +114,8 @@ export default function Auth() {
   }
 
   const handleSocialClick = (platform) => {
-    window.location.href = `/api/auth/${platform}`
+    const base = import.meta.env.VITE_API_URL || ''
+    window.location.href = `${base}/api/auth/${platform}`
   }
 
   return (
