@@ -1,0 +1,94 @@
+// In production (Vercel), VITE_API_URL points to the Railway backend.
+// In dev, Vite's proxy handles /api → localhost:6003.
+const BASE = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : '/api'
+
+const getToken = () => localStorage.getItem('arc_token')
+
+const req = async (method, path, body) => {
+  const headers = { 'Content-Type': 'application/json' }
+  const token = getToken()
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  })
+
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || data.errors?.[0]?.msg || 'Something went wrong')
+  return data
+}
+
+export const api = {
+  // Auth
+  register:      (body)          => req('POST', '/auth/register', body),
+  login:         (body)          => req('POST', '/auth/login', body),
+  getMe:         ()              => req('GET',  '/auth/me'),
+  forgotPassword:(email)         => req('POST', '/auth/forgot-password', { email }),
+  resetPassword: (body)          => req('POST', '/auth/reset-password', body),
+
+  // Payments (Razorpay)
+  createCheckout: (plan)  => req('POST', '/payments/checkout', { plan }),
+  verifyPayment:  (body)  => req('POST', '/payments/verify', body),
+  openPortal:     ()      => req('POST', '/payments/portal'),
+
+  // Scripts
+  generate:   (body) => req('POST', '/scripts/generate', body),
+  getScripts: ()     => req('GET',  '/scripts'),
+  getScript:  (id)   => req('GET',  `/scripts/${id}`),
+
+  // Hooks
+  scoreHook:    (body) => req('POST', '/hooks/score', body),
+  rewriteHook:  (body) => req('POST', '/hooks/rewrite', body),
+  acceptRewrite:(body) => req('POST', '/hooks/rewrite/accept', body),
+  hookHistory:  ()     => req('GET',  '/hooks/history'),
+
+  // Performance
+  analyze:     (body) => req('POST', '/performance/analyze', body),
+  perfHistory: ()     => req('GET',  '/performance/history'),
+
+  // Calendar
+  getCalendar:         (month)     => req('GET',    `/calendar?month=${month}`),
+  createCalendarEntry: (data)      => req('POST',   '/calendar', data),
+  updateCalendarEntry: (id, data)  => req('PATCH',  `/calendar/${id}`, data),
+  deleteCalendarEntry: (id)        => req('DELETE', `/calendar/${id}`),
+
+  // Trending
+  getTrending:  (niche, language) => req('GET', `/trending?niche=${niche}&language=${language}`),
+  getGreeting:  (region)          => req('GET', `/trending/greeting?region=${encodeURIComponent(region)}`),
+
+  // Templates
+  getTemplates:   (type) => req('GET',    `/templates${type ? `?type=${type}` : ''}`),
+  createTemplate: (data) => req('POST',   '/templates', data),
+  deleteTemplate: (id)   => req('DELETE', `/templates/${id}`),
+
+  // Reports
+  getWeeklyReport: () => req('GET', '/reports/weekly'),
+
+  // Captions
+  generateCaptions: (body) => req('POST', '/captions/generate', body),
+
+  // Remix
+  remixContent: (body) => req('POST', '/remix/generate', body),
+
+  // Creator Score
+  getCreatorScore: () => req('GET', '/score/creator'),
+
+  // AI Coach
+  coachChat: (body) => req('POST', '/coach/chat', body),
+  getCoachHistory: () => req('GET', '/coach/history'),
+
+  // Hook Library
+  getHookLibrary: (params) => req('GET', `/hooks/library?category=${params.category || 'all'}&type=${params.type || 'all'}&search=${encodeURIComponent(params.search || '')}`),
+
+  // User
+  getUserProfile:  ()         => req('GET',   '/user/profile'),
+  updateLanguage:  (language) => req('PATCH', '/user/language', { language }),
+  getBadges:       ()         => req('GET',   '/user/badges'),
+  markOnboarded:   ()         => req('PATCH', '/user/onboarded'),
+  generateAvatar:  (style)    => req('POST',  '/user/generate-avatar', { style }),
+  saveAvatar:      (url)      => req('PATCH', '/user/avatar', { url }),
+}

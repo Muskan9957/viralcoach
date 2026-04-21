@@ -1,0 +1,463 @@
+const Anthropic = require('@anthropic-ai/sdk');
+
+const MODEL       = 'claude-sonnet-4-6';           // Quality model for creative tasks
+const MODEL_FAST  = 'claude-haiku-4-5-20251001';   // Fast model for scoring/rewriting
+
+// ─── Helper — client created per-call so it always picks up the env var ─
+const ask = async (prompt, maxTokens = 1024, model = MODEL) => {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const response = await client.messages.create({
+    model,
+    max_tokens: maxTokens,
+    messages  : [{ role: 'user', content: prompt }],
+  });
+  return response.content[0].text.trim();
+};
+
+// ─────────────────────────────────────────────────────────────────
+// 1. GENERATE SCRIPT
+// ─────────────────────────────────────────────────────────────────
+const generateScript = async ({ topic, niche, tone }) => {
+  const prompt = `
+You are an expert short-form content coach who specializes in viral Instagram Reels and YouTube Shorts.
+
+Generate a high-performing short-form video script for the following:
+- Topic : ${topic}
+- Niche  : ${niche || 'general'}
+- Tone   : ${tone  || 'engaging and conversational'}
+
+The script must follow this exact structure:
+
+HOOK (first 3 seconds — must stop the scroll immediately):
+[Write 1-2 sentences. Use curiosity, a bold claim, a question, or a shocking statement.]
+
+BODY (the main value — 45-75 seconds when spoken):
+[3-5 punchy points or a mini story. Keep sentences short. No filler words.]
+
+CTA (call to action — last 5 seconds):
+[One clear action: follow, comment, save, or share. Make it feel natural, not forced.]
+
+---
+Rules:
+- Total speaking time must be 60-90 seconds (roughly 150-225 words)
+- Write like you are talking to a friend, not presenting to a boardroom
+- Do NOT use hashtags, emojis, or stage directions
+- Return ONLY the script, no extra commentary
+
+Script:
+`;
+
+  const raw = await ask(prompt, 800);
+
+  // Parse the three sections from the response
+  const hookMatch = raw.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i);
+  const bodyMatch = raw.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i);
+  const ctaMatch  = raw.match(/CTA[^:]*:\s*([\s\S]*?)$/i);
+
+  return {
+    hook      : hookMatch ? hookMatch[1].trim() : '',
+    body      : bodyMatch ? bodyMatch[1].trim() : '',
+    cta       : ctaMatch  ? ctaMatch[1].trim()  : '',
+    fullScript: raw,
+  };
+};
+
+// ─────────────────────────────────────────────────────────────────
+// 2. SCORE A HOOK
+// ─────────────────────────────────────────────────────────────────
+const scoreHook = async (hookText) => {
+  const prompt = `
+You are a viral content strategist who has analyzed thousands of short-form video hooks.
+
+Score this hook for its scroll-stopping potential on Instagram Reels / YouTube Shorts:
+
+HOOK: "${hookText}"
+
+Evaluate it on these 5 factors (20 points each):
+1. Emotional trigger (does it spark curiosity, fear, excitement, or desire?)
+2. Curiosity gap (does it make the viewer NEED to watch more?)
+3. Clarity (is it instantly understandable in 2 seconds?)
+4. Specificity (does it use concrete details rather than vague claims?)
+5. Scroll-stopping power (would YOU stop scrolling for this?)
+
+Return your response in this EXACT JSON format (no extra text):
+{
+  "score": <number 1-100>,
+  "grade": "<A|B|C|D|F>",
+  "status": "<Post Ready|Needs Improvement|Rewrite Recommended>",
+  "reasons": [
+    "<specific reason 1>",
+    "<specific reason 2>",
+    "<specific reason 3>"
+  ]
+}
+
+Scoring guide:
+- 75-100 → "Post Ready" (Grade A or B)
+- 50-74  → "Needs Improvement" (Grade C)
+- 0-49   → "Rewrite Recommended" (Grade D or F)
+`;
+
+  const raw = await ask(prompt, 400, MODEL_FAST); // Fast model — scoring is straightforward
+
+  try {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in response');
+    const parsed = JSON.parse(jsonMatch[0]);
+    // Ensure reasons is always an array
+    if (!Array.isArray(parsed.reasons)) parsed.reasons = [String(parsed.reasons)];
+    return parsed;
+  } catch {
+    // Fallback if AI doesn't return clean JSON
+    return {
+      score  : 50,
+      grade  : 'C',
+      status : 'Needs Improvement',
+      reasons: ['Could not parse detailed feedback. Try again.'],
+    };
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────
+// 3. REWRITE A HOOK
+// ─────────────────────────────────────────────────────────────────
+const rewriteHook = async (originalHook, originalScore) => {
+  const prompt = `
+You are a viral content strategist. This hook scored ${originalScore}/100 and needs improvement.
+
+ORIGINAL HOOK: "${originalHook}"
+
+Rewrite it to score at least ${Math.min(originalScore + 15, 95)}/100.
+Keep the same topic and intent — only improve the wording.
+
+Return your response in this EXACT JSON format (no extra text):
+{
+  "rewrittenHook": "<your improved hook>",
+  "changes": "<1-2 sentences explaining exactly what you changed and why>"
+}
+`;
+
+  const raw = await ask(prompt, 400, MODEL_FAST); // Fast model — rewriting is a simple task
+
+  try {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in response');
+    return JSON.parse(jsonMatch[0]);
+  } catch {
+    return {
+      rewrittenHook: originalHook,
+      changes      : 'Could not generate rewrite. Please try again.',
+    };
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────
+// 4. ANALYZE PERFORMANCE
+// ─────────────────────────────────────────────────────────────────
+const analyzePerformance = async ({ topic, hookUsed, views, watchTimePercent, likes, shares, comments, pastLogs }) => {
+  const pastContext = pastLogs && pastLogs.length > 0
+    ? `\n\nThis creator's past content patterns:\n${pastLogs.map(l =>
+        `- Topic: "${l.topic}" | Views: ${l.views} | Watch Time: ${l.watchTimePercent}%`
+      ).join('\n')}`
+    : '';
+
+  const prompt = `
+You are a data-driven content coach analyzing a creator's video performance.
+
+VIDEO DETAILS:
+- Topic        : ${topic}
+- Hook used    : "${hookUsed}"
+- Views        : ${views}
+- Watch time   : ${watchTimePercent}%
+- Likes        : ${likes}
+- Shares       : ${shares}
+- Comments     : ${comments}
+${pastContext}
+
+Write a plain-English performance analysis (3-4 paragraphs, no jargon):
+1. What worked well and why
+2. What likely hurt performance
+3. One specific thing to do differently next time
+4. A confidence-boosting closing line
+
+Keep it conversational — like advice from a smart friend, not a corporate report.
+`;
+
+  return await ask(prompt, 600);
+};
+
+// ─────────────────────────────────────────────────────────────────
+// 5. GET TRENDING TOPICS
+// ─────────────────────────────────────────────────────────────────
+const getTrendingTopics = async (niche = 'general', language = 'en') => {
+  const langInstruction = language === 'hi'
+    ? 'Respond entirely in Hindi (Devanagari script).'
+    : 'Respond in English.'
+
+  const prompt = `
+You are a viral content strategist tracking what's hot on Instagram Reels and YouTube Shorts RIGHT NOW.
+
+${langInstruction}
+
+Generate 10 trending topic ideas for a creator in the "${niche}" niche.
+Each topic should be:
+- Highly specific (not generic)
+- Timely and relevant
+- Optimized for short-form video (60-90 seconds)
+- Likely to get high engagement
+
+Return ONLY a JSON array of 10 strings. No extra text. Example:
+["Topic 1", "Topic 2", ...]
+`
+  const raw = await ask(prompt, 600)
+  try {
+    const match = raw.match(/\[[\s\S]*\]/)
+    if (!match) throw new Error('No JSON array')
+    return JSON.parse(match[0])
+  } catch {
+    return [
+      'How I gained 1000 followers in 30 days',
+      'The biggest mistake new creators make',
+      'My honest content creation routine',
+      'Why your videos get 0 views',
+      'The hook formula that always works',
+      'Content creation tools I use daily',
+      'How to batch record 30 videos in one day',
+      'My editing workflow revealed',
+      'Why consistency beats quality',
+      'The truth about going viral',
+    ]
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 6. GENERATE WEEKLY REPORT
+// ─────────────────────────────────────────────────────────────────
+const generateWeeklyReport = async (stats, language = 'en') => {
+  const langInstruction = language === 'hi'
+    ? 'Write the entire report in Hindi (Devanagari script). Be warm and encouraging.'
+    : 'Write in English. Be warm and encouraging.'
+
+  const prompt = `
+You are a personal content coach writing a creator's weekly performance summary.
+
+${langInstruction}
+
+Creator's stats for this week:
+- Scripts generated: ${stats.scripts}
+- Average hook score: ${stats.avgHookScore}/100
+- Videos analyzed: ${stats.analyses}
+- Top performing topic: "${stats.topTopic || 'N/A'}"
+- Current streak: ${stats.streak} days
+
+Write a short, motivating weekly report (3-4 sentences max) that:
+1. Celebrates what they did well
+2. Gives ONE specific tip for next week
+3. Ends with an encouraging line
+
+Be like a friend, not a corporate report. Keep it short.
+`
+  return await ask(prompt, 400)
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 7. GET REGIONAL GREETING + TRENDING NEWS
+// ─────────────────────────────────────────────────────────────────
+const getRegionalGreeting = async (region = 'India') => {
+  const prompt = `You are a sharp, professional content strategist briefing an Indian creator on today's social media landscape.
+
+Write in clean, concise English. Be warm but not overly casual — think smart friend, not cheerleader.
+
+Focus on topics Indian audiences actually engage with — Bollywood, cricket, Indian startups, festivals, food, finance, pop culture, etc.
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "greeting": "One crisp sentence (max 20 words) about what's happening in India's creator space today — insightful, not generic",
+  "trends": [
+    {"title": "Specific trend name", "description": "Why this matters for creators — 1 sentence, actionable", "category": "Entertainment"},
+    {"title": "Specific trend name", "description": "Why this matters for creators — 1 sentence, actionable", "category": "Business"},
+    {"title": "Specific trend name", "description": "Why this matters for creators — 1 sentence, actionable", "category": "Lifestyle"}
+  ]
+}
+
+Categories: Entertainment, Cricket, Finance, Tech, Food, Education, Lifestyle, Fashion, Business, Health, Bollywood`
+
+  const raw = await ask(prompt, 600, MODEL_FAST)
+  try {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) throw new Error('No JSON')
+    return JSON.parse(jsonMatch[0])
+  } catch {
+    return {
+      greeting: `Welcome back! ${region}'s social media is buzzing today — let's create something viral!`,
+      trends: [
+        { title: 'Short-form video trends', description: 'Reels and Shorts are dominating feeds right now.', category: 'Content' },
+        { title: 'Creator economy growth', description: 'More brands are investing in micro-influencers.', category: 'Business' },
+        { title: 'Authentic storytelling', description: 'Raw, unfiltered content is outperforming polished videos.', category: 'Strategy' },
+      ],
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 8. TRANSLATE CONTENT
+// ─────────────────────────────────────────────────────────────────
+const translateContent = async (content, targetLanguage) => {
+  if (targetLanguage === 'en') return content
+
+  const langMap = { hi: 'Hindi', es: 'Spanish', fr: 'French', pt: 'Portuguese' }
+  const langName = langMap[targetLanguage] || targetLanguage
+
+  const prompt = `Translate the following content to ${langName}. Keep the same tone, energy, and structure. Only return the translated text, nothing else.
+
+Content:
+${content}`
+
+  return await ask(prompt, 1200)
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 9. GENERATE CAPTIONS + HASHTAGS
+// ─────────────────────────────────────────────────────────────────
+const generateCaptions = async ({ topic, niche, tone }) => {
+  const prompt = `You are an expert Instagram caption writer who specializes in viral short-form content.
+
+Generate 4 caption styles and 25 relevant hashtags for this content:
+- Topic : ${topic}
+- Niche  : ${niche || 'general'}
+- Tone   : ${tone  || 'engaging'}
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "captions": [
+    {"style": "Short", "text": "..."},
+    {"style": "Story", "text": "..."},
+    {"style": "Question", "text": "..."},
+    {"style": "Bold", "text": "..."}
+  ],
+  "hashtags": ["tag1", "tag2", "tag3", "...", "tag25"]
+}
+
+Caption style guide:
+- Short: 1-2 punchy lines, high energy, max 50 words
+- Story: mini narrative that hooks and delivers value, 80-120 words
+- Question: opens with a question that sparks curiosity or debate, 40-70 words
+- Bold: controversial or confident statement that invites engagement, 40-70 words
+
+Hashtag rules:
+- Mix of niche-specific, broad, and trending tags
+- No # symbol in the JSON values — just the tag text
+- 25 tags exactly`;
+
+  const raw = await ask(prompt, 900, MODEL_FAST);
+
+  try {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in response');
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(parsed.captions)) throw new Error('captions not array');
+    if (!Array.isArray(parsed.hashtags)) throw new Error('hashtags not array');
+    return parsed;
+  } catch {
+    return {
+      captions: [
+        { style: 'Short', text: `${topic} — the truth no one talks about. Save this before it disappears.` },
+        { style: 'Story', text: `I almost gave up on ${topic}. Then one thing changed everything. Here's the story and what I learned that completely flipped my results.` },
+        { style: 'Question', text: `What if everything you knew about ${topic} was wrong? Drop your thoughts below.` },
+        { style: 'Bold', text: `${topic} is the #1 skill you need right now. No debate.` },
+      ],
+      hashtags: ['reels', 'viral', 'trending', 'explore', 'fyp', 'motivation', 'growth', 'content', 'creator', 'tips', 'advice', 'lifestyle', 'instagood', 'instagram', 'reelsinstagram', 'video', 'shortsvideo', 'trending2024', 'creatoreconomy', 'contentcreator', 'smallcreator', 'reelsviral', 'instareels', 'learnontiktok', 'educate'],
+    };
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────
+// 10. REMIX CONTENT
+// ─────────────────────────────────────────────────────────────────
+const remixContent = async ({ hook, body, cta, topic }) => {
+  const scriptText = `HOOK: ${hook}\n\nBODY: ${body}\n\nCTA: ${cta}`;
+
+  const prompt = `You are a multi-platform content strategist. Take this short-form video script and reformat it for 4 different platforms.
+
+Original Reel script about "${topic}":
+${scriptText}
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "twitter": "...",
+  "linkedin": "...",
+  "youtube": "...",
+  "caption": "..."
+}
+
+Platform rules:
+- twitter: A tweet thread (3-5 tweets). Use numbering like "1/" "2/" etc. Each tweet max 280 chars. Make it conversational and punchy.
+- linkedin: A professional LinkedIn post (150-250 words). Start with a bold hook line. Use line breaks for readability. End with a question to drive comments.
+- youtube: A YouTube Shorts script (same energy as the Reel but slightly longer intro). Format as: HOOK / CONTENT / CTA. Max 150 words.
+- caption: An Instagram caption (60-100 words). Engaging, conversational, ends with a CTA line. No hashtags.`;
+
+  const raw = await ask(prompt, 1000, MODEL_FAST);
+
+  try {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in response');
+    return JSON.parse(jsonMatch[0]);
+  } catch {
+    return {
+      twitter   : `1/ ${hook}\n\n2/ ${body.substring(0, 200)}\n\n3/ ${cta}`,
+      linkedin  : `${hook}\n\n${body}\n\n${cta}\n\nWhat do you think? Drop a comment below.`,
+      youtube   : `HOOK: ${hook}\n\nCONTENT: ${body}\n\nCTA: ${cta}`,
+      caption   : `${hook} ${body.substring(0, 100)}... ${cta}`,
+    };
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────
+// 11. COACH CHAT
+// ─────────────────────────────────────────────────────────────────
+const coachChat = async ({ message, history = [], userContext }) => {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+  const statsStr = userContext
+    ? `Creator stats: ${userContext.scriptsCount || 0} scripts created, avg hook score ${userContext.avgHookScore || 'N/A'}/100, current streak ${userContext.streak || 0} days, plan: ${userContext.plan || 'FREE'}${userContext.recentTopics && userContext.recentTopics.length > 0 ? `, recent topics: ${userContext.recentTopics.slice(0, 5).join(', ')}` : ''}.`
+    : '';
+
+  const onboardingStr = userContext?.onboardingContext
+    ? ` ${userContext.onboardingContext}`
+    : '';
+
+  const contextStr = [statsStr, onboardingStr].filter(Boolean).join(' ') || 'No creator context available yet.';
+
+  const systemPrompt = `You are a sharp, expert content coach for Indian short-form video creators on Instagram Reels and YouTube Shorts. ${contextStr} Always tailor advice specifically to the creator's niche and goals when provided. Be direct, practical, and specific. No fluff, no generic advice. Give actionable tips they can use today. Keep replies under 200 words unless a longer explanation is genuinely needed.`;
+
+  // Keep last 10 messages of history
+  const trimmedHistory = (history || []).slice(-10);
+
+  const messages = [
+    ...trimmedHistory.map(m => ({ role: m.role, content: m.content })),
+    { role: 'user', content: message },
+  ];
+
+  const response = await client.messages.create({
+    model     : MODEL,
+    max_tokens: 600,
+    system    : systemPrompt,
+    messages,
+  });
+
+  return { reply: response.content[0].text.trim() };
+};
+
+module.exports = {
+  generateScript,
+  scoreHook,
+  rewriteHook,
+  analyzePerformance,
+  getTrendingTopics,
+  generateWeeklyReport,
+  translateContent,
+  getRegionalGreeting,
+  generateCaptions,
+  remixContent,
+  coachChat,
+};

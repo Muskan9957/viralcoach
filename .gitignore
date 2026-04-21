@@ -1,0 +1,9 @@
+node_modules/
+.env
+dist/
+*.log
+.DS_Store
+".env" 
+"node_modules/" 
+"ai-reel-coach-frontend/node_modules/" 
+"*.db" 
