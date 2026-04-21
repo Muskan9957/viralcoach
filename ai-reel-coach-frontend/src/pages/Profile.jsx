@@ -31,7 +31,7 @@ function Avatar({ user, size = 80 }) {
     <div style={{
       width: size, height: size,
       borderRadius: '50%',
-      background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
+      background: 'linear-gradient(135deg, #FF5F1F, #FF3CAC)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontFamily: 'var(--font-head)',
       fontWeight: 800,
@@ -39,6 +39,7 @@ function Avatar({ user, size = 80 }) {
       color: '#fff',
       letterSpacing: '-0.02em',
       flexShrink: 0,
+      boxShadow: '0 4px 16px rgba(255,60,172,0.3)',
     }}>
       {initials}
     </div>
