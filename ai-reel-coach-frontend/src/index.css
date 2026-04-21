@@ -5,19 +5,19 @@
 :root {
   /* ── Backgrounds ── */
   --bg:          #07091C;
-  --surface:     #0B0F2E;
-  --surface2:    #101638;
-  --surface3:    #172050;
-  --border:      rgba(70,110,240,0.13);
-  --border-bright: rgba(70,110,240,0.25);
+  --surface:     #0D1230;
+  --surface2:    #131B42;
+  --surface3:    #1A2458;
+  --border:      rgba(100,140,255,0.18);
+  --border-bright: rgba(100,140,255,0.32);
 
   /* ── Brand Colors (ViralCoach: cyan + purple) ── */
   --accent:      #00C8FF;   /* electric cyan — primary */
   --accent2:     #7B5CF0;   /* purple — secondary */
   --accent3:     #4DD9FF;   /* lighter cyan */
   --saffron:     #00E5FF;   /* bright cyan (replaces saffron) */
-  --accent-dim:  rgba(0,200,255,0.16);
-  --accent-glow: rgba(0,200,255,0.42);
+  --accent-dim:  rgba(0,200,255,0.14);
+  --accent-glow: rgba(0,200,255,0.28);
   --accent2-dim: rgba(123,92,240,0.16);
   --teal:        #00D4B1;   /* keep for positive stats */
   --teal-dim:    rgba(0,212,177,0.13);
@@ -32,9 +32,9 @@
   --gradient-cool:   linear-gradient(135deg, #00D4B1, #7B5CF0);
 
   /* ── Text ── */
-  --text:        #E8F2FF;
-  --text-muted:  #6B8FC4;
-  --text-faint:  #2A3D6E;
+  --text:        #EDF4FF;
+  --text-muted:  #7FA3D4;
+  --text-faint:  #4D6899;
 
   /* ── Typography ── */
   --font-head:   'Plus Jakarta Sans', sans-serif;
@@ -62,8 +62,8 @@
   --border:      rgba(0,0,0,0.08);
   --border-bright: rgba(0,0,0,0.15);
   --text:        #0A1040;
-  --text-muted:  #3A5080;
-  --text-faint:  #8A9FC0;
+  --text-muted:  #445F90;
+  --text-faint:  #7A90B8;
   --accent-dim:  rgba(0,200,255,0.12);
   --accent-glow: rgba(0,200,255,0.25);
   --teal-dim:    rgba(0,212,177,0.1);
@@ -294,7 +294,7 @@ h1, h2, h3, h4 {
 }
 
 .input, .select, .textarea {
-  background: rgba(20,16,40,0.8);
+  background: rgba(18,22,52,0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
@@ -334,18 +334,18 @@ h1, h2, h3, h4 {
 
 /* ─── Cards ──────────────────────────────────────────────────────── */
 .card {
-  background: rgba(13,10,28,0.85);
+  background: rgba(15,18,46,0.88);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(100,140,255,0.14);
   border-radius: var(--radius-lg);
   padding: 28px;
   box-shadow: var(--shadow-card);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .card:hover {
-  border-color: rgba(255,255,255,0.13);
-  box-shadow: 0 4px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+  border-color: rgba(100,140,255,0.26);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(100,140,255,0.12);
 }
 .card-sm { padding: 20px; }
 .card-accent {
@@ -537,10 +537,10 @@ h1, h2, h3, h4 {
 
 /* ─── Stat card ──────────────────────────────────────────────────── */
 .stat-card {
-  background: rgba(13,10,28,0.85);
+  background: rgba(15,18,46,0.88);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,0.09);
+  border: 1px solid rgba(100,140,255,0.14);
   border-radius: var(--radius-lg);
   padding: 24px;
   display: flex;
