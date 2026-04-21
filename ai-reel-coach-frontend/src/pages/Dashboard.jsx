@@ -1,11 +1,23 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../store'
 import { api } from '../api'
 import { useLang } from '../i18n.jsx'
 import { useTextToSpeech } from '../components/VoiceAssistant'
 import WeeklyReport from '../components/WeeklyReport'
 import { usePrefs } from '../hooks/usePrefs'
+import { useToast } from '../components/Toast'
+
+const AVATAR_STYLES = [
+  { id: 'cyberpunk',  label: 'Cyberpunk',  emoji: '🤖' },
+  { id: 'anime',      label: 'Anime',      emoji: '✨' },
+  { id: 'fantasy',    label: 'Fantasy',    emoji: '🧙' },
+  { id: 'neon',       label: 'Neon',       emoji: '⚡' },
+  { id: 'minimal',    label: 'Minimal',    emoji: '◈'  },
+  { id: 'cosmic',     label: 'Cosmic',     emoji: '🌌' },
+  { id: 'pixel',      label: 'Pixel Art',  emoji: '🕹️' },
+  { id: 'watercolor', label: 'Watercolor', emoji: '🎨' },
+]
 
 const gradeColor = { A: '#00C9A7', B: '#FFD60A', C: '#FF9F43', D: '#FF6B6B', F: '#FF4757' }
 
@@ -226,6 +238,7 @@ function CreatorScoreCard({ score }) {
 export default function Dashboard() {
   const { user }          = useAuth()
   const { t }             = useLang()
+  const toast             = useToast()
   const { niches, goals, platform } = usePrefs()
   const [scripts, setSc]  = useState([])
   const [logs, setLogs]   = useState([])
@@ -233,6 +246,23 @@ export default function Dashboard() {
   const [profile, setProfile] = useState(null)
   const [creatorScore, setCreatorScore] = useState(null)
   const [loading, setLd]  = useState(true)
+  const [showAvatarGen, setShowAvatarGen] = useState(false)
+  const [avatarStyle, setAvatarStyle]     = useState('cyberpunk')
+  const [genLoading, setGenLoading]       = useState(false)
+  const [previewUrl, setPreviewUrl]       = useState(null)
+
+  const handleGenerateAvatar = async () => {
+    setGenLoading(true); setPreviewUrl(null)
+    try { const d = await api.generateAvatar(avatarStyle); setPreviewUrl(d.url) }
+    catch (err) { toast(err.message, 'error') }
+    finally { setGenLoading(false) }
+  }
+
+  const handleSaveAvatar = async () => {
+    if (!previewUrl) return
+    try { await api.saveAvatar(previewUrl); toast('Avatar updated!', 'success'); setShowAvatarGen(false); setPreviewUrl(null); window.location.reload() }
+    catch (err) { toast(err.message, 'error') }
+  }
 
   useEffect(() => {
     Promise.all([
@@ -263,22 +293,44 @@ export default function Dashboard() {
     <div className="page-enter">
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
-          {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </div>
+            <h1 style={{
+              fontFamily: 'var(--font-head)', fontWeight: 900,
+              fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
+              letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8,
+            }}>
+              Good {getTimeGreeting()},{' '}
+              <span style={{ background: 'linear-gradient(135deg, #00E5FF, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                {firstName} ✦
+              </span>
+            </h1>
+            <p className="page-sub">
+              Here's your content overview for today.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAvatarGen(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: 'linear-gradient(135deg, rgba(0,200,255,0.15), rgba(123,92,240,0.15))',
+              border: '1px solid rgba(0,200,255,0.35)',
+              borderRadius: 14, padding: '10px 18px',
+              color: 'var(--accent)', cursor: 'pointer',
+              fontSize: '0.85rem', fontWeight: 700,
+              fontFamily: 'var(--font-body)',
+              whiteSpace: 'nowrap',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0,200,255,0.25), rgba(123,92,240,0.25))'}
+            onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(135deg, rgba(0,200,255,0.15), rgba(123,92,240,0.15))'}
+          >
+            <span style={{ fontSize: '1.1rem' }}>🎨</span> Generate AI Avatar
+          </button>
         </div>
-        <h1 style={{
-          fontFamily: 'var(--font-head)', fontWeight: 900,
-          fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
-          letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8,
-        }}>
-          Good {getTimeGreeting()},{' '}
-          <span style={{ background: 'linear-gradient(135deg, #00E5FF, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-            {firstName} ✦
-          </span>
-        </h1>
-        <p className="page-sub">
-          Here's your content overview for today.
-        </p>
       </div>
 
       {/* Today's Brief */}
@@ -485,6 +537,61 @@ export default function Dashboard() {
           <Link to="/pricing" className="btn btn-primary btn-sm" style={{ position: 'relative', zIndex: 1, textDecoration: 'none' }}>
             Upgrade to Pro →
           </Link>
+        </div>
+      )}
+
+      {/* AI Avatar Generator Modal */}
+      {showAvatarGen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(4,5,18,0.88)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={e => { if (e.target === e.currentTarget) { setShowAvatarGen(false); setPreviewUrl(null) } }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-bright)', borderRadius: 24, padding: '32px 28px', width: '100%', maxWidth: 480, boxShadow: '0 32px 80px rgba(0,0,0,0.7)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <h2 style={{ fontFamily: 'var(--font-head)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text)', margin: 0 }}>🎨 AI Avatar Generator</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 4 }}>Pick a style and generate your unique avatar</p>
+              </div>
+              <button onClick={() => { setShowAvatarGen(false); setPreviewUrl(null) }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.4rem', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 }}>
+              {AVATAR_STYLES.map(s => (
+                <button key={s.id} onClick={() => setAvatarStyle(s.id)} style={{
+                  padding: '10px 6px', borderRadius: 12,
+                  border: avatarStyle === s.id ? '2px solid var(--accent)' : '1px solid var(--border)',
+                  background: avatarStyle === s.id ? 'var(--accent-dim)' : 'var(--surface2)',
+                  cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'all 0.15s',
+                }}>
+                  <span style={{ fontSize: '1.2rem' }}>{s.emoji}</span>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, color: avatarStyle === s.id ? 'var(--accent)' : 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{s.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div style={{ height: 200, borderRadius: 16, background: 'var(--surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, overflow: 'hidden' }}>
+              {genLoading ? (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid var(--border)', borderTopColor: 'var(--accent)', animation: 'spin 0.7s linear infinite', margin: '0 auto 12px' }} />
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Generating your avatar…</p>
+                </div>
+              ) : previewUrl ? (
+                <img src={previewUrl} alt="Generated avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: 8 }}>🎨</div>
+                  <p style={{ fontSize: '0.82rem' }}>Your avatar will appear here</p>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={handleGenerateAvatar} disabled={genLoading} className="btn btn-primary" style={{ flex: 1 }}>
+                {genLoading ? 'Generating…' : previewUrl ? '↺ Regenerate' : '✦ Generate Avatar'}
+              </button>
+              {previewUrl && (
+                <button onClick={handleSaveAvatar} className="btn btn-teal" style={{ flex: 1 }}>Set as Avatar ✓</button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
