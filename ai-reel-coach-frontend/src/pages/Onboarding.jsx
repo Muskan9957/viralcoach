@@ -38,7 +38,7 @@ const PLATFORMS = [
     ),
     label: 'Instagram Reels',
     desc: 'Short, visual, trending audio',
-    tag: 'Most Popular in India',
+    tag: 'Most Popular',
   },
   {
     id: 'youtube', icon: (

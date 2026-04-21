@@ -236,7 +236,7 @@ export default function Pricing() {
           textTransform: 'uppercase',
           marginBottom: 20,
         }}>
-          🇮🇳 India-First Pricing
+          🌍 Creator-First Pricing
         </div>
 
         <h1 style={{
@@ -500,12 +500,12 @@ export default function Pricing() {
       {/* Social proof */}
       <div style={{ maxWidth: 800, margin: '0 auto 72px', textAlign: 'center' }}>
         <p style={{ color: 'var(--text-faint)', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 28 }}>
-          Trusted by creators across India
+          Trusted by creators worldwide
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
           {[
             { name: 'Priya S.',    handle: '@priyalifestyle', avatar: 'P', text: '"Went from 2K to 47K followers in 3 months using ViralCoach scripts. The hook scorer is insane."', niche: 'Lifestyle' },
-            { name: 'Rohan M.',   handle: '@rohanfinance',   avatar: 'R', text: '"Finally an AI that understands Indian audiences. My finance reels now get 5x more saves."',       niche: 'Finance' },
+            { name: 'Rohan M.',   handle: '@rohanfinance',   avatar: 'R', text: '"Finally an AI that understands my audience. My finance reels now get 5x more saves."',       niche: 'Finance' },
             { name: 'Ananya K.',  handle: '@ananyafitness',  avatar: 'A', text: '"The AI Coach helped me fix my CTA game. My first viral reel hit 2.3 million views!"',               niche: 'Fitness' },
           ].map(t => (
             <div key={t.name} style={{
@@ -637,7 +637,7 @@ export default function Pricing() {
           </button>
         </div>
         <p style={{ color: 'var(--text-faint)', fontSize: '0.78rem', marginTop: 16 }}>
-          🇮🇳 Made for Indian creators &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Hindi support included
+          🌍 Made for creators worldwide &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Multi-language support
         </p>
       </div>
     </div>

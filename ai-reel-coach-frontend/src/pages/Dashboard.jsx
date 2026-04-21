@@ -34,7 +34,7 @@ function TrendingBrief({ userName }) {
   const [played, setPlayed]     = useState(false)
 
   useEffect(() => {
-    api.getGreeting('India')
+    api.getGreeting('Global')
       .then(data => setGreeting(data))
       .catch(() => {})
       .finally(() => setLoading(false))
