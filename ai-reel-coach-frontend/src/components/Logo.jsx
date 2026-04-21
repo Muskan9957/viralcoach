@@ -64,24 +64,27 @@ export default function Logo({ size = 40, showWordmark = true }) {
           <div style={{
             fontFamily: 'var(--font-head)',
             fontWeight: 800,
-            fontSize: size * 0.3,
+            fontSize: Math.max(size * 0.38, 14),
             letterSpacing: '-0.03em',
             color: 'var(--text)',
             lineHeight: 1.1,
           }}>
             <span style={{ fontWeight: 900 }}>Viral</span><span style={{ fontWeight: 400 }}>Coach</span>
           </div>
-          <div style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: size * 0.15,
-            color: 'var(--accent)',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            marginTop: 1,
-            opacity: 0.7,
-          }}>
-            Smart. Strategic. Accelerated.
-          </div>
+          {size >= 40 && (
+            <div style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: Math.max(size * 0.18, 9),
+              color: 'var(--accent)',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              marginTop: 2,
+              opacity: 0.65,
+              whiteSpace: 'nowrap',
+            }}>
+              Script · Score · Go Viral
+            </div>
+          )}
         </div>
       )}
     </div>
