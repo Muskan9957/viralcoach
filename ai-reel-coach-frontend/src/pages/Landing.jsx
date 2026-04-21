@@ -184,7 +184,7 @@ export default function Landing() {
         backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
-        <Logo size={36} showWordmark />
+        <Logo size={44} showWordmark />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ThemeToggle size="sm" />
           <Link
@@ -430,7 +430,7 @@ export default function Landing() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexWrap: 'wrap', gap: 16, background: 'var(--surface)',
       }}>
-        <Logo size={30} showWordmark />
+        <Logo size={40} showWordmark />
         <div style={{ fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', letterSpacing: '0.02em' }}>
           © 2025 ViralCoach · Built with ❤️ for creators
         </div>

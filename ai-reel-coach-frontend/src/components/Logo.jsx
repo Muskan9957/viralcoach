@@ -71,20 +71,18 @@ export default function Logo({ size = 40, showWordmark = true }) {
           }}>
             <span style={{ fontWeight: 900 }}>Viral</span><span style={{ fontWeight: 400 }}>Coach</span>
           </div>
-          {size >= 40 && (
-            <div style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: Math.max(size * 0.18, 9),
-              color: 'var(--accent)',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              marginTop: 2,
-              opacity: 0.65,
-              whiteSpace: 'nowrap',
-            }}>
-              Script · Score · Go Viral
-            </div>
-          )}
+          <div style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: Math.max(size * 0.22, 9),
+            color: 'var(--accent)',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            marginTop: 2,
+            opacity: 0.65,
+            whiteSpace: 'nowrap',
+          }}>
+            Script · Score · Go Viral
+          </div>
         </div>
       )}
     </div>
