@@ -2,6 +2,14 @@ import { useLang } from '../i18n.jsx'
 
 const LANGUAGES = [
   { code: 'en',       label: 'English',    flag: '🇬🇧' },
+  { code: 'es',       label: 'Español',    flag: '🇪🇸' },
+  { code: 'fr',       label: 'Français',   flag: '🇫🇷' },
+  { code: 'pt',       label: 'Português',  flag: '🇧🇷' },
+  { code: 'de',       label: 'Deutsch',    flag: '🇩🇪' },
+  { code: 'ar',       label: 'العربية',    flag: '🇸🇦' },
+  { code: 'id',       label: 'Bahasa',     flag: '🇮🇩' },
+  { code: 'ja',       label: '日本語',      flag: '🇯🇵' },
+  { code: 'ko',       label: '한국어',      flag: '🇰🇷' },
   { code: 'hi',       label: 'हिंदी',      flag: '🇮🇳' },
   { code: 'hinglish', label: 'Hinglish',   flag: '🇮🇳' },
 ]

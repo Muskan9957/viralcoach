@@ -287,7 +287,8 @@ export function LangProvider({ children }) {
   const setLanguage = (l) => {
     setLang(l)
     localStorage.setItem('arc_lang', l)
-    fetch('/api/user/language', {
+    const base = import.meta.env.VITE_API_URL || ''
+    fetch(`${base}/api/user/language`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

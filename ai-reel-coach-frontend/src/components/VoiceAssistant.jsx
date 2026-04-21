@@ -2,7 +2,19 @@ import { useState, useRef } from 'react'
 import { useLang } from '../i18n.jsx'
 
 // Language codes for Web Speech API
-const LANG_CODES = { en: 'en-IN', hi: 'hi-IN', hinglish: 'hi-IN' }
+const LANG_CODES = {
+  en:       'en-US',
+  es:       'es-ES',
+  fr:       'fr-FR',
+  pt:       'pt-BR',
+  de:       'de-DE',
+  ar:       'ar-SA',
+  id:       'id-ID',
+  ja:       'ja-JP',
+  ko:       'ko-KR',
+  hi:       'hi-IN',
+  hinglish: 'hi-IN',
+}
 
 // ─── Pick the best available voice ────────────────────────────────
 let cachedVoice = {}
