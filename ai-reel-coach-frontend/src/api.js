@@ -89,4 +89,6 @@ export const api = {
   updateLanguage:  (language) => req('PATCH', '/user/language', { language }),
   getBadges:       ()         => req('GET',   '/user/badges'),
   markOnboarded:   ()         => req('PATCH', '/user/onboarded'),
+  generateAvatar:  (style)    => req('POST',  '/user/generate-avatar', { style }),
+  saveAvatar:      (url)      => req('PATCH', '/user/avatar', { url }),
 }

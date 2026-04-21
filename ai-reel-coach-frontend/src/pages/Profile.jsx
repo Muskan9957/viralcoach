@@ -3,6 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../store'
 import { useTheme } from '../context/ThemeContext'
 import { useToast } from '../components/Toast'
+import { api } from '../api'
+
+const AVATAR_STYLES = [
+  { id: 'cyberpunk',  label: 'Cyberpunk',  emoji: '🤖', color: '#00C8FF' },
+  { id: 'anime',      label: 'Anime',      emoji: '✨', color: '#FF6EE7' },
+  { id: 'fantasy',    label: 'Fantasy',    emoji: '🧙', color: '#9B72FF' },
+  { id: 'neon',       label: 'Neon',       emoji: '⚡', color: '#00FF88' },
+  { id: 'minimal',    label: 'Minimal',    emoji: '◈',  color: '#A8C4E8' },
+  { id: 'cosmic',     label: 'Cosmic',     emoji: '🌌', color: '#7B5CF0' },
+  { id: 'pixel',      label: 'Pixel Art',  emoji: '🕹️', color: '#FFD60A' },
+  { id: 'watercolor', label: 'Watercolor', emoji: '🎨', color: '#FF9F7F' },
+]
 
 const PLAN_META = {
   FREE:    { label: 'Free',    color: '#6B6B90', bg: 'rgba(107,107,144,0.12)', limit: 10  },
@@ -89,7 +101,11 @@ export default function Profile() {
   const { theme, toggle }  = useTheme()
   const navigate           = useNavigate()
   const toast              = useToast()
-  const [showDanger, setShowDanger] = useState(false)
+  const [showDanger, setShowDanger]       = useState(false)
+  const [showAvatarGen, setShowAvatarGen] = useState(false)
+  const [avatarStyle, setAvatarStyle]     = useState('cyberpunk')
+  const [genLoading, setGenLoading]       = useState(false)
+  const [previewUrl, setPreviewUrl]       = useState(null)
 
   const prefs    = (() => { try { return JSON.parse(localStorage.getItem('vs_prefs') || '{}') } catch { return {} } })()
   const planMeta = PLAN_META[user?.plan] || PLAN_META.FREE
@@ -100,6 +116,32 @@ export default function Profile() {
     logout()
     navigate('/')
     toast.success('Logged out successfully')
+  }
+
+  const handleGenerateAvatar = async () => {
+    setGenLoading(true)
+    setPreviewUrl(null)
+    try {
+      const data = await api.generateAvatar(avatarStyle)
+      setPreviewUrl(data.url)
+    } catch (err) {
+      toast(err.message, 'error')
+    } finally {
+      setGenLoading(false)
+    }
+  }
+
+  const handleSaveAvatar = async () => {
+    if (!previewUrl) return
+    try {
+      await api.saveAvatar(previewUrl)
+      toast('Avatar updated!', 'success')
+      setShowAvatarGen(false)
+      setPreviewUrl(null)
+      window.location.reload()
+    } catch (err) {
+      toast(err.message, 'error')
+    }
   }
 
   return (
@@ -127,14 +169,16 @@ export default function Profile() {
           pointerEvents: 'none',
         }} />
 
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setShowAvatarGen(true)} title="Generate AI avatar">
           <Avatar user={user} size={80} />
           <div style={{
             position: 'absolute', bottom: 2, right: 2,
-            width: 20, height: 20, borderRadius: '50%',
-            background: '#22C55E',
+            width: 24, height: 24, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
             border: '2px solid var(--bg)',
-          }} />
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '0.65rem',
+          }}>✦</div>
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -370,6 +414,104 @@ export default function Profile() {
           )}
         </Section>
       </div>
+
+      {/* AI Avatar Generator Modal */}
+      {showAvatarGen && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(4,5,18,0.85)',
+          backdropFilter: 'blur(16px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 20,
+        }} onClick={e => { if (e.target === e.currentTarget) setShowAvatarGen(false) }}>
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border-bright)',
+            borderRadius: 24,
+            padding: '32px 28px',
+            width: '100%',
+            maxWidth: 480,
+            boxShadow: '0 32px 80px rgba(0,0,0,0.7)',
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <h2 style={{ fontFamily: 'var(--font-head)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text)', margin: 0 }}>
+                  ✦ AI Avatar Generator
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 4 }}>
+                  Pick a style and generate your unique avatar
+                </p>
+              </div>
+              <button onClick={() => setShowAvatarGen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer', padding: 4 }}>✕</button>
+            </div>
+
+            {/* Style picker */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 }}>
+              {AVATAR_STYLES.map(s => (
+                <button key={s.id} onClick={() => setAvatarStyle(s.id)} style={{
+                  padding: '10px 6px',
+                  borderRadius: 12,
+                  border: avatarStyle === s.id ? `2px solid ${s.color}` : '1px solid var(--border)',
+                  background: avatarStyle === s.id ? `rgba(${s.color === '#00C8FF' ? '0,200,255' : s.color === '#FF6EE7' ? '255,110,231' : '123,92,240'},0.12)` : 'var(--surface2)',
+                  cursor: 'pointer',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                  transition: 'all 0.15s',
+                }}>
+                  <span style={{ fontSize: '1.2rem' }}>{s.emoji}</span>
+                  <span style={{ fontSize: '0.65rem', fontWeight: 700, color: avatarStyle === s.id ? s.color : 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
+                    {s.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Preview */}
+            <div style={{
+              height: 200,
+              borderRadius: 16,
+              background: 'var(--surface2)',
+              border: '1px solid var(--border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 16,
+              overflow: 'hidden',
+              position: 'relative',
+            }}>
+              {genLoading ? (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    border: '3px solid var(--border)',
+                    borderTopColor: 'var(--accent)',
+                    animation: 'spin 0.7s linear infinite',
+                    margin: '0 auto 12px',
+                  }} />
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Generating your avatar…</p>
+                </div>
+              ) : previewUrl ? (
+                <img src={previewUrl} alt="Generated avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ textAlign: 'center', color: 'var(--text-faint)' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: 8 }}>✦</div>
+                  <p style={{ fontSize: '0.82rem' }}>Your avatar will appear here</p>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={handleGenerateAvatar} disabled={genLoading} className="btn btn-primary" style={{ flex: 1 }}>
+                {genLoading ? 'Generating…' : previewUrl ? '↺ Regenerate' : '✦ Generate'}
+              </button>
+              {previewUrl && (
+                <button onClick={handleSaveAvatar} className="btn btn-teal" style={{ flex: 1 }}>
+                  Set as Avatar ✓
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
