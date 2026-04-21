@@ -277,42 +277,8 @@ export default function Dashboard() {
           </span>
         </h1>
         <p className="page-sub">
-          {niches.length > 0
-            ? `Your ${niches.join(' · ')} dashboard — here's what's happening today.`
-            : "Here's your content overview for today."}
+          Here's your content overview for today.
         </p>
-        {/* Onboarding niche + goal chips */}
-        {(niches.length > 0 || goals.length > 0) && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-            {niches.map(n => (
-              <span key={n} style={{
-                background: 'rgba(0,200,255,0.1)', color: 'var(--accent)',
-                border: '1px solid rgba(0,200,255,0.25)',
-                fontSize: '0.72rem', fontWeight: 700, fontFamily: 'var(--font-mono)',
-                padding: '3px 10px', borderRadius: 99, textTransform: 'capitalize',
-                letterSpacing: '0.04em',
-              }}>#{n}</span>
-            ))}
-            {goals.map(g => (
-              <span key={g} style={{
-                background: 'rgba(0,212,177,0.08)', color: 'var(--teal)',
-                border: '1px solid rgba(0,212,177,0.2)',
-                fontSize: '0.72rem', fontWeight: 700, fontFamily: 'var(--font-mono)',
-                padding: '3px 10px', borderRadius: 99, textTransform: 'capitalize',
-                letterSpacing: '0.04em',
-              }}>🎯 {g}</span>
-            ))}
-            {platform && (
-              <span style={{
-                background: 'rgba(123,92,240,0.08)', color: '#7B5CF0',
-                border: '1px solid rgba(123,92,240,0.2)',
-                fontSize: '0.72rem', fontWeight: 700, fontFamily: 'var(--font-mono)',
-                padding: '3px 10px', borderRadius: 99, textTransform: 'capitalize',
-                letterSpacing: '0.04em',
-              }}>📱 {platform}</span>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Today's Brief */}
