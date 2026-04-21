@@ -1,0 +1,274 @@
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+import { api } from '../api'
+import { useToast } from '../components/Toast'
+import { useLang } from '../i18n.jsx'
+import { MicButton, SpeakButton } from '../components/VoiceAssistant'
+
+const gradeColor  = { A: '#00C9A7', B: '#88F0D0', C: '#FFD60A', D: '#FF9F43', F: '#FF6B6B' }
+const gradeLabel  = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
+
+function BigScoreRing({ score }) {
+  const r    = 68
+  const circ = 2 * Math.PI * r
+  const fill = circ - (score / 100) * circ
+  const grade = score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 60 ? 'C' : score >= 50 ? 'D' : 'F'
+  const color = gradeColor[grade]
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle cx="80" cy="80" r={r} fill="none" stroke="var(--surface3)" strokeWidth="10" />
+        <circle
+          cx="80" cy="80" r={r}
+          fill="none"
+          stroke={color}
+          strokeWidth="10"
+          strokeDasharray={circ}
+          strokeDashoffset={fill}
+          strokeLinecap="round"
+          transform="rotate(-90 80 80)"
+          style={{ filter: `drop-shadow(0 0 12px ${color})`, transition: 'stroke-dashoffset 1s ease' }}
+        />
+        <text x="80" y="74" textAnchor="middle" fontFamily="var(--font-head)" fontSize="30" fontWeight="800" fill="var(--text)">{score}</text>
+        <text x="80" y="96" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12" fill={color}>
+          {grade} — {gradeLabel[grade]}
+        </text>
+      </svg>
+    </div>
+  )
+}
+
+export default function Score() {
+  const toast    = useToast()
+  const { t }    = useLang()
+  const location = useLocation()
+
+  const [hook, setHook]         = useState('')
+  const [loading, setLd]        = useState(false)
+  const [result, setResult]     = useState(null)
+  const [accepted, setAccepted] = useState(false)
+
+  // Pre-fill hook from Templates page
+  useEffect(() => {
+    const stateHook = location.state?.hook
+    if (stateHook) {
+      setHook(stateHook)
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
+
+  const scoreHook = async e => {
+    e.preventDefault()
+    if (!hook.trim()) { toast('Please enter a hook', 'error'); return }
+    setLd(true); setResult(null); setAccepted(false)
+    try {
+      const data = await api.scoreHook({ hookText: hook })
+      setResult(data.hookScore)
+      toast('Hook scored!', 'success')
+    } catch (err) {
+      toast(err.message, 'error')
+    } finally {
+      setLd(false)
+    }
+  }
+
+  const statusColor = s =>
+    s === 'Post Ready' ? '#00C9A7' :
+    s === 'Needs Improvement' ? '#FFD60A' : '#FF6B6B'
+
+  // TTS text for the result
+  const ttsText = result
+    ? `Your hook scored ${result.score} out of 100. Grade ${result.score >= 90 ? 'A' : result.score >= 75 ? 'B' : result.score >= 60 ? 'C' : result.score >= 50 ? 'D' : 'F'}. ${result.reasons?.join('. ')}`
+    : null
+
+  return (
+    <div className="page-enter">
+      <h1 className="page-title">{t('score_title')}</h1>
+      <p className="page-sub">Paste any hook and get an instant score before you post.</p>
+
+      <div style={styles.layout}>
+        {/* Form */}
+        <div className="card" style={{ position: 'sticky', top: 40 }}>
+          <h2 style={styles.cardTitle}>Your Hook</h2>
+          <form onSubmit={scoreHook} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <div className="field">
+              <label>Hook Text</label>
+              {/* Textarea with MicButton inline */}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                <textarea
+                  className="textarea"
+                  placeholder={'e.g. "I was broke at 25. Here\'s what changed everything."'}
+                  value={hook}
+                  onChange={e => setHook(e.target.value)}
+                  rows={5}
+                  required
+                  style={{ flex: 1, resize: 'vertical' }}
+                />
+                <MicButton
+                  onResult={(text) => setHook(text)}
+                  style={{ marginTop: 2 }}
+                />
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', textAlign: 'right', marginTop: 4 }}>
+                {hook.length} chars
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+              {loading
+                ? <><span className="spinner" />Scoring...</>
+                : '◎ Score This Hook'}
+            </button>
+          </form>
+
+          {/* Tips */}
+          <div style={styles.tips}>
+            <div style={styles.tipsTitle}>What makes a great hook?</div>
+            {['Opens a curiosity gap', 'Uses specific numbers or claims', 'Triggers an emotion', 'Gets to the point in 2 seconds'].map(tip => (
+              <div key={tip} style={styles.tip}><span style={{ color: 'var(--teal)' }}>✓</span> {tip}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* Result */}
+        <div>
+          {!result && !loading && (
+            <div className="card" style={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="empty-state">
+                <div className="icon">◎</div>
+                <p style={{ fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+                  Score appears here
+                </p>
+                <p>Enter a hook and click Score.</p>
+              </div>
+            </div>
+          )}
+
+          {result && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {/* Big score */}
+              <div className="card" style={styles.scoreCard}>
+                <BigScoreRing score={result.score} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+                    <span style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.4rem' }}>
+                      {result.score}<span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/100</span>
+                    </span>
+                    <span style={{
+                      fontSize: '0.8rem',
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: '600',
+                      padding: '4px 12px',
+                      borderRadius: '99px',
+                      background: `${statusColor(result.status)}22`,
+                      color: statusColor(result.status),
+                      border: `1px solid ${statusColor(result.status)}44`,
+                    }}>
+                      {result.status}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+                    Why this score
+                  </div>
+                  <div className="reasons">
+                    {result.reasons?.map((r, i) => (
+                      <div key={i} className="reason-item">
+                        <div className="reason-dot" />
+                        {r}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* TTS button */}
+                  <div style={{ marginTop: 16 }}>
+                    <SpeakButton text={ttsText} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Scored hook display */}
+              <div className="card card-sm">
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                  Scored Hook
+                </div>
+                <div style={{ fontSize: '1rem', lineHeight: 1.6, color: 'var(--text)', borderLeft: '3px solid var(--accent)', paddingLeft: '14px' }}>
+                  "{hook}"
+                </div>
+              </div>
+
+              {/* Action row */}
+              {result.score < 75 && (
+                <div className="card card-sm" style={{ background: 'var(--accent-dim)', border: '1px solid rgba(255,95,31,0.2)' }}>
+                  <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.9rem', marginBottom: 8 }}>
+                    This hook could be stronger
+                  </div>
+                  <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.6 }}>
+                    Go to Script Generator, paste this topic, and the AI will generate a new script with a stronger hook automatically.
+                  </p>
+                  <a href="/generate" className="btn btn-primary btn-sm">✦ Generate Better Script</a>
+                </div>
+              )}
+
+              {result.score >= 75 && (
+                <div className="card card-sm" style={{ background: 'var(--teal-dim)', border: '1px solid rgba(0,201,167,0.2)' }}>
+                  <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--teal)', marginBottom: 6 }}>
+                    ✓ This hook is ready to post
+                  </div>
+                  <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)' }}>
+                    Score above 75 means high scroll-stopping potential. Go record it!
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const styles = {
+  layout: {
+    display: 'grid',
+    gridTemplateColumns: '340px 1fr',
+    gap: 24,
+    alignItems: 'flex-start',
+  },
+  cardTitle: {
+    fontFamily: 'var(--font-head)',
+    fontWeight: '700',
+    fontSize: '1rem',
+    marginBottom: '20px',
+  },
+  scoreCard: {
+    display: 'flex',
+    gap: 28,
+    alignItems: 'flex-start',
+    flexWrap: 'wrap',
+  },
+  tips: {
+    marginTop: 24,
+    padding: '16px',
+    background: 'var(--surface2)',
+    borderRadius: 'var(--radius)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  tipsTitle: {
+    fontSize: '0.75rem',
+    fontFamily: 'var(--font-mono)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    color: 'var(--text-faint)',
+    marginBottom: 6,
+  },
+  tip: {
+    fontSize: '0.82rem',
+    color: 'var(--text-muted)',
+    display: 'flex',
+    gap: 8,
+  },
+}
