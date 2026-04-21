@@ -169,16 +169,28 @@ export default function Profile() {
           pointerEvents: 'none',
         }} />
 
-        <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setShowAvatarGen(true)} title="Generate AI avatar">
-          <Avatar user={user} size={80} />
-          <div style={{
-            position: 'absolute', bottom: 2, right: 2,
-            width: 24, height: 24, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
-            border: '2px solid var(--bg)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '0.65rem',
-          }}>✦</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+          <div style={{ position: 'relative' }}>
+            <Avatar user={user} size={80} />
+          </div>
+          <button
+            onClick={() => setShowAvatarGen(true)}
+            style={{
+              background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
+              border: 'none',
+              borderRadius: 10,
+              color: '#fff',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              fontFamily: 'var(--font-body)',
+              padding: '6px 12px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              letterSpacing: '0.02em',
+            }}
+          >
+            ✦ AI Avatar
+          </button>
         </div>
 
         <div style={{ flex: 1, minWidth: 0 }}>
