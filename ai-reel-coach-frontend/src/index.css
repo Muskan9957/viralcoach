@@ -32,9 +32,9 @@
   --gradient-cool:   linear-gradient(135deg, #00D4B1, #7B5CF0);
 
   /* ── Text ── */
-  --text:        #EDF4FF;
-  --text-muted:  #7FA3D4;
-  --text-faint:  #4D6899;
+  --text:        #F0F6FF;
+  --text-muted:  #A8C4E8;
+  --text-faint:  #6B8DB8;
 
   /* ── Typography ── */
   --font-head:   'Plus Jakarta Sans', sans-serif;
@@ -287,7 +287,7 @@ h1, h2, h3, h4 {
 .field { display: flex; flex-direction: column; gap: 7px; }
 .field label {
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -309,7 +309,7 @@ h1, h2, h3, h4 {
   outline: none;
   letter-spacing: -0.01em;
 }
-.input::placeholder, .textarea::placeholder { color: var(--text-faint); }
+.input::placeholder, .textarea::placeholder { color: var(--text-faint); opacity: 0.9; }
 .input:focus, .select:focus, .textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(0,200,255,0.16), 0 0 20px rgba(0,200,255,0.08);
@@ -451,15 +451,13 @@ h1, h2, h3, h4 {
   letter-spacing: -0.04em;
   line-height: 1.1;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, var(--text) 55%, var(--text-muted));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text);
 }
 .page-sub {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.93rem;
   margin-bottom: 32px;
+  line-height: 1.6;
 }
 
 /* ─── Section label (mono caps) ──────────────────────────────────── */
@@ -481,7 +479,7 @@ h1, h2, h3, h4 {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--text-faint);
+  color: var(--text-muted);
   padding: 14px 12px 5px;
   font-family: var(--font-mono);
   position: relative;
@@ -517,10 +515,10 @@ h1, h2, h3, h4 {
 .script-section-label {
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-faint);
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 .script-text {
@@ -554,8 +552,8 @@ h1, h2, h3, h4 {
   transform: translateY(-2px);
   box-shadow: 0 8px 40px rgba(0,200,255,0.10), var(--shadow-card);
 }
-.stat-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-faint); }
-.stat-value { font-family: var(--font-head); font-size: 2rem; font-weight: 900; letter-spacing: -0.04em; }
+.stat-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+.stat-value { font-family: var(--font-head); font-size: 2rem; font-weight: 900; letter-spacing: -0.04em; color: var(--text); }
 .stat-sub   { font-size: 0.78rem; color: var(--text-faint); }
 
 /* ─── Progress bar ───────────────────────────────────────────────── */
@@ -581,7 +579,7 @@ h1, h2, h3, h4 {
 .bottom-nav-item {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 3px; flex: 1; height: 100%; cursor: pointer; text-decoration: none;
-  color: var(--text-faint); transition: color 0.2s ease;
+  color: var(--text-muted); transition: color 0.2s ease;
   position: relative; padding: 8px 4px;
 }
 .bottom-nav-item.active { color: var(--accent); }
@@ -617,7 +615,7 @@ h1, h2, h3, h4 {
 }
 
 /* ─── Empty state ────────────────────────────────────────────────── */
-.empty-state { text-align: center; padding: 48px 24px; color: var(--text-faint); }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
 .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
 .empty-state p { font-size: 0.9rem; }
 
@@ -631,7 +629,7 @@ h1, h2, h3, h4 {
 
 /* ─── Reasons list ───────────────────────────────────────────────── */
 .reasons { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-.reason-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; }
+.reason-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.875rem; color: var(--text); line-height: 1.5; }
 .reason-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gradient); margin-top: 7px; flex-shrink: 0; }
 
 /* ─── Animations ─────────────────────────────────────────────────── */
