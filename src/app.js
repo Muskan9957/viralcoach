@@ -33,12 +33,15 @@ const ALLOWED_ORIGINS = [
   process.env.FRONTEND_URL,
   'http://localhost:3000',
   'http://localhost:5173',
+  'https://viralcoach-two.vercel.app',
 ].filter(Boolean)
 
 app.use(cors({
   origin: (origin, cb) => {
     // Allow requests with no origin (mobile, curl) or matching origins
     if (!origin || ALLOWED_ORIGINS.some(o => origin.startsWith(o))) return cb(null, true)
+    // Allow all vercel.app preview deployments
+    if (origin && origin.endsWith('.vercel.app')) return cb(null, true)
     cb(new Error(`CORS: origin ${origin} not allowed`))
   },
   credentials: true,
