@@ -28,7 +28,10 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('arc_token')
     if (!token) { setLoading(false); return }
     api.getMe()
-      .then(d => setUser(d.user))
+      .then(d => {
+        if (d.user.onboarded) localStorage.setItem('vs_onboarded', '1')
+        setUser(d.user)
+      })
       .catch(() => localStorage.removeItem('arc_token'))
       .finally(() => setLoading(false))
   }, [])

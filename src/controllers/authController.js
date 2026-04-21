@@ -92,6 +92,7 @@ const getMe = async (req, res, next) => {
         generationsUsed : true,
         generationsReset: true,
         createdAt       : true,
+        onboarded       : true,
       },
     });
     if (!user) return res.status(404).json({ error: 'User not found.' });

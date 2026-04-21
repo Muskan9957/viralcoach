@@ -85,7 +85,8 @@ export const api = {
   getHookLibrary: (params) => req('GET', `/hooks/library?category=${params.category || 'all'}&type=${params.type || 'all'}&search=${encodeURIComponent(params.search || '')}`),
 
   // User
-  getUserProfile: ()         => req('GET',   '/user/profile'),
-  updateLanguage: (language) => req('PATCH', '/user/language', { language }),
-  getBadges:      ()         => req('GET',   '/user/badges'),
+  getUserProfile:  ()         => req('GET',   '/user/profile'),
+  updateLanguage:  (language) => req('PATCH', '/user/language', { language }),
+  getBadges:       ()         => req('GET',   '/user/badges'),
+  markOnboarded:   ()         => req('PATCH', '/user/onboarded'),
 }

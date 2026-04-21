@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../store'
+import { api } from '../api'
 import Logo from '../components/Logo'
 
 const NICHES = [
@@ -139,6 +140,7 @@ export default function Onboarding() {
   const finish = () => {
     localStorage.setItem('vs_onboarded', '1')
     localStorage.setItem('vs_prefs', JSON.stringify({ niches, platform, goals }))
+    api.markOnboarded().catch(() => {})
     setDone(true)
     setTimeout(() => navigate('/dashboard'), 2000)
   }
