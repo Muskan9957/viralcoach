@@ -30,39 +30,39 @@ const AVATAR_STYLES = {
 router.post('/generate-avatar', auth, async (req, res, next) => {
   try {
     const { style = 'cyberpunk' } = req.body
-    if (!process.env.FAL_API_KEY) {
+    const apiKey = (process.env.FAL_API_KEY || '').trim()
+    if (!apiKey) {
       console.error('FAL_API_KEY not set')
       return res.status(503).json({ error: 'Avatar generation not configured.' })
     }
 
+    // Log key prefix so we can verify Railway is reading it correctly
+    console.log('fal.ai: key prefix =', apiKey.substring(0, 10) + '..., length =', apiKey.length)
+
     const stylePrompt = AVATAR_STYLES[style] || AVATAR_STYLES.cyberpunk
     const prompt = `${stylePrompt}, square avatar portrait, centered composition, high quality digital art, no text, no watermark`
 
-    console.log('fal.ai: calling style=', style)
+    // Use official fal-ai SDK
+    const falModule = await import('@fal-ai/serverless-client')
+    const fal = falModule.fal || falModule.default
+    fal.config({ credentials: apiKey })
 
-    const falRes = await axios.post(
-      'https://fal.run/fal-ai/flux/schnell',
-      { prompt, image_size: 'square_hd', num_inference_steps: 4, num_images: 1 },
-      {
-        headers: { 'Authorization': `Key ${process.env.FAL_API_KEY}`, 'Content-Type': 'application/json' },
-        timeout: 60000,
-      }
-    )
+    const result = await fal.subscribe('fal-ai/flux/schnell', {
+      input: { prompt, image_size: 'square_hd', num_inference_steps: 4, num_images: 1 },
+    })
 
-    console.log('fal.ai: HTTP', falRes.status, JSON.stringify(falRes.data).slice(0, 300))
+    console.log('fal.ai result:', JSON.stringify(result).slice(0, 200))
 
-    const imageUrl = falRes.data?.images?.[0]?.url
+    const imageUrl = result?.images?.[0]?.url
     if (!imageUrl) {
-      console.error('fal.ai: no url in response:', JSON.stringify(falRes.data))
+      console.error('fal.ai: no url in result:', JSON.stringify(result))
       return res.status(502).json({ error: 'No image returned from fal.ai.' })
     }
 
     res.json({ url: imageUrl })
   } catch (err) {
-    const status = err.response?.status
-    const data   = err.response?.data
-    console.error('fal.ai error: HTTP', status, JSON.stringify(data) || err.message)
-    res.status(502).json({ error: `Avatar generation failed (${status || err.message}).` })
+    console.error('fal.ai error:', err.message, err.status || '', err.body || '')
+    res.status(502).json({ error: `Avatar generation failed: ${err.message}` })
   }
 })
 
