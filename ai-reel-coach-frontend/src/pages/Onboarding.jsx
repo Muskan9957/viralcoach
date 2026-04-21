@@ -85,6 +85,22 @@ const STEPS = [
   { id: 3, title: "What's your goal?",  sub: "We'll calibrate the AI to match what you're building." },
 ]
 
+const mobileStyles = `
+  @media (max-width: 600px) {
+    .ob-card { padding: 24px 18px !important; border-radius: 18px !important; }
+    .ob-title { font-size: 1.45rem !important; }
+    .ob-niche-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+    .ob-platform-card { flex-wrap: wrap; gap: 10px !important; padding: 14px 14px !important; }
+    .ob-platform-tag { margin-left: 0 !important; }
+    .ob-goal-card { padding: 14px 14px !important; gap: 12px !important; }
+    .ob-cta-row { flex-direction: column !important; }
+    .ob-cta-row button { width: 100% !important; margin-left: 0 !important; }
+  }
+  @media (max-width: 360px) {
+    .ob-niche-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+`
+
 export default function Onboarding() {
   const { user } = useAuth()
   const navigate  = useNavigate()
@@ -145,6 +161,7 @@ export default function Onboarding() {
 
   return (
     <div style={styles.root}>
+      <style>{mobileStyles}</style>
       {/* Top bar */}
       <div style={styles.topBar}>
         <Logo size={32} />
@@ -169,15 +186,15 @@ export default function Onboarding() {
       </div>
 
       {/* Card */}
-      <div style={{ ...styles.card, opacity: exiting ? 0 : 1, transform: exiting ? 'translateY(10px)' : 'translateY(0)', transition: 'all 0.26s ease' }}>
+      <div className="ob-card" style={{ ...styles.card, opacity: exiting ? 0 : 1, transform: exiting ? 'translateY(10px)' : 'translateY(0)', transition: 'all 0.26s ease' }}>
         <div style={styles.stepBadge}>Step {step} of 3</div>
-        <h1 style={styles.title}>{current.title}</h1>
+        <h1 className="ob-title" style={styles.title}>{current.title}</h1>
         <p style={styles.sub}>{current.sub}</p>
 
         {/* Step 1: Niche grid — multi-select */}
         {step === 1 && (
           <>
-            <div style={styles.nicheGrid}>
+            <div className="ob-niche-grid" style={styles.nicheGrid}>
               {NICHES.map(n => {
                 const selected = niches.includes(n.id)
                 return (
@@ -240,6 +257,7 @@ export default function Onboarding() {
               <button
                 key={p.id}
                 onClick={() => setPlatform(p.id)}
+                className="ob-platform-card"
                 style={{
                   ...styles.platformCard,
                   background: platform === p.id ? 'rgba(255,95,31,0.08)' : 'var(--surface2)',
@@ -252,7 +270,7 @@ export default function Onboarding() {
                   <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)', marginBottom: 3 }}>{p.label}</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{p.desc}</div>
                 </div>
-                <span style={styles.platformTag}>{p.tag}</span>
+                <span className="ob-platform-tag" style={styles.platformTag}>{p.tag}</span>
                 {platform === p.id && <div style={styles.checkMark}>✓</div>}
               </button>
             ))}
@@ -269,6 +287,7 @@ export default function Onboarding() {
                   <button
                     key={g.id}
                     onClick={() => toggleGoal(g.id)}
+                    className="ob-goal-card"
                     style={{
                       ...styles.goalCard,
                       background: selected ? 'rgba(255,95,31,0.1)' : 'var(--surface2)',
@@ -297,7 +316,7 @@ export default function Onboarding() {
         )}
 
         {/* CTA */}
-        <div style={styles.ctaRow}>
+        <div className="ob-cta-row" style={styles.ctaRow}>
           {step > 1 && (
             <button onClick={() => setStep(s => s - 1)} style={styles.backBtn}>← Back</button>
           )}
