@@ -30,24 +30,39 @@ const AVATAR_STYLES = {
 router.post('/generate-avatar', auth, async (req, res, next) => {
   try {
     const { style = 'cyberpunk' } = req.body
-    if (!process.env.FAL_API_KEY) return res.status(503).json({ error: 'Avatar generation not configured.' })
+    if (!process.env.FAL_API_KEY) {
+      console.error('FAL_API_KEY not set')
+      return res.status(503).json({ error: 'Avatar generation not configured.' })
+    }
 
     const stylePrompt = AVATAR_STYLES[style] || AVATAR_STYLES.cyberpunk
     const prompt = `${stylePrompt}, square avatar portrait, centered composition, high quality digital art, no text, no watermark`
 
+    console.log('fal.ai: calling style=', style)
+
     const falRes = await axios.post(
       'https://fal.run/fal-ai/flux/schnell',
       { prompt, image_size: 'square_hd', num_inference_steps: 4, num_images: 1 },
-      { headers: { 'Authorization': `Key ${process.env.FAL_API_KEY}`, 'Content-Type': 'application/json' } }
+      {
+        headers: { 'Authorization': `Key ${process.env.FAL_API_KEY}`, 'Content-Type': 'application/json' },
+        timeout: 60000,
+      }
     )
 
+    console.log('fal.ai: HTTP', falRes.status, JSON.stringify(falRes.data).slice(0, 300))
+
     const imageUrl = falRes.data?.images?.[0]?.url
-    if (!imageUrl) return res.status(502).json({ error: 'No image returned.' })
+    if (!imageUrl) {
+      console.error('fal.ai: no url in response:', JSON.stringify(falRes.data))
+      return res.status(502).json({ error: 'No image returned from fal.ai.' })
+    }
 
     res.json({ url: imageUrl })
   } catch (err) {
-    console.error('fal.ai error:', err.response?.data || err.message)
-    res.status(502).json({ error: 'Avatar generation failed. Try again.' })
+    const status = err.response?.status
+    const data   = err.response?.data
+    console.error('fal.ai error: HTTP', status, JSON.stringify(data) || err.message)
+    res.status(502).json({ error: `Avatar generation failed (${status || err.message}).` })
   }
 })
 
