@@ -239,8 +239,11 @@ export default function Layout({ children }) {
               ...styles.avatarCircle,
               boxShadow: location.pathname === '/profile' ? '0 0 16px rgba(0,200,255,0.5)' : '0 0 10px rgba(0,200,255,0.3)',
               border: location.pathname === '/profile' ? '2px solid var(--accent)' : '2px solid transparent',
+              overflow: 'hidden', padding: 0,
             }}>
-              {userInitial}
+              {user?.avatar
+                ? <img src={user.avatar} alt={userName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                : userInitial}
             </div>
             <div style={styles.userInfo}>
               <div style={styles.userName}>{userName}</div>
@@ -332,11 +335,13 @@ export default function Layout({ children }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <LanguageSelector compact />
               <div
-                style={styles.mobileAvatar}
+                style={{ ...styles.mobileAvatar, overflow: 'hidden', padding: 0 }}
                 title={userName}
                 onClick={() => navigate('/profile')}
               >
-                {userInitial}
+                {user?.avatar
+                  ? <img src={user.avatar} alt={userName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                  : userInitial}
               </div>
             </div>
           </header>
