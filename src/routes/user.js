@@ -30,39 +30,40 @@ const AVATAR_STYLES = {
 router.post('/generate-avatar', auth, async (req, res, next) => {
   try {
     const { style = 'cyberpunk' } = req.body
-    const apiKey = (process.env.FAL_API_KEY || '').trim()
+    const apiKey = (process.env.HF_API_KEY || '').trim()
     if (!apiKey) {
-      console.error('FAL_API_KEY not set')
       return res.status(503).json({ error: 'Avatar generation not configured.' })
     }
-
-    // Log key prefix so we can verify Railway is reading it correctly
-    console.log('fal.ai: key prefix =', apiKey.substring(0, 10) + '..., length =', apiKey.length)
 
     const stylePrompt = AVATAR_STYLES[style] || AVATAR_STYLES.cyberpunk
     const prompt = `${stylePrompt}, square avatar portrait, centered composition, high quality digital art, no text, no watermark`
 
-    // Use official fal-ai SDK
-    const falModule = await import('@fal-ai/serverless-client')
-    const fal = falModule.fal || falModule.default
-    fal.config({ credentials: apiKey })
+    console.log('HuggingFace: generating avatar, style=', style)
 
-    const result = await fal.subscribe('fal-ai/flux/schnell', {
-      input: { prompt, image_size: 'square_hd', num_inference_steps: 4, num_images: 1 },
-    })
+    const hfRes = await axios.post(
+      'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+      { inputs: prompt },
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        responseType: 'arraybuffer',
+        timeout: 60000,
+      }
+    )
 
-    console.log('fal.ai result:', JSON.stringify(result).slice(0, 200))
+    // HF returns raw image bytes — convert to base64 data URL
+    const base64 = Buffer.from(hfRes.data).toString('base64')
+    const contentType = hfRes.headers['content-type'] || 'image/jpeg'
+    const dataUrl = `data:${contentType};base64,${base64}`
 
-    const imageUrl = result?.images?.[0]?.url
-    if (!imageUrl) {
-      console.error('fal.ai: no url in result:', JSON.stringify(result))
-      return res.status(502).json({ error: 'No image returned from fal.ai.' })
-    }
-
-    res.json({ url: imageUrl })
+    res.json({ url: dataUrl })
   } catch (err) {
-    console.error('fal.ai error:', err.message, err.status || '', err.body || '')
-    res.status(502).json({ error: `Avatar generation failed: ${err.message}` })
+    const status = err.response?.status
+    const msg = err.response?.data ? Buffer.from(err.response.data).toString('utf8').slice(0, 200) : err.message
+    console.error('HuggingFace error: HTTP', status, msg)
+    res.status(502).json({ error: `Avatar generation failed (${status || err.message}).` })
   }
 })
 
