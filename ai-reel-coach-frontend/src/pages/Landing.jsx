@@ -337,15 +337,11 @@ export default function Landing() {
       }}>
         <Logo size={40} showWordmark />
         <div style={{ fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', letterSpacing: '0.02em' }}>
-          © 2025 ViralCoach · Built with ❤️ for creators
+          © Anahat Aura LLP · ViralCoach
         </div>
         <div style={{ display: 'flex', gap: 20 }}>
-          {['Privacy', 'Terms', 'Contact'].map(l => (
-            <a key={l} href="#" style={{ fontSize: '0.78rem', color: 'var(--text-faint)', textDecoration: 'none', transition: 'color 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.color = 'var(--text-muted)'}
-              onMouseLeave={e => e.currentTarget.style.color = 'var(--text-faint)'}
-            >{l}</a>
-          ))}
+          <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--text-faint)', textDecoration: 'none' }}>Privacy</Link>
+          <Link to="/terms"   style={{ fontSize: '0.78rem', color: 'var(--text-faint)', textDecoration: 'none' }}>Terms</Link>
         </div>
       </footer>
 

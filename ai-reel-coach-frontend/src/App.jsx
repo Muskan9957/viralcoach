@@ -23,6 +23,8 @@ import Pricing from './pages/Pricing'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Demo from './pages/Demo'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import Terms from './pages/Terms'
 
 function Protected({ children }) {
   const { user, loading } = useAuth()
@@ -77,6 +79,8 @@ export default function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password"  element={<ResetPassword />} />
                 <Route path="/demo"            element={<Demo />} />
+                <Route path="/privacy"         element={<PrivacyPolicy />} />
+                <Route path="/terms"           element={<Terms />} />
                 <Route path="/onboarding"      element={<OnboardingRoute />} />
                 <Route path="/dashboard"    element={<Protected><Dashboard /></Protected>} />
                 <Route path="/generate"     element={<Protected><Generate /></Protected>} />
