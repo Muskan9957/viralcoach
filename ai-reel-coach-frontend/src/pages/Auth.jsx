@@ -181,27 +181,9 @@ export default function Auth() {
             <AppMockup />
           </div>
 
-          {/* Social proof footer */}
+          {/* Footer */}
           <div style={{ borderTop: '1px solid rgba(0,200,255,0.1)', paddingTop: 20, marginTop: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ display: 'flex' }}>
-                {['T', 'P', 'R', 'S', 'A'].map((l, i) => (
-                  <div key={i} style={{
-                    width: 26, height: 26, borderRadius: '50%',
-                    background: `hsl(${i * 42 + 190}, 65%, 58%)`,
-                    border: '2px solid var(--bg)',
-                    marginLeft: i > 0 ? -7 : 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '0.6rem', fontWeight: 800, color: '#fff',
-                    fontFamily: 'var(--font-head)',
-                  }}>{l}</div>
-                ))}
-              </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                <span style={{ color: 'var(--text)', fontWeight: 700 }}>10,000+</span> creators growing with ViralCoach
-              </div>
-            </div>
-            <div style={{ marginTop: 6, fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
               Free to start · No credit card · Cancel anytime
             </div>
           </div>

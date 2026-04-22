@@ -43,47 +43,6 @@ const FEATURES = [
   },
 ]
 
-const STATS = [
-  { value: '10,000+', label: 'Scripts generated' },
-  { value: '50,000+', label: 'Hooks scored' },
-  { value: '15+',     label: 'Cities' },
-  { value: '4.9★',   label: 'Creator rating' },
-]
-
-const TESTIMONIALS = [
-  { name: 'Priya S.', handle: '@priyacreates', avatar: 'P', color: '#00C8FF', text: 'My views went from 2K to 80K after using the hook scorer. It literally changed how I start every video.' },
-  { name: 'Rahul M.', handle: '@rahulfinance', avatar: 'R', color: '#00C9A7', text: 'The script generator actually understands finance content context. Finally an AI tool that gives real, specific advice.' },
-  { name: 'Sneha K.', handle: '@snehalifestyle', avatar: 'S', color: '#7B5CF0', text: 'I create content in 3 languages and the AI handles all of them. The Coach feature is my daily ritual now.' },
-]
-
-/* ─── Animated counter ───────────────────────────────────────────── */
-function AnimatedStat({ value, label }) {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 200)
-    return () => clearTimeout(t)
-  }, [])
-  return (
-    <div style={{ textAlign: 'center' }}>
-      <div style={{
-        fontFamily: 'var(--font-head)',
-        fontSize: 'clamp(1.8rem, 4vw, 2.6rem)',
-        fontWeight: 900, letterSpacing: '-0.04em',
-        background: 'linear-gradient(135deg, #00E5FF, #00C8FF 50%, #7B5CF0)',
-        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-        lineHeight: 1.1,
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(12px)',
-        transition: 'opacity 0.5s ease, transform 0.5s ease',
-      }}>
-        {value}
-      </div>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: 4 }}>
-        {label}
-      </div>
-    </div>
-  )
-}
 
 /* ─── Feature Card ───────────────────────────────────────────────── */
 function FeatureCard({ icon, title, desc, accent }) {
@@ -125,32 +84,6 @@ function FeatureCard({ icon, title, desc, accent }) {
   )
 }
 
-/* ─── Testimonial Card ───────────────────────────────────────────── */
-function TestimonialCard({ name, handle, avatar, color, text }) {
-  return (
-    <div style={{
-      background: 'var(--surface)',
-      border: '1px solid var(--border)',
-      borderRadius: 20,
-      padding: '24px',
-      display: 'flex', flexDirection: 'column', gap: 16,
-    }}>
-      <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.65, flex: 1 }}>
-        "{text}"
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 36, height: 36, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.82rem', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
-          {avatar}
-        </div>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)' }}>{name}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>{handle}</div>
-        </div>
-        <div style={{ marginLeft: 'auto', color: '#FFD60A', fontSize: '0.82rem', fontFamily: 'var(--font-mono)' }}>★★★★★</div>
-      </div>
-    </div>
-  )
-}
 
 /* ─── Floating UI element ────────────────────────────────────────── */
 function FloatingCard({ style, className = '', children }) {
@@ -340,18 +273,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Stats strip ──────────────────────────────────────────────── */}
-      <section style={{
-        padding: '52px 5%',
-        borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)',
-        background: 'var(--surface)',
-        position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(0,229,255,0.04) 0%, rgba(0,200,255,0.03) 40%, rgba(123,92,240,0.04) 100%)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: 32, flexWrap: 'wrap' }}>
-          {STATS.map(s => <AnimatedStat key={s.label} {...s} />)}
-        </div>
-      </section>
 
       {/* ── Features ─────────────────────────────────────────────────── */}
       <section id="features" style={{ padding: '96px 5%', maxWidth: 1180, margin: '0 auto' }}>
@@ -377,22 +298,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Testimonials ─────────────────────────────────────────────── */}
-      <section style={{ padding: '80px 5%', background: 'var(--surface)', borderTop: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
-              Creator stories
-            </div>
-            <h2 style={{ fontFamily: 'var(--font-head)', fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1.15 }}>
-              Results speak for themselves
-            </h2>
-          </div>
-          <div className="landing-testimonials-grid">
-            {TESTIMONIALS.map(t => <TestimonialCard key={t.name} {...t} />)}
-          </div>
-        </div>
-      </section>
 
       {/* ── CTA section ──────────────────────────────────────────────── */}
       <section style={{ padding: '100px 5%', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -410,7 +315,7 @@ export default function Landing() {
             Ready to grow faster?
           </h2>
           <p style={{ fontSize: '1rem', color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: 36 }}>
-            Join thousands of creators using ViralCoach to make better content, faster.
+            Generate viral scripts, score your hooks, and grow with data — all in one place.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/auth" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', display: 'inline-flex', minWidth: 210 }}>

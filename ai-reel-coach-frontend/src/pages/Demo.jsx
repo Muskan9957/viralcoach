@@ -280,17 +280,6 @@ export default function Demo() {
           </div>
         </section>
 
-        {/* ── Stats ── */}
-        <section ref={statsRef} style={{ maxWidth: 900, margin: '0 auto', padding: '60px 24px', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 40 }}>
-            {statsInView && <>
-              <Stat value={12000} suffix="+" label="Creators Using It" accent="#00C8FF" />
-              <Stat value={850000} suffix="+" label="Scripts Generated" accent="#7B5CF0" />
-              <Stat value={94} suffix="%" label="Hook Accuracy" accent="#00C9A7" />
-              <Stat value={10} suffix="x" label="Faster Content Creation" accent="#FFD60A" />
-            </>}
-          </div>
-        </section>
 
         {/* ── Features ── */}
         <section id="features" ref={featRef} style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 24px' }}>
@@ -318,26 +307,6 @@ export default function Demo() {
           </div>
         </section>
 
-        {/* ── Testimonials ── */}
-        <section style={{ maxWidth: 1000, margin: '0 auto', padding: '80px 24px' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 900, fontSize: 'clamp(1.8rem,3.5vw,2.6rem)', color: '#fff', letterSpacing: '-0.03em' }}>Creators Love It</h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 18 }}>
-            {[
-              { quote: "I went from 2K to 48K followers in 6 weeks. ViralCoach writes better hooks than I ever could.", name: "Aryan S.", role: "Finance Creator", accent: '#00C8FF' },
-              { quote: "The hook scorer alone is worth it. I now know exactly why my videos flop before I even post.", name: "Priya M.", role: "Lifestyle Creator", accent: '#FF6EE7' },
-              { quote: "I generate a week of content in under an hour. This is the unfair advantage I was looking for.", name: "Rohan K.", role: "Tech Creator", accent: '#00C9A7' },
-            ].map((t, i) => (
-              <div key={i} style={{ background: 'rgba(13,10,28,0.8)', border: `1px solid ${t.accent}22`, borderRadius: 20, padding: '24px', borderTop: `2px solid ${t.accent}` }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: 12, color: t.accent }}>❝</div>
-                <p style={{ fontSize: '0.88rem', color: '#C0D4EE', lineHeight: 1.7, marginBottom: 18, fontStyle: 'italic' }}>{t.quote}</p>
-                <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.85rem' }}>{t.name}</div>
-                <div style={{ fontSize: '0.72rem', color: t.accent, fontFamily: 'var(--font-mono)', marginTop: 2 }}>{t.role}</div>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* ── CTA ── */}
         <section style={{ textAlign: 'center', padding: '60px 24px 100px', maxWidth: 700, margin: '0 auto' }}>
@@ -349,7 +318,7 @@ export default function Demo() {
                 Your Next Viral Video<br />Starts Here.
               </h2>
               <p style={{ color: '#8BA4CC', fontSize: '0.95rem', marginBottom: 32, lineHeight: 1.6 }}>
-                Join thousands of creators already using ViralCoach to grow faster, create smarter, and go viral consistently.
+                Generate viral scripts, score your hooks, and grow with data — all in one place.
               </p>
               <button onClick={() => navigate('/auth')} style={{ background: 'linear-gradient(135deg,#00E5FF,#00C8FF 50%,#7B5CF0)', border: 'none', borderRadius: 14, padding: '16px 40px', color: '#fff', fontWeight: 800, fontSize: '1.05rem', cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 8px 36px rgba(0,200,255,0.45)', letterSpacing: '-0.01em' }}>
                 Start Creating for Free →
