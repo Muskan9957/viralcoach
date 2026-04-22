@@ -41,7 +41,7 @@ router.post('/generate-avatar', auth, async (req, res, next) => {
     console.log('HuggingFace: generating avatar, style=', style)
 
     const hfRes = await axios.post(
-      'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
       { inputs: prompt },
       {
         headers: {
