@@ -145,6 +145,41 @@ function Row({ icon, label, value, action }) {
   )
 }
 
+const SKIN_COLORS   = ['Tanned','Yellow','Pale','Light','Brown','DarkBrown','Black']
+const HAIR_STYLES   = ['ShortHairShortFlat','ShortHairShortCurly','ShortHairShortRound','ShortHairDreads01','LongHairBob','LongHairCurly','LongHairStraight','LongHairBun','LongHairFro','Hijab','NoHair']
+const HAIR_LABELS   = ['Flat','Curly','Round','Dreads','Bob','Long Curly','Straight','Bun','Fro','Hijab','Bald']
+const HAIR_COLORS   = ['Black','Brown','BrownDark','Auburn','Blonde','BlondeGolden','Red','SilverGray','PastelPink','Platinum']
+const EYE_TYPES     = ['Default','Happy','Wink','Hearts','Squint','Side','Surprised','Close','EyeRoll']
+const MOUTH_TYPES   = ['Smile','Default','Twinkle','Tongue','Serious','Sad','Grimace','Disbelief']
+const CLOTHES       = ['Hoodie','BlazerShirt','GraphicShirt','ShirtCrewNeck','ShirtVNeck','Overall','CollarSweater','BlazerSweater']
+const CLOTHES_LABEL = ['Hoodie','Blazer','Graphic','Crew','V-Neck','Overall','Sweater','Suit']
+const ACCESSORIES   = ['Blank','Sunglasses','Prescription01','Prescription02','Round','Wayfarers','Kurt']
+const ACC_LABELS    = ['None','Sunglasses','Glasses','Oval','Round','Wayfarers','Kurt']
+const CLOTH_COLORS  = ['Blue03','Red','Black','Heather','White','Pink','PastelBlue','PastelGreen','Gray01','PastelYellow']
+
+const SKIN_HEX = { Tanned:'#FD9841', Yellow:'#F9CA5F', Pale:'#FADDBB', Light:'#EDB98A', Brown:'#D08B5B', DarkBrown:'#AE5D29', Black:'#614335' }
+const HAIR_HEX = { Black:'#2C1B18', Brown:'#724133', BrownDark:'#4A312C', Auburn:'#A55728', Blonde:'#B58143', BlondeGolden:'#D6B370', Red:'#C93305', SilverGray:'#E8E1E1', PastelPink:'#F59797', Platinum:'#EFEFEF' }
+const CLOTH_HEX = { Blue03:'#25557C', Red:'#FF5C5C', Black:'#262E33', Heather:'#B7C1DB', White:'#E6E6E6', Pink:'#FF488E', PastelBlue:'#B1E2FF', PastelGreen:'#A7D2A5', Gray01:'#858585', PastelYellow:'#FFDEB5' }
+
+function buildAvatarUrl(opts) {
+  const p = new URLSearchParams({
+    avatarStyle:    'Circle',
+    topType:        opts.hair,
+    hairColor:      opts.hairColor,
+    facialHairType: 'Blank',
+    accessoriesType:opts.accessories,
+    clotheType:     opts.clothes,
+    clotheColor:    opts.clotheColor,
+    eyeType:        opts.eyes,
+    eyebrowType:    'Default',
+    mouthType:      opts.mouth,
+    skinColor:      opts.skin,
+  })
+  return `https://avataaars.io/?${p.toString()}`
+}
+
+const DEFAULT_CUSTOM = { skin:'Light', hair:'ShortHairShortFlat', hairColor:'Brown', eyes:'Default', mouth:'Smile', clothes:'Hoodie', clotheColor:'Blue03', accessories:'Blank' }
+
 export default function Profile() {
   const { user, logout }   = useAuth()
   const { theme, toggle }  = useTheme()
@@ -152,7 +187,9 @@ export default function Profile() {
   const toast              = useToast()
   const [showDanger, setShowDanger]       = useState(false)
   const [showAvatarGen, setShowAvatarGen] = useState(false)
+  const [avatarTab, setAvatarTab]         = useState('gallery') // 'gallery' | 'custom'
   const [selectedAvatar, setSelectedAvatar] = useState(null)
+  const [custom, setCustom]               = useState(DEFAULT_CUSTOM)
 
   const prefs    = (() => { try { return JSON.parse(localStorage.getItem('vs_prefs') || '{}') } catch { return {} } })()
   const planMeta = PLAN_META[user?.plan] || PLAN_META.FREE
@@ -463,82 +500,188 @@ export default function Profile() {
 
       {/* Avatar Picker Modal */}
       {showAvatarGen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(4,5,18,0.88)',
-          backdropFilter: 'blur(16px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: 20,
-        }} onClick={e => { if (e.target === e.currentTarget) { setShowAvatarGen(false); setSelectedAvatar(null) } }}>
-          <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border-bright)',
-            borderRadius: 24,
-            padding: '28px 24px',
-            width: '100%',
-            maxWidth: 520,
-            boxShadow: '0 32px 80px rgba(0,0,0,0.7)',
-            maxHeight: '85vh',
-            display: 'flex',
-            flexDirection: 'column',
-          }}>
+        <div style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(4,5,18,0.88)', backdropFilter:'blur(16px)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+          onClick={e => { if (e.target === e.currentTarget) { setShowAvatarGen(false); setSelectedAvatar(null) } }}>
+          <div style={{ background:'var(--surface)', border:'1px solid var(--border-bright)', borderRadius:24, padding:'24px 20px', width:'100%', maxWidth:540, boxShadow:'0 32px 80px rgba(0,0,0,0.7)', maxHeight:'90vh', display:'flex', flexDirection:'column' }}>
+
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexShrink: 0 }}>
-              <div>
-                <h2 style={{ fontFamily: 'var(--font-head)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--text)', margin: 0 }}>
-                  ✦ Choose Your Avatar
-                </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 3 }}>
-                  Pick one and tap Set as Avatar
-                </p>
-              </div>
-              <button onClick={() => { setShowAvatarGen(false); setSelectedAvatar(null) }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer', padding: 4 }}>✕</button>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16, flexShrink:0 }}>
+              <h2 style={{ fontFamily:'var(--font-head)', fontSize:'1.15rem', fontWeight:800, color:'var(--text)', margin:0 }}>✦ Choose Your Avatar</h2>
+              <button onClick={() => { setShowAvatarGen(false); setSelectedAvatar(null) }} style={{ background:'none', border:'none', color:'var(--text-muted)', fontSize:'1.2rem', cursor:'pointer' }}>✕</button>
             </div>
 
-            {/* Avatar Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: 10,
-              overflowY: 'auto',
-              paddingRight: 4,
-              flex: 1,
-            }}>
-              {PRESET_AVATARS.map((av, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedAvatar(av.url)}
-                  style={{
-                    padding: 6,
-                    borderRadius: 14,
-                    border: selectedAvatar === av.url ? '2px solid var(--accent)' : '2px solid transparent',
-                    background: selectedAvatar === av.url ? 'rgba(0,200,255,0.1)' : 'var(--surface2)',
-                    cursor: 'pointer',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-                    transition: 'all 0.15s',
-                    boxShadow: selectedAvatar === av.url ? '0 0 12px rgba(0,200,255,0.3)' : 'none',
-                  }}
-                >
-                  <img
-                    src={av.url}
-                    alt={av.label}
-                    style={{ width: 72, height: 72, borderRadius: 10, objectFit: 'cover' }}
-                  />
-                  <span style={{ fontSize: '0.62rem', color: selectedAvatar === av.url ? 'var(--accent)' : 'var(--text-faint)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
-                    {av.label}
-                  </span>
+            {/* Tabs */}
+            <div style={{ display:'flex', gap:8, marginBottom:16, flexShrink:0 }}>
+              {['gallery','custom'].map(tab => (
+                <button key={tab} onClick={() => { setAvatarTab(tab); setSelectedAvatar(null) }} style={{
+                  flex:1, padding:'8px', borderRadius:10, border:'none', cursor:'pointer', fontWeight:700, fontSize:'0.82rem', fontFamily:'var(--font-body)',
+                  background: avatarTab === tab ? 'linear-gradient(135deg,#00C8FF,#7B5CF0)' : 'var(--surface2)',
+                  color: avatarTab === tab ? '#fff' : 'var(--text-muted)',
+                  transition:'all 0.15s',
+                }}>
+                  {tab === 'gallery' ? '🖼 Gallery' : '🎨 Custom'}
                 </button>
               ))}
             </div>
 
-            {/* Save button */}
-            <div style={{ marginTop: 16, flexShrink: 0 }}>
-              <button
-                onClick={handleSaveAvatar}
-                disabled={!selectedAvatar}
-                className="btn btn-primary"
-                style={{ width: '100%', opacity: selectedAvatar ? 1 : 0.4 }}
-              >
+            {/* Gallery Tab */}
+            {avatarTab === 'gallery' && (
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, overflowY:'auto', flex:1, paddingRight:2 }}>
+                {PRESET_AVATARS.map((av, i) => (
+                  <button key={i} onClick={() => setSelectedAvatar(av.url)} style={{
+                    padding:6, borderRadius:12, cursor:'pointer', transition:'all 0.15s',
+                    border: selectedAvatar === av.url ? '2px solid var(--accent)' : '2px solid transparent',
+                    background: selectedAvatar === av.url ? 'rgba(0,200,255,0.1)' : 'var(--surface2)',
+                    boxShadow: selectedAvatar === av.url ? '0 0 10px rgba(0,200,255,0.3)' : 'none',
+                    display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+                  }}>
+                    <img src={av.url} alt={av.label} style={{ width:68, height:68, borderRadius:8, objectFit:'cover' }} />
+                    <span style={{ fontSize:'0.6rem', color: selectedAvatar === av.url ? 'var(--accent)' : 'var(--text-faint)', fontFamily:'var(--font-mono)', fontWeight:600 }}>{av.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Custom Tab */}
+            {avatarTab === 'custom' && (
+              <div style={{ display:'flex', gap:16, flex:1, overflow:'hidden', minHeight:0 }}>
+                {/* Preview */}
+                <div style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+                  <div style={{ width:120, height:120, borderRadius:20, overflow:'hidden', background:'var(--surface2)', border:'2px solid var(--border-bright)' }}>
+                    <img src={buildAvatarUrl(custom)} alt="preview" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                  </div>
+                  <button onClick={() => setSelectedAvatar(buildAvatarUrl(custom))} style={{
+                    padding:'7px 14px', borderRadius:10, border: selectedAvatar === buildAvatarUrl(custom) ? '2px solid var(--accent)' : '1px solid var(--border)',
+                    background: selectedAvatar === buildAvatarUrl(custom) ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                    color: selectedAvatar === buildAvatarUrl(custom) ? 'var(--accent)' : 'var(--text-muted)',
+                    cursor:'pointer', fontSize:'0.75rem', fontWeight:700,
+                  }}>
+                    {selectedAvatar === buildAvatarUrl(custom) ? '✓ Selected' : 'Select This'}
+                  </button>
+                </div>
+
+                {/* Options */}
+                <div style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:14 }}>
+                  {/* Skin */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Skin Tone</div>
+                    <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                      {SKIN_COLORS.map(s => (
+                        <button key={s} onClick={() => setCustom(c => ({...c, skin:s}))} title={s} style={{
+                          width:28, height:28, borderRadius:'50%', border: custom.skin===s ? '3px solid var(--accent)' : '2px solid transparent',
+                          background: SKIN_HEX[s], cursor:'pointer', transition:'all 0.12s',
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Hair Style */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Hair Style</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {HAIR_STYLES.map((h,i) => (
+                        <button key={h} onClick={() => setCustom(c => ({...c, hair:h}))} style={{
+                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                          border: custom.hair===h ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.hair===h ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.hair===h ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>{HAIR_LABELS[i]}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Hair Color */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Hair Color</div>
+                    <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                      {HAIR_COLORS.map(c => (
+                        <button key={c} onClick={() => setCustom(cv => ({...cv, hairColor:c}))} title={c} style={{
+                          width:24, height:24, borderRadius:'50%', border: custom.hairColor===c ? '3px solid var(--accent)' : '2px solid transparent',
+                          background: HAIR_HEX[c], cursor:'pointer',
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Eyes */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Eyes</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {EYE_TYPES.map(e => (
+                        <button key={e} onClick={() => setCustom(c => ({...c, eyes:e}))} style={{
+                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                          border: custom.eyes===e ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.eyes===e ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.eyes===e ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>{e}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mouth */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Mouth</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {MOUTH_TYPES.map(m => (
+                        <button key={m} onClick={() => setCustom(c => ({...c, mouth:m}))} style={{
+                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                          border: custom.mouth===m ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.mouth===m ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.mouth===m ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>{m}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Clothes */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Clothes</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {CLOTHES.map((cl,i) => (
+                        <button key={cl} onClick={() => setCustom(c => ({...c, clothes:cl}))} style={{
+                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                          border: custom.clothes===cl ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.clothes===cl ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.clothes===cl ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>{CLOTHES_LABEL[i]}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Clothes Color */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Clothes Color</div>
+                    <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                      {CLOTH_COLORS.map(c => (
+                        <button key={c} onClick={() => setCustom(cv => ({...cv, clotheColor:c}))} title={c} style={{
+                          width:24, height:24, borderRadius:'50%', border: custom.clotheColor===c ? '3px solid var(--accent)' : '2px solid transparent',
+                          background: CLOTH_HEX[c], cursor:'pointer',
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Accessories */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Accessories</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {ACCESSORIES.map((a,i) => (
+                        <button key={a} onClick={() => setCustom(c => ({...c, accessories:a}))} style={{
+                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                          border: custom.accessories===a ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.accessories===a ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.accessories===a ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>{ACC_LABELS[i]}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Save */}
+            <div style={{ marginTop:16, flexShrink:0 }}>
+              <button onClick={handleSaveAvatar} disabled={!selectedAvatar} className="btn btn-primary" style={{ width:'100%', opacity: selectedAvatar ? 1 : 0.4 }}>
                 {selectedAvatar ? 'Set as Avatar ✓' : 'Select an avatar above'}
               </button>
             </div>
