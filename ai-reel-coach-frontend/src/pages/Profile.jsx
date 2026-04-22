@@ -146,8 +146,10 @@ function Row({ icon, label, value, action }) {
 }
 
 const SKIN_COLORS   = ['Tanned','Yellow','Pale','Light','Brown','DarkBrown','Black']
-const HAIR_STYLES   = ['ShortHairShortFlat','ShortHairShortCurly','ShortHairShortRound','ShortHairDreads01','LongHairBob','LongHairCurly','LongHairStraight','LongHairBun','LongHairFro','Hijab','NoHair']
-const HAIR_LABELS   = ['Flat','Curly','Round','Dreads','Bob','Long Curly','Straight','Bun','Fro','Hijab','Bald']
+const MALE_HAIR     = ['ShortHairShortFlat','ShortHairShortCurly','ShortHairShortRound','ShortHairShortWaved','ShortHairDreads01','ShortHairFrizzle','ShortHairTheCaesar','ShortHairSides','NoHair']
+const MALE_LABELS   = ['Flat','Curly','Round','Waved','Dreads','Frizzle','Caesar','Sides','Bald']
+const FEMALE_HAIR   = ['LongHairStraight','LongHairCurly','LongHairBob','LongHairBun','LongHairFro','LongHairBigHair','LongHairMiaWallace','LongHairNotTooLong','LongHairFroBand','Hijab','NoHair']
+const FEMALE_LABELS = ['Straight','Curly','Bob','Bun','Fro','Big Hair','Mia','Medium','Band','Hijab','Bald']
 const HAIR_COLORS   = ['Black','Brown','BrownDark','Auburn','Blonde','BlondeGolden','Red','SilverGray','PastelPink','Platinum']
 const EYE_TYPES     = ['Default','Happy','Wink','Hearts','Squint','Side','Surprised','Close','EyeRoll']
 const MOUTH_TYPES   = ['Smile','Default','Twinkle','Tongue','Serious','Sad','Grimace','Disbelief']
@@ -178,7 +180,9 @@ function buildAvatarUrl(opts) {
   return `https://avataaars.io/?${p.toString()}`
 }
 
-const DEFAULT_CUSTOM = { skin:'Light', hair:'ShortHairShortFlat', hairColor:'Brown', eyes:'Default', mouth:'Smile', clothes:'Hoodie', clotheColor:'Blue03', accessories:'Blank' }
+const DEFAULT_MALE   = { gender:'male',   skin:'Light', hair:'ShortHairShortFlat', hairColor:'Brown',  eyes:'Default', mouth:'Smile', clothes:'Hoodie', clotheColor:'Blue03', accessories:'Blank' }
+const DEFAULT_FEMALE = { gender:'female', skin:'Light', hair:'LongHairStraight',   hairColor:'Brown',  eyes:'Default', mouth:'Smile', clothes:'BlazerShirt', clotheColor:'Pink', accessories:'Blank' }
+const DEFAULT_CUSTOM = DEFAULT_MALE
 
 export default function Profile() {
   const { user, logout }   = useAuth()
@@ -562,6 +566,22 @@ export default function Profile() {
 
                 {/* Options */}
                 <div style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:14 }}>
+                  {/* Gender */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Gender</div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      {['male','female'].map(g => (
+                        <button key={g} onClick={() => setCustom(g === 'male' ? DEFAULT_MALE : DEFAULT_FEMALE)} style={{
+                          flex:1, padding:'7px', borderRadius:10, fontWeight:700, fontSize:'0.78rem', cursor:'pointer', fontFamily:'var(--font-body)',
+                          border: custom.gender===g ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.gender===g ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.gender===g ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>
+                          {g === 'male' ? '👦 Male' : '👧 Female'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   {/* Skin */}
                   <div>
                     <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Skin Tone</div>
@@ -579,14 +599,17 @@ export default function Profile() {
                   <div>
                     <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Hair Style</div>
                     <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
-                      {HAIR_STYLES.map((h,i) => (
-                        <button key={h} onClick={() => setCustom(c => ({...c, hair:h}))} style={{
-                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
-                          border: custom.hair===h ? '1px solid var(--accent)' : '1px solid var(--border)',
-                          background: custom.hair===h ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
-                          color: custom.hair===h ? 'var(--accent)' : 'var(--text-muted)',
-                        }}>{HAIR_LABELS[i]}</button>
-                      ))}
+                      {(custom.gender === 'female' ? FEMALE_HAIR : MALE_HAIR).map((h,i) => {
+                        const label = custom.gender === 'female' ? FEMALE_LABELS[i] : MALE_LABELS[i]
+                        return (
+                          <button key={h} onClick={() => setCustom(c => ({...c, hair:h}))} style={{
+                            padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                            border: custom.hair===h ? '1px solid var(--accent)' : '1px solid var(--border)',
+                            background: custom.hair===h ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                            color: custom.hair===h ? 'var(--accent)' : 'var(--text-muted)',
+                          }}>{label}</button>
+                        )
+                      })}
                     </div>
                   </div>
 
