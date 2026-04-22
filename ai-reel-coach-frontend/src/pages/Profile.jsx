@@ -6,36 +6,62 @@ import { useToast } from '../components/Toast'
 import { api } from '../api'
 
 const PRESET_AVATARS = [
-  // Bottts (Cyberpunk/Robot)
-  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=alpha&size=128',      label: 'Bot Alpha'    },
-  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=nova&size=128',       label: 'Bot Nova'     },
-  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=cyber&size=128',      label: 'Cyber'        },
-  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=pixel9&size=128',     label: 'Pixel Bot'    },
-  // Adventurer (Anime)
-  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=sakura&size=128', label: 'Sakura'       },
-  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=kai&size=128',    label: 'Kai'          },
-  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=luna&size=128',   label: 'Luna'         },
-  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=ryu&size=128',    label: 'Ryu'          },
+  // Robots
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=alpha&size=128',           label: 'Alpha'      },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=nova&size=128',            label: 'Nova'       },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=cyber&size=128',           label: 'Cyber'      },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=pixel9&size=128',          label: 'Pixel Bot'  },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=titan&size=128',           label: 'Titan'      },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=zero&size=128',            label: 'Zero'       },
+  { url: 'https://api.dicebear.com/8.x/bottts-neutral/png?seed=steel&size=128',   label: 'Steel'      },
+  { url: 'https://api.dicebear.com/8.x/bottts-neutral/png?seed=matrix&size=128',  label: 'Matrix'     },
+  // Anime / Illustrated
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=sakura&size=128',      label: 'Sakura'     },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=kai&size=128',         label: 'Kai'        },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=luna&size=128',        label: 'Luna'       },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=ryu&size=128',         label: 'Ryu'        },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=hana&size=128',        label: 'Hana'       },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=storm&size=128',       label: 'Storm'      },
+  { url: 'https://api.dicebear.com/8.x/adventurer-neutral/png?seed=aria&size=128',label: 'Aria'       },
+  { url: 'https://api.dicebear.com/8.x/adventurer-neutral/png?seed=blaze&size=128',label:'Blaze'      },
   // Pixel Art
-  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=hero&size=128',    label: 'Hero'         },
-  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=quest&size=128',   label: 'Quest'        },
-  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=blade&size=128',   label: 'Blade'        },
-  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=spark&size=128',   label: 'Spark'        },
-  // Lorelei (Watercolor/Soft)
-  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=aurora&size=128',    label: 'Aurora'       },
-  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=mist&size=128',      label: 'Mist'         },
-  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=ember&size=128',     label: 'Ember'        },
-  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=dusk&size=128',      label: 'Dusk'         },
-  // Rings (Neon/Geometric)
-  { url: 'https://api.dicebear.com/8.x/rings/png?seed=neon1&size=128',       label: 'Neon Ring'    },
-  { url: 'https://api.dicebear.com/8.x/rings/png?seed=pulse&size=128',       label: 'Pulse'        },
-  { url: 'https://api.dicebear.com/8.x/rings/png?seed=wave&size=128',        label: 'Wave'         },
-  { url: 'https://api.dicebear.com/8.x/rings/png?seed=vibe&size=128',        label: 'Vibe'         },
-  // Shapes (Minimal)
-  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=zen&size=128',        label: 'Zen'          },
-  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=arc&size=128',        label: 'Arc'          },
-  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=dot&size=128',        label: 'Dot'          },
-  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=flow&size=128',       label: 'Flow'         },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=hero&size=128',         label: 'Hero'       },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=quest&size=128',        label: 'Quest'      },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=blade&size=128',        label: 'Blade'      },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=spark&size=128',        label: 'Spark'      },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=glitch&size=128',       label: 'Glitch'     },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=retro&size=128',        label: 'Retro'      },
+  // Soft / Illustrated
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=aurora&size=128',         label: 'Aurora'     },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=mist&size=128',           label: 'Mist'       },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=ember&size=128',          label: 'Ember'      },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=dusk&size=128',           label: 'Dusk'       },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=dawn&size=128',           label: 'Dawn'       },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=sol&size=128',            label: 'Sol'        },
+  // Fun / Expressive
+  { url: 'https://api.dicebear.com/8.x/fun-emoji/png?seed=joy&size=128',          label: 'Joy'        },
+  { url: 'https://api.dicebear.com/8.x/fun-emoji/png?seed=cool&size=128',         label: 'Cool'       },
+  { url: 'https://api.dicebear.com/8.x/fun-emoji/png?seed=fire&size=128',         label: 'Fire'       },
+  { url: 'https://api.dicebear.com/8.x/fun-emoji/png?seed=chill&size=128',        label: 'Chill'      },
+  // Geometric / Abstract
+  { url: 'https://api.dicebear.com/8.x/rings/png?seed=neon1&size=128',            label: 'Neon Ring'  },
+  { url: 'https://api.dicebear.com/8.x/rings/png?seed=pulse&size=128',            label: 'Pulse'      },
+  { url: 'https://api.dicebear.com/8.x/rings/png?seed=wave&size=128',             label: 'Wave'       },
+  { url: 'https://api.dicebear.com/8.x/rings/png?seed=vibe&size=128',             label: 'Vibe'       },
+  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=zen&size=128',             label: 'Zen'        },
+  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=arc&size=128',             label: 'Arc'        },
+  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=dot&size=128',             label: 'Dot'        },
+  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=flow&size=128',            label: 'Flow'       },
+  // Croodles (Doodle style)
+  { url: 'https://api.dicebear.com/8.x/croodles/png?seed=sketch&size=128',        label: 'Sketch'     },
+  { url: 'https://api.dicebear.com/8.x/croodles/png?seed=doodle&size=128',        label: 'Doodle'     },
+  { url: 'https://api.dicebear.com/8.x/croodles/png?seed=ink&size=128',           label: 'Ink'        },
+  { url: 'https://api.dicebear.com/8.x/croodles/png?seed=brush&size=128',         label: 'Brush'      },
+  // Thumbs (Unique style)
+  { url: 'https://api.dicebear.com/8.x/thumbs/png?seed=ace&size=128',             label: 'Ace'        },
+  { url: 'https://api.dicebear.com/8.x/thumbs/png?seed=bold&size=128',            label: 'Bold'       },
+  { url: 'https://api.dicebear.com/8.x/thumbs/png?seed=vivid&size=128',           label: 'Vivid'      },
+  { url: 'https://api.dicebear.com/8.x/thumbs/png?seed=prime&size=128',           label: 'Prime'      },
 ]
 
 const PLAN_META = {
