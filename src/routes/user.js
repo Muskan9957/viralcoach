@@ -30,40 +30,17 @@ const AVATAR_STYLES = {
 router.post('/generate-avatar', auth, async (req, res, next) => {
   try {
     const { style = 'cyberpunk' } = req.body
-    const apiKey = (process.env.HF_API_KEY || '').trim()
-    if (!apiKey) {
-      return res.status(503).json({ error: 'Avatar generation not configured.' })
-    }
-
     const stylePrompt = AVATAR_STYLES[style] || AVATAR_STYLES.cyberpunk
     const prompt = `${stylePrompt}, square avatar portrait, centered composition, high quality digital art, no text, no watermark`
 
-    console.log('HuggingFace: generating avatar, style=', style)
+    const seed = Math.floor(Math.random() * 1000000)
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&seed=${seed}&nologo=true&model=flux`
 
-    const hfRes = await axios.post(
-      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
-      { inputs: prompt },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        responseType: 'arraybuffer',
-        timeout: 60000,
-      }
-    )
-
-    // HF returns raw image bytes — convert to base64 data URL
-    const base64 = Buffer.from(hfRes.data).toString('base64')
-    const contentType = hfRes.headers['content-type'] || 'image/jpeg'
-    const dataUrl = `data:${contentType};base64,${base64}`
-
-    res.json({ url: dataUrl })
+    console.log('Pollinations: generating avatar, style=', style)
+    res.json({ url: imageUrl })
   } catch (err) {
-    const status = err.response?.status
-    const msg = err.response?.data ? Buffer.from(err.response.data).toString('utf8').slice(0, 200) : err.message
-    console.error('HuggingFace error: HTTP', status, msg)
-    res.status(502).json({ error: `Avatar generation failed (${status || err.message}).` })
+    console.error('Avatar error:', err.message)
+    res.status(502).json({ error: 'Avatar generation failed.' })
   }
 })
 
