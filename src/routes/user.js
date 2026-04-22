@@ -30,13 +30,22 @@ const AVATAR_STYLES = {
 router.post('/generate-avatar', auth, async (req, res, next) => {
   try {
     const { style = 'cyberpunk' } = req.body
-    const stylePrompt = AVATAR_STYLES[style] || AVATAR_STYLES.cyberpunk
-    const prompt = `${stylePrompt}, square avatar portrait, centered composition, high quality digital art, no text, no watermark`
 
-    const seed = Math.floor(Math.random() * 1000000)
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&seed=${seed}&nologo=true&model=flux`
+    const STYLE_MAP = {
+      cyberpunk:   'bottts',
+      anime:       'adventurer',
+      fantasy:     'personas',
+      neon:        'rings',
+      minimal:     'shapes',
+      cosmic:      'identicon',
+      pixel:       'pixel-art',
+      watercolor:  'lorelei',
+    }
 
-    console.log('Pollinations: generating avatar, style=', style)
+    const dicebearStyle = STYLE_MAP[style] || 'bottts'
+    const seed = Math.random().toString(36).substring(2, 12)
+    const imageUrl = `https://api.dicebear.com/8.x/${dicebearStyle}/png?seed=${seed}&size=256`
+
     res.json({ url: imageUrl })
   } catch (err) {
     console.error('Avatar error:', err.message)
