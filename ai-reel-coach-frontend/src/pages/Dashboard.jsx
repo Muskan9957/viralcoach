@@ -428,33 +428,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Scripts quick-access */}
-      <div style={{ marginTop: 36, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        <Link to="/generate" style={{ textDecoration: 'none' }}>
-          <div className="card card-sm" style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'border-color 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(0,200,255,0.35)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
-          >
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(0,200,255,0.1)', border: '1px solid rgba(0,200,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>✦</div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>New Script</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Generate with AI</div>
-            </div>
-          </div>
-        </Link>
-        <Link to="/scripts" style={{ textDecoration: 'none' }}>
-          <div className="card card-sm" style={{ display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', transition: 'border-color 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(123,92,240,0.35)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
-          >
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(123,92,240,0.1)', border: '1px solid rgba(123,92,240,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>📄</div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>Script History</div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{scripts.length} script{scripts.length !== 1 ? 's' : ''} saved</div>
-            </div>
-          </div>
-        </Link>
-      </div>
 
       <WeeklyReport />
 

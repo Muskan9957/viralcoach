@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { api } from '../api'
 import { useToast } from '../components/Toast'
 import { useLang } from '../i18n.jsx'
@@ -80,8 +80,13 @@ export default function Generate() {
     <div className="page-enter" style={{ maxWidth: 720, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 className="page-title" style={{ marginBottom: 8 }}>{t('generate_title')}</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+          <h1 className="page-title" style={{ marginBottom: 0 }}>{t('generate_title')}</h1>
+          <Link to="/scripts" style={{ fontSize: '0.8rem', color: 'var(--text-faint)', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            View history →
+          </Link>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: 6 }}>
           Speak or type your idea — get a viral-ready script in seconds.
         </p>
       </div>
