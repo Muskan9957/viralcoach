@@ -397,12 +397,12 @@ const styles = {
   card: {
     width: '100%',
     maxWidth: 580,
-    background: 'rgba(15,15,26,0.92)',
+    background: 'var(--surface-card)',
     backdropFilter: 'blur(24px)',
     border: '1px solid var(--border)',
     borderRadius: 24,
     padding: '40px 36px',
-    boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+    boxShadow: 'var(--shadow-glass)',
   },
   stepBadge: {
     display: 'inline-flex',

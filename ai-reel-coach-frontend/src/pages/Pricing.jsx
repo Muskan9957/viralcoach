@@ -329,8 +329,8 @@ export default function Pricing() {
               key={plan.id}
               style={{
                 background: isPopular
-                  ? 'linear-gradient(180deg, rgba(0,200,255,0.07) 0%, rgba(11,15,46,0.95) 40%)'
-                  : 'rgba(11,15,46,0.92)',
+                  ? 'linear-gradient(180deg, rgba(0,200,255,0.09) 0%, var(--surface-card) 40%)'
+                  : 'var(--surface-card)',
                 backdropFilter: 'blur(20px)',
                 border: isPopular
                   ? '1.5px solid rgba(0,200,255,0.35)'
@@ -338,7 +338,7 @@ export default function Pricing() {
                 borderRadius: 24,
                 padding: isPopular ? '32px 28px' : '28px 24px',
                 position: 'relative',
-                boxShadow: isPopular ? '0 0 60px rgba(0,200,255,0.12), 0 24px 60px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.3)',
+                boxShadow: isPopular ? 'var(--shadow-accent), var(--shadow-glass)' : 'var(--shadow)',
                 transform: isPopular ? 'translateY(-8px)' : 'none',
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                 animation: `fadeUp 0.4s ease ${i * 0.1}s both`,

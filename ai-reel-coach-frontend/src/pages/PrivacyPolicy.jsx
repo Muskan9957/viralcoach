@@ -35,9 +35,9 @@ export default function PrivacyPolicy() {
         position: 'sticky', top: 0, zIndex: 100,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 5%',
-        background: 'rgba(7,9,28,0.95)',
+        background: 'var(--surface-nav)',
         backdropFilter: 'blur(24px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid var(--border-nav)',
       }}>
         <Link to="/" style={{ textDecoration: 'none' }}>
           <Logo size={36} showWordmark />

@@ -211,13 +211,13 @@ export default function Auth() {
 
           {/* Auth card */}
           <div style={{
-            background: 'rgba(11,15,46,0.95)',
+            background: 'var(--surface-card)',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(0,200,255,0.12)',
+            border: '1px solid var(--border-bright)',
             borderRadius: 20,
             padding: '32px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,200,255,0.04)',
+            boxShadow: 'var(--shadow-glass)',
           }}>
             <h1 style={{
               fontFamily: 'var(--font-head)', fontWeight: 800,

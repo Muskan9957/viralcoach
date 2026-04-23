@@ -297,16 +297,16 @@ export default function Dashboard() {
         {/* Scripts stat */}
         <div style={{
           backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.08)', borderRadius: 'var(--radius-lg)', padding: 24,
+          border: '1px solid var(--stat-border-raw)', borderRadius: 'var(--radius-lg)', padding: 24,
           display: 'flex', flexDirection: 'column', gap: 4,
           transition: 'border-color 0.2s, transform 0.2s',
-          background: 'linear-gradient(135deg, rgba(0,200,255,0.08) 0%, rgba(13,10,28,0.92) 60%)',
+          background: 'var(--stat-bg-cyan)',
           borderLeft: '2px solid rgba(0,200,255,0.5)',
         }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,200,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--stat-border-raw)'; e.currentTarget.style.transform = 'translateY(0)' }}
         >
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 4 }}>{t('weekly_scripts')}</div>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: 4 }}>{t('weekly_scripts')}</div>
           <div style={{ fontFamily: 'var(--font-head)', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.04em', background: 'linear-gradient(135deg, #00C8FF, #4DD9FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', lineHeight: 1 }}>
             {scripts.length}
           </div>
@@ -314,16 +314,16 @@ export default function Dashboard() {
         </div>
         {/* Usage stat */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(0,212,177,0.08) 0%, rgba(13,10,28,0.92) 60%)',
-          border: '1px solid rgba(255,255,255,0.08)', borderLeft: '2px solid rgba(0,212,177,0.5)',
+          background: 'var(--stat-bg-teal)',
+          border: '1px solid var(--stat-border-raw)', borderLeft: '2px solid rgba(0,212,177,0.5)',
           borderRadius: 'var(--radius-lg)', padding: 24,
           display: 'flex', flexDirection: 'column', gap: 4,
           transition: 'border-color 0.2s, transform 0.2s',
         }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,201,167,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--stat-border-raw)'; e.currentTarget.style.transform = 'translateY(0)' }}
         >
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 4 }}>{t('dash_this_month')}</div>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: 4 }}>{t('dash_this_month')}</div>
           <div style={{ fontFamily: 'var(--font-head)', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.04em', color: 'var(--teal)', lineHeight: 1 }}>
             {used}<span style={{ fontSize: '1.1rem', color: 'var(--text-faint)', fontWeight: 600 }}>/{limit}</span>
           </div>
@@ -333,16 +333,16 @@ export default function Dashboard() {
         </div>
         {/* Analyses stat */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(123,97,255,0.08) 0%, rgba(13,10,28,0.92) 60%)',
-          border: '1px solid rgba(255,255,255,0.08)', borderLeft: '2px solid rgba(123,97,255,0.5)',
+          background: 'var(--stat-bg-violet)',
+          border: '1px solid var(--stat-border-raw)', borderLeft: '2px solid rgba(123,97,255,0.5)',
           borderRadius: 'var(--radius-lg)', padding: 24,
           display: 'flex', flexDirection: 'column', gap: 4,
           transition: 'border-color 0.2s, transform 0.2s',
         }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(123,97,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--stat-border-raw)'; e.currentTarget.style.transform = 'translateY(0)' }}
         >
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 4 }}>{t('weekly_analyses')}</div>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: 4 }}>{t('weekly_analyses')}</div>
           <div style={{ fontFamily: 'var(--font-head)', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#7B61FF', lineHeight: 1 }}>
             {logs.length}
           </div>
