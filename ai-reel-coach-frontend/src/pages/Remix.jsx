@@ -103,12 +103,18 @@ export default function Remix() {
 
         {showPaste && (
           <div style={{ marginBottom: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 2 }}>
+              <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: fullScript.length > 900 ? '#FF6B6B' : fullScript.length > 700 ? 'var(--yellow)' : 'var(--text-faint)', transition: 'color 0.2s' }}>
+                {fullScript.length}/1000
+              </span>
+            </div>
             <textarea
               className="input"
               style={{ width: '100%', minHeight: 120, resize: 'vertical', fontFamily: 'var(--font-body)' }}
               placeholder={t('remix_paste_ph')}
               value={fullScript}
               onChange={e => setFullScript(e.target.value)}
+              maxLength={1000}
             />
             <button
               type="button"
@@ -123,43 +129,66 @@ export default function Remix() {
 
         {/* Hook */}
         <div className="field" style={{ marginBottom: 16 }}>
-          <label style={s.label}>{t('remix_hook')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_hook_label')})</span></label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+            <label style={{ ...s.label, marginBottom: 0 }}>{t('remix_hook')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_hook_label')})</span></label>
+            <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: hook.length > 900 ? '#FF6B6B' : hook.length > 700 ? 'var(--yellow)' : 'var(--text-faint)', transition: 'color 0.2s' }}>
+              {hook.length}/1000
+            </span>
+          </div>
           <textarea
             className="input"
             style={{ width: '100%', minHeight: 72, resize: 'vertical', fontFamily: 'var(--font-body)' }}
             placeholder={t('remix_hook_ph')}
             value={hook}
             onChange={e => setHook(e.target.value)}
+            maxLength={1000}
           />
         </div>
 
         {/* Body */}
         <div className="field" style={{ marginBottom: 16 }}>
-          <label style={s.label}>{t('remix_body')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_body_label')})</span></label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+            <label style={{ ...s.label, marginBottom: 0 }}>{t('remix_body')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_body_label')})</span></label>
+            <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: body.length > 900 ? '#FF6B6B' : body.length > 700 ? 'var(--yellow)' : 'var(--text-faint)', transition: 'color 0.2s' }}>
+              {body.length}/1000
+            </span>
+          </div>
           <textarea
             className="input"
             style={{ width: '100%', minHeight: 100, resize: 'vertical', fontFamily: 'var(--font-body)' }}
             placeholder={t('remix_body_ph')}
             value={body}
             onChange={e => setBody(e.target.value)}
+            maxLength={1000}
           />
         </div>
 
         {/* CTA */}
         <div className="field" style={{ marginBottom: 16 }}>
-          <label style={s.label}>{t('remix_cta')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_cta_label')})</span></label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+            <label style={{ ...s.label, marginBottom: 0 }}>{t('remix_cta')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_cta_label')})</span></label>
+            <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: cta.length > 900 ? '#FF6B6B' : cta.length > 700 ? 'var(--yellow)' : 'var(--text-faint)', transition: 'color 0.2s' }}>
+              {cta.length}/1000
+            </span>
+          </div>
           <textarea
             className="input"
             style={{ width: '100%', minHeight: 60, resize: 'vertical', fontFamily: 'var(--font-body)' }}
             placeholder={t('remix_cta_ph')}
             value={cta}
             onChange={e => setCta(e.target.value)}
+            maxLength={1000}
           />
         </div>
 
         {/* Topic */}
         <div className="field" style={{ marginBottom: 24 }}>
-          <label style={s.label}>{t('remix_topic')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_topic_label')})</span></label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+            <label style={{ ...s.label, marginBottom: 0 }}>{t('remix_topic')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_topic_label')})</span></label>
+            <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: topic.length > 900 ? '#FF6B6B' : topic.length > 700 ? 'var(--yellow)' : 'var(--text-faint)', transition: 'color 0.2s' }}>
+              {topic.length}/1000
+            </span>
+          </div>
           <input
             className="input"
             style={{ width: '100%' }}
@@ -167,6 +196,7 @@ export default function Remix() {
             placeholder={t('remix_topic_ph')}
             value={topic}
             onChange={e => setTopic(e.target.value)}
+            maxLength={1000}
           />
         </div>
 

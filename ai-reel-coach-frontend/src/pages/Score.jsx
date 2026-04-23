@@ -93,7 +93,17 @@ export default function Score() {
           <h2 style={styles.cardTitle}>{t('score_label')}</h2>
           <form onSubmit={scoreHook} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div className="field">
-              <label>{t('score_hook_text')}</label>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                <label style={{ marginBottom: 0 }}>{t('score_hook_text')}</label>
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontFamily: 'var(--font-mono)',
+                  color: hook.length > 900 ? '#FF6B6B' : hook.length > 700 ? 'var(--yellow)' : 'var(--text-faint)',
+                  transition: 'color 0.2s',
+                }}>
+                  {hook.length}/1000
+                </span>
+              </div>
               {/* Textarea with MicButton inline */}
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <textarea
@@ -101,17 +111,15 @@ export default function Score() {
                   placeholder={'e.g. "I was broke at 25. Here\'s what changed everything."'}
                   value={hook}
                   onChange={e => setHook(e.target.value)}
-                  rows={5}
+                  rows={3}
                   required
+                  maxLength={1000}
                   style={{ flex: 1, resize: 'vertical' }}
                 />
                 <MicButton
-                  onResult={(text) => setHook(text)}
+                  onResult={(text) => setHook(text.slice(0, 1000))}
                   style={{ marginTop: 2 }}
                 />
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', textAlign: 'right', marginTop: 4 }}>
-                {hook.length} chars
               </div>
             </div>
 

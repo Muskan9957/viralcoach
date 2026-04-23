@@ -13,7 +13,7 @@ router.post(
   '/score',
   aiLimiter,
   [
-    body('hookText').trim().notEmpty().withMessage('Hook text is required.').isLength({ max: 500 }),
+    body('hookText').trim().notEmpty().withMessage('Hook text is required.').isLength({ max: 1000 }).withMessage('Hook text must be under 1000 characters.'),
     body('scriptId').optional().isString(),
   ],
   controller.score
