@@ -1,30 +1,14 @@
 const prisma    = require('../config/prisma')
 const aiService = require('../services/aiService')
 
-// ─── GET /api/trending/greeting?region=India ─────────────────────
+// ─── GET /api/trending/greeting?region=India&language=hi ─────────
+// Always calls AI fresh — no DB cache — so language changes are instant
 const getGreeting = async (req, res, next) => {
   try {
     const region   = (req.query.region   || 'India').trim()
     const userLang = (req.query.language || 'en').trim()
-    const today    = new Date().toISOString().slice(0, 10)
-    const niche    = `greeting_${region.toLowerCase().replace(/\s+/g, '_')}`
-    const language = `greetv2_${userLang}` // v2: language-specific cache key (busts old English-only cache)
 
-    // Check cache (reuse TrendingCache, one entry per region+language per day)
-    const cached = await prisma.trendingCache.findUnique({
-      where: { niche_language_date: { niche, language, date: today } },
-    })
-    if (cached) return res.json(JSON.parse(cached.topics))
-
-    // Generate fresh in user's language
     const data = await aiService.getRegionalGreeting(region, userLang)
-
-    // Only cache real AI responses — never cache fallback content
-    if (!data._isFallback) {
-      await prisma.trendingCache.create({
-        data: { niche, language, topics: JSON.stringify(data), date: today },
-      })
-    }
 
     // Strip internal flag before sending to client
     const { _isFallback, ...responseData } = data
