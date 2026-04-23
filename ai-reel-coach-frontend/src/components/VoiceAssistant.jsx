@@ -13,7 +13,6 @@ const LANG_CODES = {
   ja:       'ja-JP',
   ko:       'ko-KR',
   hi:       'hi-IN',
-  hinglish: 'hi-IN',
 }
 
 // ─── Pick the best available voice ────────────────────────────────
@@ -175,15 +174,18 @@ export function useSpeechToText(onResult) {
   const { lang } = useLang()
   const [listening, setListening]     = useState(false)
   const [interimText, setInterimText] = useState('')
-  const recognitionRef = useRef(null)
-  const finalRef       = useRef('')
-  const stoppedRef     = useRef(false)
-  const flushedRef     = useRef(false)
-  const silenceTimer   = useRef(null)
-  const SR_ref         = useRef(null)
-  const langRef        = useRef('en-IN')
-  const onResultRef    = useRef(onResult)
-  onResultRef.current  = onResult
+  const recognitionRef  = useRef(null)
+  const finalRef        = useRef('')
+  const stoppedRef      = useRef(false)
+  const flushedRef      = useRef(false)
+  const silenceTimer    = useRef(null)
+  const SR_ref          = useRef(null)
+  const langRef         = useRef('en-IN')
+  const onResultRef     = useRef(onResult)
+  // Track highest result index already committed — prevents Chrome from
+  // re-delivering old final results (e.resultIndex can be 0 for old items)
+  const lastFinalIdxRef = useRef(-1)
+  onResultRef.current   = onResult
 
   const clearSilenceTimer = () => {
     if (silenceTimer.current) { clearTimeout(silenceTimer.current); silenceTimer.current = null }
@@ -209,24 +211,43 @@ export function useSpeechToText(onResult) {
 
   const startSession = () => {
     if (stoppedRef.current || !SR_ref.current) return
+    // Reset per-session index so each new recognition instance starts clean
+    lastFinalIdxRef.current = -1
 
     const recognition           = new SR_ref.current()
     recognition.lang            = langRef.current
     recognition.interimResults  = true
     recognition.maxAlternatives = 1
-    recognition.continuous      = true   // ← holds the mic open; Chrome never cuts mid-sentence
+    recognition.continuous      = true   // holds the mic open; Chrome never cuts mid-sentence
 
     recognition.onresult = (e) => {
       let interim = '', newFinal = ''
+
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) newFinal += e.results[i][0].transcript
-        else                      interim  += e.results[i][0].transcript
+        if (e.results[i].isFinal) {
+          // FIX 1: Only process a final result if its index is strictly newer
+          // than the last one we committed. Chrome sometimes fires resultIndex=0
+          // for events that include already-finalized earlier results.
+          if (i > lastFinalIdxRef.current) {
+            newFinal += e.results[i][0].transcript
+            lastFinalIdxRef.current = i
+          }
+        } else {
+          interim += e.results[i][0].transcript
+        }
       }
+
       if (newFinal) {
-        finalRef.current = (finalRef.current + (finalRef.current ? ' ' : '') + newFinal).trim()
+        const trimmed  = newFinal.trim()
+        const existing = finalRef.current
+        // FIX 2: Cross-session guard — Chrome sometimes replays the last phrase
+        // when a session restarts. Skip if it's identical to what we just appended.
+        if (trimmed && !existing.endsWith(trimmed)) {
+          finalRef.current = (existing + (existing ? ' ' : '') + trimmed).trim()
+        }
       }
-      // Reset timer on ANY speech activity — interim keeps it alive while
-      // you're still mid-word, final resets it after the word lands
+
+      // Reset timer on ANY speech activity
       if (newFinal || interim) armSilenceTimer()
       setInterimText(interim || finalRef.current)
     }
