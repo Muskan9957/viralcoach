@@ -23,6 +23,7 @@ import Pricing from './pages/Pricing'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Demo from './pages/Demo'
+import Scripts from './pages/Scripts'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
 
@@ -84,6 +85,7 @@ export default function App() {
                 <Route path="/onboarding"      element={<OnboardingRoute />} />
                 <Route path="/dashboard"    element={<Protected><Dashboard /></Protected>} />
                 <Route path="/generate"     element={<Protected><Generate /></Protected>} />
+                <Route path="/scripts"      element={<Protected><Scripts /></Protected>} />
                 <Route path="/score"        element={<Protected><Score /></Protected>} />
                 <Route path="/performance"  element={<Protected><Performance /></Protected>} />
                 <Route path="/calendar"     element={<Protected><Calendar /></Protected>} />

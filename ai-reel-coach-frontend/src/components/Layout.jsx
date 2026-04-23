@@ -34,6 +34,12 @@ const IconGenerate = ({ size = 22 }) => (
   </svg>
 )
 
+const IconScripts = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
+  </svg>
+)
+
 const IconScore = ({ size = 22 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="9"/>
@@ -138,6 +144,7 @@ const NAV_CONFIG = [
   { section: 'Studio' },
   { to: '/dashboard',   icon: IconDashboard,   labelKey: 'nav_dashboard'   },
   { to: '/generate',    icon: IconGenerate,    labelKey: 'nav_generate'    },
+  { to: '/scripts',     icon: IconScripts,     labelKey: 'nav_scripts'     },
   { to: '/score',       icon: IconScore,       labelKey: 'nav_score'       },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'       },
   { section: 'Content' },

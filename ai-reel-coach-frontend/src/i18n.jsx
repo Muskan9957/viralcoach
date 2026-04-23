@@ -2,6 +2,7 @@ export const translations = {
   en: {
     nav_dashboard: 'Dashboard',
     nav_generate: 'Generate',
+    nav_scripts: 'Script History',
     nav_score: 'Score Hook',
     nav_performance: 'Performance',
     nav_calendar: 'Calendar',
