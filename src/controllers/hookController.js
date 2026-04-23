@@ -9,10 +9,10 @@ const score = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { hookText, scriptId } = req.body;
+    const { hookText, scriptId, language } = req.body;
 
     // Score via AI
-    const result = await aiService.scoreHook(hookText);
+    const result = await aiService.scoreHook(hookText, language);
 
     // Save record
     const hookScore = await prisma.hookScore.create({
@@ -59,7 +59,7 @@ const rewrite = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { scriptId, originalHook } = req.body;
+    const { scriptId, originalHook, language } = req.body;
 
     // Verify script belongs to this user
     const script = await prisma.script.findFirst({
@@ -70,10 +70,10 @@ const rewrite = async (req, res, next) => {
     const originalScore = script.hookScore || 50;
 
     // Rewrite via AI
-    const { rewrittenHook, changes } = await aiService.rewriteHook(originalHook, originalScore);
+    const { rewrittenHook, changes } = await aiService.rewriteHook(originalHook, originalScore, language);
 
     // Score the new hook
-    const newScoreData = await aiService.scoreHook(rewrittenHook);
+    const newScoreData = await aiService.scoreHook(rewrittenHook, language);
 
     // Save rewrite record
     const rewriteRecord = await prisma.rewrite.create({

@@ -9,7 +9,7 @@ const analyze = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { topic, hookUsed, views, watchTimePercent, likes, shares, comments } = req.body;
+    const { topic, hookUsed, views, watchTimePercent, likes, shares, comments, language } = req.body;
 
     // Fetch past logs for personalization context (last 5 posts)
     const pastLogs = await prisma.performanceLog.findMany({
@@ -21,7 +21,7 @@ const analyze = async (req, res, next) => {
 
     // Generate AI feedback
     const feedback = await aiService.analyzePerformance({
-      topic, hookUsed, views, watchTimePercent, likes, shares, comments, pastLogs,
+      topic, hookUsed, views, watchTimePercent, likes, shares, comments, pastLogs, language,
     });
 
     // Save to database (builds Creator Learning Profile over time)

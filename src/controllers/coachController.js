@@ -5,7 +5,7 @@ const aiService = require('../services/aiService');
 const chat = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { message, history, context } = req.body;
+    const { message, history, context, language } = req.body;
 
     if (!message || !message.trim()) {
       return res.status(400).json({ error: 'message is required' });
@@ -62,6 +62,7 @@ const chat = async (req, res, next) => {
       message    : message.trim(),
       history    : trimmedHistory,
       userContext,
+      language   : language || 'en',
     });
 
     // Save assistant message to DB

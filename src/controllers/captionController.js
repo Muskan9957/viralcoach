@@ -3,16 +3,17 @@ const aiService = require('../services/aiService');
 // ─── POST /api/captions/generate ──────────────────────────────────
 const generate = async (req, res, next) => {
   try {
-    const { topic, niche, tone } = req.body;
+    const { topic, niche, tone, language } = req.body;
 
     if (!topic || !topic.trim()) {
       return res.status(400).json({ error: 'topic is required' });
     }
 
     const result = await aiService.generateCaptions({
-      topic: topic.trim(),
-      niche: niche ? niche.trim() : undefined,
-      tone : tone  ? tone.trim()  : undefined,
+      topic   : topic.trim(),
+      niche   : niche    ? niche.trim()    : undefined,
+      tone    : tone     ? tone.trim()     : undefined,
+      language: language || 'en',
     });
 
     return res.json({
