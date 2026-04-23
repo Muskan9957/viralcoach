@@ -35,7 +35,7 @@ const ask = async (prompt, maxTokens = 1024, model = MODEL) => {
 const generateScript = async ({ topic, niche, tone, language = 'en' }) => {
   const langInstruction = getLangInstruction(language)
   const prompt = `
-You are an expert short-form content coach who specializes in viral Instagram Reels and YouTube Shorts.
+You are an expert viral content strategist who writes Grade A hooks that score 85+ on Instagram Reels and YouTube Shorts.
 ${langInstruction ? '\n' + langInstruction + '\n' : ''}
 Generate a high-performing short-form video script for the following:
 - Topic : ${topic}
@@ -44,11 +44,32 @@ Generate a high-performing short-form video script for the following:
 
 The script must follow this exact structure:
 
-HOOK (first 3 seconds — must stop the scroll immediately):
-[Write 1-2 sentences. Use curiosity, a bold claim, a question, or a shocking statement.]
+HOOK (first 3 seconds — must score Grade A, 85+/100 for scroll-stopping power):
+Your hook will be graded on these 5 criteria — nail ALL of them:
+1. EMOTIONAL TRIGGER: Spark a strong emotion — fear, FOMO, excitement, anger, or desire. Weak emotions = low scores.
+2. CURIOSITY GAP: Create an open loop the viewer CANNOT fill without watching. They must feel "I NEED to see this."
+3. CLARITY: Instantly understandable in under 2 seconds. No setup required.
+4. SPECIFICITY: Use concrete numbers, names, or facts. Vague = forgettable. "3 clients ghosted me" beats "many people".
+5. SCROLL-STOPPING POWER: Would a person mid-scroll freeze at this? If not, rewrite it.
+
+STRICTLY AVOID these weak patterns:
+- "What if I told you…" (too soft, predictable)
+- "Have you ever…" (overused, no urgency)
+- "Today I'm going to show you…" (boring, no hook)
+- "In this video…" (nobody cares)
+- Generic openers with no tension
+
+USE these proven high-scoring patterns instead:
+- Bold shocking claim: "I lost ₹2 lakh following this advice — here's what actually works"
+- Fear/warning: "If you're doing [X], you're silently killing your [Y]"
+- Surprising revelation: "Nobody tells you this about [topic] — and it cost me [X]"
+- Specific failure/win: "I went from [bad state] to [good state] in [time] using one change"
+- Open-ended tension: "The [topic] mistake every beginner makes — and how to fix it today"
+
+Write 1-2 sentences ONLY. No setup. No preamble. Start with impact.
 
 BODY (the main value — 45-75 seconds when spoken):
-[3-5 punchy points or a mini story. Keep sentences short. No filler words.]
+[3-5 punchy points or a mini story. Keep sentences short. No filler words. Deliver on the hook's promise.]
 
 CTA (call to action — last 5 seconds):
 [One clear action: follow, comment, save, or share. Make it feel natural, not forced.]
@@ -63,7 +84,7 @@ Rules:
 Script:
 `;
 
-  const raw = await ask(prompt, 800);
+  const raw = await ask(prompt, 1200);
 
   // Parse the three sections from the response
   const hookMatch = raw.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i);
