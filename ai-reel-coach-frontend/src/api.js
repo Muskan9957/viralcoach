@@ -58,7 +58,7 @@ export const api = {
 
   // Trending
   getTrending:  (niche, language) => req('GET', `/trending?niche=${niche}&language=${language}`),
-  getGreeting:  (region)          => req('GET', `/trending/greeting?region=${encodeURIComponent(region)}`),
+  getGreeting:  (region, language) => req('GET', `/trending/greeting?region=${encodeURIComponent(region)}&language=${language || 'en'}`),
 
   // Templates
   getTemplates:   (type) => req('GET',    `/templates${type ? `?type=${type}` : ''}`),

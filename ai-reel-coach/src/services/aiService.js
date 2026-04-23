@@ -278,11 +278,10 @@ Be like a friend, not a corporate report. Keep it short.
 // ─────────────────────────────────────────────────────────────────
 // 7. GET REGIONAL GREETING + TRENDING NEWS
 // ─────────────────────────────────────────────────────────────────
-const getRegionalGreeting = async (region = 'India') => {
+const getRegionalGreeting = async (region = 'India', language = 'en') => {
+  const langInstruction = getLangInstruction(language)
   const prompt = `You are a sharp, professional content strategist briefing an Indian creator on today's social media landscape.
-
-Write in clean, concise English. Be warm but not overly casual — think smart friend, not cheerleader.
-
+${langInstruction ? '\n' + langInstruction + ' Write the greeting sentence and trend descriptions in that language, but keep JSON keys and category names in English.\n' : '\nWrite in clean, concise English. Be warm but not overly casual — think smart friend, not cheerleader.\n'}
 Focus on topics Indian audiences actually engage with — Bollywood, cricket, Indian startups, festivals, food, finance, pop culture, etc.
 
 Return ONLY valid JSON (no markdown, no code blocks):

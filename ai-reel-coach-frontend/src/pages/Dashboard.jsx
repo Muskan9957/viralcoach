@@ -28,22 +28,25 @@ const CATEGORY_COLORS = {
 }
 
 function TrendingBrief({ userName }) {
+  const { t, lang } = useLang()
   const { speak, speaking, stopSpeaking } = useTextToSpeech()
   const [greeting, setGreeting] = useState(null)
   const [loading, setLoading]   = useState(true)
   const [played, setPlayed]     = useState(false)
 
   useEffect(() => {
-    api.getGreeting('Global')
+    setLoading(true)
+    setGreeting(null)
+    api.getGreeting('Global', lang)
       .then(data => setGreeting(data))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [lang])
 
   const playGreeting = () => {
     if (!greeting) return
     if (speaking) { stopSpeaking(); return }
-    speak(`Good ${getTimeGreeting()} ${userName}! ${greeting.greeting}`)
+    speak(`${t('dash_greeting_' + getTimeGreetingKey())} ${userName}! ${greeting.greeting}`)
     setPlayed(true)
   }
 
@@ -61,7 +64,7 @@ function TrendingBrief({ userName }) {
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(0,229,255,0.4), rgba(0,200,255,0.6), rgba(123,92,240,0.4), transparent)' }} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
         <span style={{ fontSize: '0.85rem', fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-          TODAY'S BRIEF
+          {t('dash_todays_brief')}
         </span>
         <div style={{ flex: 1 }} />
         <button
@@ -78,14 +81,14 @@ function TrendingBrief({ userName }) {
             transition: 'all 0.15s',
           }}
         >
-          {speaking ? '⏹ Stop' : played ? '🔊 Replay' : '▶ Listen'}
+          {speaking ? t('dash_stop') : played ? t('dash_replay') : t('dash_listen')}
         </button>
       </div>
 
       {loading ? (
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <div className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-faint)' }}>Loading today's trends...</span>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-faint)' }}>{t('dash_loading_trends')}</span>
         </div>
       ) : greeting ? (
         <>
@@ -111,7 +114,7 @@ function TrendingBrief({ userName }) {
                     {trend.description}
                   </div>
                   <Link to="/generate" state={{ topic: trend.title }} style={{ display: 'inline-block', marginTop: 6, fontSize: '0.7rem', color, textDecoration: 'none', fontWeight: 600 }}>
-                    Write script →
+                    {t('dash_write_script')}
                   </Link>
                 </div>
               )
@@ -123,7 +126,8 @@ function TrendingBrief({ userName }) {
   )
 }
 
-function getTimeGreeting() {
+// Returns the key suffix for t('dash_greeting_*')
+function getTimeGreetingKey() {
   const h = new Date().getHours()
   if (h < 12) return 'morning'
   if (h < 17) return 'afternoon'
@@ -131,16 +135,17 @@ function getTimeGreeting() {
 }
 
 function CreatorScoreCard({ score }) {
+  const { t } = useLang()
   const [copied, setCopied] = useState(false)
 
   if (!score) return null
 
   const { score: val, breakdown = {}, level } = score
   const segments = [
-    { key: 'consistency',  label: 'Consistency',  color: '#00C9A7' },
-    { key: 'hookQuality',  label: 'Hook Quality', color: '#00C8FF' },
-    { key: 'performance',  label: 'Performance',  color: '#7B5CF0' },
-    { key: 'streakBonus',  label: 'Streak Bonus', color: '#FFD60A' },
+    { key: 'consistency',  label: t('dash_seg_consistency'), color: '#00C9A7' },
+    { key: 'hookQuality',  label: t('dash_seg_hook'),        color: '#00C8FF' },
+    { key: 'performance',  label: t('dash_seg_performance'), color: '#7B5CF0' },
+    { key: 'streakBonus',  label: t('dash_seg_streak'),      color: '#FFD60A' },
   ]
   const total = segments.reduce((acc, s) => acc + (breakdown[s.key] || 0), 0) || 1
 
@@ -174,7 +179,7 @@ function CreatorScoreCard({ score }) {
         {/* Breakdown */}
         <div style={{ flex: 1, minWidth: 180 }}>
           <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>
-            Creator Score Breakdown
+            {t('dash_score_breakdown')}
           </div>
           {/* Bar */}
           <div style={{ display: 'flex', height: 8, borderRadius: 99, overflow: 'hidden', gap: 2, marginBottom: 10 }}>
@@ -216,7 +221,7 @@ function CreatorScoreCard({ score }) {
             flexShrink: 0, alignSelf: 'flex-start',
           }}
         >
-          {copied ? '✓ Copied' : '↗ Share Score'}
+          {copied ? t('dash_score_copied') : t('dash_share_score')}
         </button>
       </div>
     </div>
@@ -225,7 +230,7 @@ function CreatorScoreCard({ score }) {
 
 export default function Dashboard() {
   const { user }          = useAuth()
-  const { t }             = useLang()
+  const { t, lang }       = useLang()
   const { niches, goals, platform } = usePrefs()
   const [scripts, setSc]  = useState([])
   const [logs, setLogs]   = useState([])
@@ -265,20 +270,20 @@ export default function Dashboard() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
             <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {new Date().toLocaleDateString(lang === 'hi' ? 'hi-IN' : 'en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
             <h1 style={{
               fontFamily: 'var(--font-head)', fontWeight: 900,
               fontSize: 'clamp(1.8rem, 4vw, 2.4rem)',
               letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: 8,
             }}>
-              Good {getTimeGreeting()},{' '}
+              {t('dash_greeting_' + getTimeGreetingKey())},{' '}
               <span style={{ background: 'linear-gradient(135deg, #00E5FF, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                 {firstName} ✦
               </span>
             </h1>
             <p className="page-sub">
-              Here's your content overview for today.
+              {t('dash_overview')}
             </p>
           </div>
         </div>
@@ -301,11 +306,11 @@ export default function Dashboard() {
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,200,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
         >
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 4 }}>Scripts</div>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 4 }}>{t('weekly_scripts')}</div>
           <div style={{ fontFamily: 'var(--font-head)', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.04em', background: 'linear-gradient(135deg, #00C8FF, #4DD9FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', lineHeight: 1 }}>
             {scripts.length}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: 2 }}>All time</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: 2 }}>{t('dash_all_time')}</div>
         </div>
         {/* Usage stat */}
         <div style={{
@@ -318,7 +323,7 @@ export default function Dashboard() {
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,201,167,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
         >
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 4 }}>This Month</div>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 4 }}>{t('dash_this_month')}</div>
           <div style={{ fontFamily: 'var(--font-head)', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.04em', color: 'var(--teal)', lineHeight: 1 }}>
             {used}<span style={{ fontSize: '1.1rem', color: 'var(--text-faint)', fontWeight: 600 }}>/{limit}</span>
           </div>
@@ -337,11 +342,11 @@ export default function Dashboard() {
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(123,97,255,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)' }}
         >
-          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 4 }}>Analyses</div>
+          <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-faint)', marginBottom: 4 }}>{t('weekly_analyses')}</div>
           <div style={{ fontFamily: 'var(--font-head)', fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.04em', color: '#7B61FF', lineHeight: 1 }}>
             {logs.length}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: 2 }}>Videos reviewed</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', marginTop: 2 }}>{t('dash_videos_reviewed')}</div>
         </div>
       </div>
 
@@ -354,7 +359,7 @@ export default function Dashboard() {
           <div style={{ fontSize: '1.8rem', lineHeight: 1 }}>🔥</div>
           <div>
             <span style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.5rem', color: 'var(--accent)' }}>{streak}</span>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: 8 }}>day streak</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: 8 }}>{t('dash_day_streak')}</span>
           </div>
         </div>
       )}
@@ -362,7 +367,7 @@ export default function Dashboard() {
       {/* Badges */}
       {badges.length > 0 && (
         <div style={{ marginTop: 28 }}>
-          <h2 style={styles.sectionTitle}>Badges</h2>
+          <h2 style={styles.sectionTitle}>{t('dash_badges')}</h2>
           <div style={styles.badgesRow}>
             {badges.map((badge, i) => {
               const meta = BADGE_META[badge.type || badge] || { emoji: '⭐', label: badge.type || badge }
@@ -380,12 +385,12 @@ export default function Dashboard() {
       {/* Quick actions */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginTop: 28 }}>
         {[
-          { to: '/generate',    icon: '✦', label: 'Generate Script', accent: true },
-          { to: '/score',       icon: '◎', label: 'Score Hook',       accent: false },
-          { to: '/coach',       icon: '🤖', label: 'Ask AI Coach',    accent: false },
-          { to: '/trending',    icon: '📈', label: 'Trending',        accent: false },
-          { to: '/performance', icon: '◈', label: 'Analyze',          accent: false },
-          { to: '/calendar',    icon: '📅', label: 'Calendar',        accent: false },
+          { to: '/generate',    icon: '✦',  label: t('dash_action_generate'), accent: true },
+          { to: '/score',       icon: '◎',  label: t('dash_action_score'),    accent: false },
+          { to: '/coach',       icon: '🤖', label: t('dash_action_coach'),    accent: false },
+          { to: '/trending',    icon: '📈', label: t('dash_action_trending'), accent: false },
+          { to: '/performance', icon: '◈',  label: t('dash_action_analyze'),  accent: false },
+          { to: '/calendar',    icon: '📅', label: t('dash_action_calendar'), accent: false },
         ].map(({ to, icon, label, accent }) => (
           <Link key={to} to={to} style={{ textDecoration: 'none' }}>
             <div style={{
@@ -446,11 +451,11 @@ export default function Dashboard() {
           <div style={{ position: 'absolute', top: -30, right: -20, width: 150, height: 150, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,200,255,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
           <div style={{ position: 'absolute', bottom: -20, left: '40%', width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(123,92,240,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.05rem', marginBottom: 4, background: 'linear-gradient(135deg, #00E5FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Unlock unlimited scripts</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Free plan — {used}/{limit} used this month · Upgrade to Pro for ₹799/mo</div>
+            <div style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.05rem', marginBottom: 4, background: 'linear-gradient(135deg, #00E5FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{t('dash_unlock_title')}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{used}/{limit} {t('generate_usage')} · {t('dash_free_desc')}</div>
           </div>
           <Link to="/pricing" className="btn btn-primary btn-sm" style={{ position: 'relative', zIndex: 1, textDecoration: 'none' }}>
-            Upgrade to Pro →
+            {t('dash_upgrade_btn')}
           </Link>
         </div>
       )}

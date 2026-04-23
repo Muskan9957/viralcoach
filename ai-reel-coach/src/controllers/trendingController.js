@@ -4,19 +4,20 @@ const aiService = require('../services/aiService')
 // ─── GET /api/trending/greeting?region=India ─────────────────────
 const getGreeting = async (req, res, next) => {
   try {
-    const region   = (req.query.region || 'India').trim()
+    const region   = (req.query.region   || 'India').trim()
+    const userLang = (req.query.language || 'en').trim()
     const today    = new Date().toISOString().slice(0, 10)
     const niche    = `greeting_${region.toLowerCase().replace(/\s+/g, '_')}`
-    const language = 'greeting'
+    const language = `greeting_${userLang}` // language-specific cache key
 
-    // Check cache (reuse TrendingCache, one entry per region per day)
+    // Check cache (reuse TrendingCache, one entry per region+language per day)
     const cached = await prisma.trendingCache.findUnique({
       where: { niche_language_date: { niche, language, date: today } },
     })
     if (cached) return res.json(JSON.parse(cached.topics))
 
-    // Generate fresh
-    const data = await aiService.getRegionalGreeting(region)
+    // Generate fresh in user's language
+    const data = await aiService.getRegionalGreeting(region, userLang)
 
     // Persist
     await prisma.trendingCache.create({
