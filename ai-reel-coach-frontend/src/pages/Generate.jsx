@@ -97,18 +97,29 @@ export default function Generate() {
 
           {/* Topic — most important field, big and prominent */}
           <div className="field">
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              {t('generate_topic_label')}
-            </label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                {t('generate_topic_label')}
+              </label>
+              <span style={{
+                fontSize: '0.72rem',
+                fontFamily: 'var(--font-mono)',
+                color: form.topic.length > 900 ? '#FF6B6B' : form.topic.length > 700 ? 'var(--yellow)' : 'var(--text-faint)',
+                transition: 'color 0.2s',
+              }}>
+                {form.topic.length}/1000
+              </span>
+            </div>
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <textarea
                 className="textarea"
                 placeholder="e.g. How I grew from 0 to 10k followers in 90 days"
                 value={form.topic}
                 onChange={set('topic')}
-                rows={2}
+                rows={3}
                 required
-                style={{ flex: 1, resize: 'none', fontSize: '1rem' }}
+                maxLength={1000}
+                style={{ flex: 1, resize: 'vertical', fontSize: '1rem' }}
               />
               <MicButton
                 onResult={text => setForm(f => ({ ...f, topic: text }))}

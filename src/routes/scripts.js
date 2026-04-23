@@ -14,7 +14,7 @@ router.post(
   '/generate',
   aiLimiter,
   [
-    body('topic').trim().notEmpty().withMessage('Topic is required.').isLength({ max: 200 }),
+    body('topic').trim().notEmpty().withMessage('Topic is required.').isLength({ max: 1000 }).withMessage('Topic must be under 1000 characters.'),
     body('niche').optional().trim().isLength({ max: 100 }),
     body('tone').optional().trim().isIn(['educational', 'funny', 'motivational', 'storytelling', 'controversial', 'conversational'])
       .withMessage('Tone must be one of: educational, funny, motivational, storytelling, controversial, conversational'),
