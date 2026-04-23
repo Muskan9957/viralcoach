@@ -236,8 +236,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     Promise.all([
-      api.getScripts(),
-      api.perfHistory(),
+      api.getScripts().catch(() => ({ scripts: [] })),
+      api.perfHistory().catch(() => ({ logs: [] })),
       api.getBadges().catch(() => ({ badges: [] })),
       api.getUserProfile().catch(() => null),
       api.getCreatorScore().catch(() => null),
@@ -249,7 +249,6 @@ export default function Dashboard() {
         setProfile(prof)
         setCreatorScore(cs)
       })
-      .catch(() => {})
       .finally(() => setLd(false))
   }, [])
 
@@ -432,34 +431,38 @@ export default function Dashboard() {
       {/* Recent scripts */}
       <div style={{ marginTop: 36 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h2 style={styles.sectionTitle}>Recent Scripts</h2>
-          {scripts.length > 0 && <Link to="/generate" style={{ fontSize: '0.8rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>+ New</Link>}
+          <h2 style={styles.sectionTitle}>Script History</h2>
+          <Link to="/generate" style={{ fontSize: '0.8rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>+ New Script</Link>
         </div>
 
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
-            {[1,2,3].map(i => <div key={i} style={{ height: 80, background: 'var(--surface)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }} />)}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[1,2,3].map(i => <div key={i} style={{ height: 64, background: 'var(--surface)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }} />)}
           </div>
         ) : scripts.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 16 }}>No scripts yet</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 16 }}>No scripts yet — generate your first one</p>
             <Link to="/generate" className="btn btn-primary btn-sm">Generate your first</Link>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
-            {scripts.slice(0, 6).map(s => (
-              <div key={s.id} className="card card-sm">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 500, lineHeight: 1.4, flex: 1 }}>{s.topic}</div>
-                  {s.hookScore && (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: gradeColor[s.hookScore >= 75 ? 'A' : s.hookScore >= 50 ? 'C' : 'F'] }}>
-                      {s.hookScore}
-                    </span>
-                  )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {scripts.map(s => (
+              <div key={s.id} className="card card-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 500, lineHeight: 1.4, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.topic}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginTop: 3 }}>
+                    {new Date(s.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </div>
                 </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-                  {new Date(s.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
-                </div>
+                {s.hookScore && (
+                  <span style={{
+                    fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.85rem',
+                    color: s.hookScore >= 75 ? '#00C9A7' : s.hookScore >= 50 ? '#FFD60A' : '#FF6B6B',
+                    flexShrink: 0,
+                  }}>
+                    {s.hookScore}/100
+                  </span>
+                )}
               </div>
             ))}
           </div>
