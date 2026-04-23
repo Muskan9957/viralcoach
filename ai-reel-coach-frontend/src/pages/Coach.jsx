@@ -2,13 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { api } from '../api'
 import { MicButton } from '../components/VoiceAssistant'
 import { usePrefs } from '../hooks/usePrefs'
-
-const STARTER_QUESTIONS = [
-  'Why do my Reels get low views?',
-  'What should I post this week?',
-  'How do I improve my hook score?',
-  'Give me a 30-day content plan',
-]
+import { useLang } from '../i18n.jsx'
 
 function TypingIndicator() {
   return (
@@ -68,6 +62,7 @@ function Message({ msg }) {
 }
 
 export default function Coach() {
+  const { t, lang } = useLang()
   const [messages, setMessages] = useState([])
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
@@ -107,7 +102,7 @@ export default function Coach() {
     const historyForApi = newMessages.slice(-10).map(m => ({ role: m.role, content: m.content }))
 
     try {
-      const data = await api.coachChat({ message: trimmed, history: historyForApi.slice(0, -1), context: aiContext })
+      const data = await api.coachChat({ message: trimmed, history: historyForApi.slice(0, -1), context: aiContext, language: lang })
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
     } catch (err) {
       setMessages(prev => [...prev, {
@@ -133,8 +128,8 @@ export default function Coach() {
     <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)', maxWidth: 720, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: 20, flexShrink: 0 }}>
-        <h1 className="page-title">AI Coach</h1>
-        <p className="page-sub">Your personal content strategist — ask anything.</p>
+        <h1 className="page-title">{t('nav_coach')}</h1>
+        <p className="page-sub">{t('coach_sub')}</p>
       </div>
 
       {/* Chat area */}
@@ -155,10 +150,10 @@ export default function Coach() {
             <div style={{ textAlign: 'center', paddingTop: 20 }}>
               <div style={{ fontSize: '2rem', marginBottom: 12 }}>💬</div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 20 }}>
-                Ask me anything about growing your content.
+                {t('coach_empty')}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 400, margin: '0 auto' }}>
-                {STARTER_QUESTIONS.map((q, i) => (
+                {[t('coach_q1'), t('coach_q2'), t('coach_q3'), t('coach_q4')].map((q, i) => (
                   <button
                     key={i}
                     onClick={() => sendMessage(q)}
@@ -248,7 +243,7 @@ export default function Coach() {
               paddingTop: 10,
               paddingBottom: 10,
             }}
-            placeholder="Ask your AI Coach..."
+            placeholder={t('coach_placeholder')}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}

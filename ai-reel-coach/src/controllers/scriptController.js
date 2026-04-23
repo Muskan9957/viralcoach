@@ -21,11 +21,11 @@ const generate = async (req, res, next) => {
     }
 
     // 2. Generate script via AI
-    const { topic, niche, tone } = req.body;
-    const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone });
+    const { topic, niche, tone, language } = req.body;
+    const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language });
 
-    // 3. Auto-score the hook
-    const hookScoreData = await aiService.scoreHook(hook);
+    // 3. Auto-score the hook (same language for consistency)
+    const hookScoreData = await aiService.scoreHook(hook, language);
 
     // 4. Save script to database
     const script = await prisma.script.create({

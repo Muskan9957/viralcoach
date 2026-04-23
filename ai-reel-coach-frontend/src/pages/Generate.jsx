@@ -14,7 +14,7 @@ const gradeLabel = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poo
 
 export default function Generate() {
   const toast      = useToast()
-  const { t }      = useLang()
+  const { t, lang } = useLang()
   const location   = useLocation()
   const resultRef  = useRef(null)
   const { primaryNiche } = usePrefs()
@@ -55,7 +55,7 @@ export default function Generate() {
     setLd(true)
     setResult(null)
     try {
-      const data = await api.generate(form)
+      const data = await api.generate({ ...form, language: lang })
       setResult(data)
     } catch (err) {
       toast(err.message, 'error')
@@ -83,11 +83,11 @@ export default function Generate() {
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
           <h1 className="page-title" style={{ marginBottom: 0 }}>{t('generate_title')}</h1>
           <Link to="/scripts" style={{ fontSize: '0.8rem', color: 'var(--text-faint)', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            View history →
+            {t('generate_view_history')}
           </Link>
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: 6 }}>
-          Speak or type your idea — get a viral-ready script in seconds.
+          {t('generate_speak')}
         </p>
       </div>
 
@@ -98,7 +98,7 @@ export default function Generate() {
           {/* Topic — most important field, big and prominent */}
           <div className="field">
             <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              Your Topic *
+              {t('generate_topic_label')}
             </label>
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <textarea
@@ -141,8 +141,8 @@ export default function Generate() {
             style={{ height: 52, fontSize: '1rem', fontWeight: 700, letterSpacing: '0.02em' }}
           >
             {loading
-              ? <><span className="spinner" /> Writing your script...</>
-              : '✦ Generate Script'}
+              ? <><span className="spinner" /> {t('generate_writing')}</>
+              : `✦ ${t('generate_btn')}`}
           </button>
         </form>
       </div>
@@ -165,10 +165,10 @@ export default function Generate() {
             ))}
           </div>
           <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '1.1rem', marginBottom: 8 }}>
-            AI is writing your script
+            {t('generate_ai_writing')}
           </p>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Crafting hook → body → CTA and scoring your hook...
+            {t('generate_crafting')}
           </p>
         </div>
       )}
@@ -202,7 +202,7 @@ export default function Generate() {
                   {hookScore.score}
                 </div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 }}>
-                  Hook Score
+                  {t('generate_score_label')}
                 </div>
               </div>
               <div style={{ flex: 1, minWidth: 200 }}>
@@ -240,7 +240,7 @@ export default function Generate() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
               <div>
                 <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.15rem', marginBottom: 4 }}>
-                  Your Script
+                  {t('generate_your_script')}
                 </h2>
                 <p style={{ color: 'var(--text-faint)', fontSize: '0.78rem', fontFamily: 'var(--font-mono)' }}>
                   {form.topic}
@@ -249,36 +249,36 @@ export default function Generate() {
               <div style={{ display: 'flex', gap: 8 }}>
                 <SpeakButton text={result.script?.fullScript} />
                 <button onClick={copyScript} className="btn btn-ghost btn-sm">
-                  {copied ? '✓ Copied!' : '⎘ Copy All'}
+                  {copied ? `✓ ${t('generate_copied')}` : t('generate_copy_all')}
                 </button>
               </div>
             </div>
 
             {/* Hook */}
             <div style={sectionStyle('#00C8FF')}>
-              <div style={labelStyle}>🎣 HOOK — First 3 seconds</div>
+              <div style={labelStyle}>🎣 {t('generate_hook').toUpperCase()} — {lang === 'en' ? 'First 3 seconds' : lang === 'hi' ? 'पहले 3 सेकंड' : 'First 3 seconds'}</div>
               <p style={scriptTextStyle}>{result.script.hook}</p>
             </div>
 
             {/* Body */}
             <div style={sectionStyle('#00C9A7')}>
-              <div style={labelStyle}>📖 BODY — Main value</div>
+              <div style={labelStyle}>📖 {t('generate_body').toUpperCase()} — {lang === 'en' ? 'Main value' : lang === 'hi' ? 'मुख्य मूल्य' : 'Main value'}</div>
               <p style={{ ...scriptTextStyle, whiteSpace: 'pre-line' }}>{result.script.body}</p>
             </div>
 
             {/* CTA */}
             <div style={sectionStyle('#FFD60A')}>
-              <div style={labelStyle}>📣 CALL TO ACTION</div>
+              <div style={labelStyle}>📣 {t('generate_cta').toUpperCase()}</div>
               <p style={scriptTextStyle}>{result.script.cta}</p>
             </div>
 
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
               <span style={{ fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-                {result.usage?.used}/{result.usage?.limit} generations used this month
+                {result.usage?.used}/{result.usage?.limit} {t('generate_usage')}
               </span>
               {result.newBadges?.length > 0 && (
                 <span style={{ fontSize: '0.8rem', color: 'var(--yellow)', fontWeight: 600 }}>
-                  🏆 New badge unlocked!
+                  {t('generate_new_badge')}
                 </span>
               )}
             </div>
@@ -286,11 +286,11 @@ export default function Generate() {
 
           {/* Generate another button */}
           <button
-            onClick={() => { setResult(null); setForm({ topic: '', niche: '', tone: 'motivational' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+            onClick={() => { setResult(null); setForm({ topic: '', niche: primaryNiche, tone: 'motivational' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
             className="btn btn-ghost btn-full"
             style={{ marginBottom: 32 }}
           >
-            ↑ Generate Another Script
+            {t('generate_another')}
           </button>
         </div>
       )}

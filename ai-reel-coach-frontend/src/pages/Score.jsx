@@ -41,7 +41,7 @@ function BigScoreRing({ score }) {
 
 export default function Score() {
   const toast    = useToast()
-  const { t }    = useLang()
+  const { t, lang } = useLang()
   const location = useLocation()
 
   const [hook, setHook]         = useState('')
@@ -63,7 +63,7 @@ export default function Score() {
     if (!hook.trim()) { toast('Please enter a hook', 'error'); return }
     setLd(true); setResult(null); setAccepted(false)
     try {
-      const data = await api.scoreHook({ hookText: hook })
+      const data = await api.scoreHook({ hookText: hook, language: lang })
       setResult(data.hookScore)
       toast('Hook scored!', 'success')
     } catch (err) {
@@ -85,15 +85,15 @@ export default function Score() {
   return (
     <div className="page-enter">
       <h1 className="page-title">{t('score_title')}</h1>
-      <p className="page-sub">Paste any hook and get an instant score before you post.</p>
+      <p className="page-sub">{t('score_sub')}</p>
 
       <div style={styles.layout}>
         {/* Form */}
         <div className="card" style={{ position: 'sticky', top: 40 }}>
-          <h2 style={styles.cardTitle}>Your Hook</h2>
+          <h2 style={styles.cardTitle}>{t('score_label')}</h2>
           <form onSubmit={scoreHook} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div className="field">
-              <label>Hook Text</label>
+              <label>{t('score_hook_text')}</label>
               {/* Textarea with MicButton inline */}
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <textarea
@@ -117,16 +117,16 @@ export default function Score() {
 
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
               {loading
-                ? <><span className="spinner" />Scoring...</>
-                : '◎ Score This Hook'}
+                ? <><span className="spinner" />{t('score_scoring')}</>
+                : t('score_btn_score')}
             </button>
           </form>
 
           {/* Tips */}
           <div style={styles.tips}>
-            <div style={styles.tipsTitle}>What makes a great hook?</div>
-            {['Opens a curiosity gap', 'Uses specific numbers or claims', 'Triggers an emotion', 'Gets to the point in 2 seconds'].map(tip => (
-              <div key={tip} style={styles.tip}><span style={{ color: 'var(--teal)' }}>✓</span> {tip}</div>
+            <div style={styles.tipsTitle}>{t('score_tips_title')}</div>
+            {[t('score_tip_1'), t('score_tip_2'), t('score_tip_3'), t('score_tip_4')].map((tip, i) => (
+              <div key={i} style={styles.tip}><span style={{ color: 'var(--teal)' }}>✓</span> {tip}</div>
             ))}
           </div>
         </div>
@@ -138,9 +138,9 @@ export default function Score() {
               <div className="empty-state">
                 <div className="icon">◎</div>
                 <p style={{ fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: 8 }}>
-                  Score appears here
+                  {t('score_empty')}
                 </p>
-                <p>Enter a hook and click Score.</p>
+                <p>{t('score_empty_sub')}</p>
               </div>
             </div>
           )}
@@ -170,7 +170,7 @@ export default function Score() {
                   </div>
 
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
-                    Why this score
+                    {t('score_reasons_label')}
                   </div>
                   <div className="reasons">
                     {result.reasons?.map((r, i) => (
@@ -191,7 +191,7 @@ export default function Score() {
               {/* Scored hook display */}
               <div className="card card-sm">
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                  Scored Hook
+                  {t('score_scored_hook')}
                 </div>
                 <div style={{ fontSize: '1rem', lineHeight: 1.6, color: 'var(--text)', borderLeft: '3px solid var(--accent)', paddingLeft: '14px' }}>
                   "{hook}"
@@ -202,22 +202,22 @@ export default function Score() {
               {result.score < 75 && (
                 <div className="card card-sm" style={{ background: 'var(--accent-dim)', border: '1px solid rgba(255,95,31,0.2)' }}>
                   <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.9rem', marginBottom: 8 }}>
-                    This hook could be stronger
+                    {t('score_weak_title')}
                   </div>
                   <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.6 }}>
-                    Go to Script Generator, paste this topic, and the AI will generate a new script with a stronger hook automatically.
+                    {t('score_weak_body')}
                   </p>
-                  <a href="/generate" className="btn btn-primary btn-sm">✦ Generate Better Script</a>
+                  <a href="/generate" className="btn btn-primary btn-sm">{t('score_weak_btn')}</a>
                 </div>
               )}
 
               {result.score >= 75 && (
                 <div className="card card-sm" style={{ background: 'var(--teal-dim)', border: '1px solid rgba(0,201,167,0.2)' }}>
                   <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--teal)', marginBottom: 6 }}>
-                    ✓ This hook is ready to post
+                    {t('score_ready_title')}
                   </div>
                   <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)' }}>
-                    Score above 75 means high scroll-stopping potential. Go record it!
+                    {t('score_ready_body')}
                   </p>
                 </div>
               )}

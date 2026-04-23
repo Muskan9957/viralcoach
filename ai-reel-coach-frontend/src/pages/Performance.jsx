@@ -5,7 +5,7 @@ import { useLang } from '../i18n.jsx'
 
 export default function Performance() {
   const toast   = useToast()
-  const { t }   = useLang()
+  const { t, lang } = useLang()
   const [form, setForm]       = useState({ topic: '', hookUsed: '', views: '', watchTimePercent: '', likes: '', shares: '', comments: '' })
   const [loading, setLd]      = useState(false)
   const [result, setResult]   = useState(null)
@@ -35,7 +35,7 @@ export default function Performance() {
         shares:           Number(form.shares),
         comments:         Number(form.comments),
       }
-      const data = await api.analyze(payload)
+      const data = await api.analyze({ ...payload, language: lang })
       setResult(data.analysis)
       // refresh history
       api.perfHistory().then(d => setHistory(d.logs)).catch(() => {})

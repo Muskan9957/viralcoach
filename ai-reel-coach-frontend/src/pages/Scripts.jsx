@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useToast } from '../components/Toast'
+import { useLang } from '../i18n.jsx'
 
 const gradeColor = s => s >= 75 ? '#00C9A7' : s >= 50 ? '#FFD60A' : '#FF6B6B'
 const gradeLabel = s => s >= 90 ? 'Excellent' : s >= 75 ? 'Good' : s >= 60 ? 'Average' : s >= 50 ? 'Weak' : 'Poor'
 
 export default function Scripts() {
   const toast                   = useToast()
+  const { t }                   = useLang()
   const [scripts, setScripts]   = useState([])
   const [loading, setLoading]   = useState(true)
   const [expanded, setExpanded] = useState(null)
@@ -52,13 +54,13 @@ export default function Scripts() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 className="page-title" style={{ marginBottom: 4 }}>Script History</h1>
+          <h1 className="page-title" style={{ marginBottom: 4 }}>{t('scripts_title')}</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            {loading ? 'Loading...' : `${scripts.length} script${scripts.length !== 1 ? 's' : ''} generated`}
+            {loading ? t('loading') : `${scripts.length} ${scripts.length !== 1 ? t('scripts_count_many') : t('scripts_count_one')}`}
           </p>
         </div>
         <Link to="/generate" className="btn btn-primary btn-sm" style={{ textDecoration: 'none', alignSelf: 'flex-start' }}>
-          + New Script
+          {t('scripts_new')}
         </Link>
       </div>
 
@@ -67,7 +69,7 @@ export default function Scripts() {
         <div style={{ marginBottom: 20 }}>
           <input
             className="input"
-            placeholder="Search by topic..."
+            placeholder={t('scripts_search')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ width: '100%' }}
@@ -87,14 +89,14 @@ export default function Scripts() {
           {search ? (
             <>
               <div style={{ fontSize: '2rem', marginBottom: 12 }}>🔍</div>
-              <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>No scripts match "{search}"</p>
-              <button className="btn btn-ghost btn-sm" onClick={() => setSearch('')}>Clear search</button>
+              <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>{t('scripts_no_match')} "{search}"</p>
+              <button className="btn btn-ghost btn-sm" onClick={() => setSearch('')}>{t('scripts_clear')}</button>
             </>
           ) : (
             <>
               <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>✍️</div>
-              <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: '0.95rem' }}>No scripts yet — generate your first one</p>
-              <Link to="/generate" className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>Generate Script</Link>
+              <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: '0.95rem' }}>{t('scripts_empty_title')}</p>
+              <Link to="/generate" className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>{t('scripts_generate')}</Link>
             </>
           )}
         </div>
@@ -161,26 +163,26 @@ export default function Scripts() {
                 {isOpen && (
                   <div style={{ borderTop: '1px solid var(--border)', padding: '18px 18px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                     {loadingId === s.id ? (
-                      <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Loading script...</div>
+                      <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t('scripts_loading_detail')}</div>
                     ) : full ? (
                       <>
                         {/* Hook */}
-                        <ScriptBlock label="🎣 Hook" text={full.hook} onCopy={() => copy(full.hook)} accent="#00C8FF" />
+                        <ScriptBlock label={t('scripts_hook_label')} text={full.hook} onCopy={() => copy(full.hook)} accent="#00C8FF" copyLabel={t('copy')} />
                         {/* Body */}
-                        {full.body && <ScriptBlock label="📝 Body" text={full.body} onCopy={() => copy(full.body)} accent="#7B5CF0" />}
+                        {full.body && <ScriptBlock label={t('scripts_body_label')} text={full.body} onCopy={() => copy(full.body)} accent="#7B5CF0" copyLabel={t('copy')} />}
                         {/* CTA */}
-                        {full.cta && <ScriptBlock label="📣 Call to Action" text={full.cta} onCopy={() => copy(full.cta)} accent="#00C9A7" />}
+                        {full.cta && <ScriptBlock label={t('scripts_cta_label')} text={full.cta} onCopy={() => copy(full.cta)} accent="#00C9A7" copyLabel={t('copy')} />}
                         {/* Copy full */}
                         <button
                           onClick={() => copy(full.fullScript || [full.hook, full.body, full.cta].filter(Boolean).join('\n\n'))}
                           className="btn btn-ghost btn-sm"
                           style={{ alignSelf: 'flex-start', marginTop: 4 }}
                         >
-                          📋 Copy Full Script
+                          {t('scripts_copy_full')}
                         </button>
                       </>
                     ) : (
-                      <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Could not load details</div>
+                      <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t('scripts_no_detail')}</div>
                     )}
                   </div>
                 )}
@@ -193,12 +195,12 @@ export default function Scripts() {
   )
 }
 
-function ScriptBlock({ label, text, onCopy, accent }) {
+function ScriptBlock({ label, text, onCopy, accent, copyLabel = 'Copy' }) {
   return (
     <div style={{ background: 'var(--surface2)', borderRadius: 10, padding: '12px 14px', borderLeft: `3px solid ${accent}` }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: accent }}>{label}</span>
-        <button onClick={onCopy} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', fontSize: '0.75rem', padding: '2px 6px', borderRadius: 4 }}>Copy</button>
+        <button onClick={onCopy} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', fontSize: '0.75rem', padding: '2px 6px', borderRadius: 4 }}>{copyLabel}</button>
       </div>
       <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.65, margin: 0, whiteSpace: 'pre-wrap' }}>{text}</p>
     </div>

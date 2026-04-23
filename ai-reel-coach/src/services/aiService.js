@@ -3,6 +3,17 @@ const Anthropic = require('@anthropic-ai/sdk');
 const MODEL       = 'claude-sonnet-4-6';           // Quality model for creative tasks
 const MODEL_FAST  = 'claude-haiku-4-5-20251001';   // Fast model for scoring/rewriting
 
+// ─── Language instruction helper ─────────────────────────────────
+const getLangInstruction = (language) => {
+  if (language === 'hi') {
+    return 'IMPORTANT: Write ALL content entirely in Hindi (Devanagari script). Every word of your response must be in Hindi only.'
+  }
+  if (language === 'hinglish') {
+    return 'IMPORTANT: Write ALL content in Hinglish — a natural mix of Hindi and English used by Indian millennials on social media. Use Roman script (not Devanagari). Mix Hindi and English naturally the way Indian creators speak, e.g. "Aaj main tumhe bataunga ek secret jo 10k followers dilayega."'
+  }
+  return '' // English is the default
+}
+
 // ─── Helper — client created per-call so it always picks up the env var ─
 const ask = async (prompt, maxTokens = 1024, model = MODEL) => {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -17,10 +28,11 @@ const ask = async (prompt, maxTokens = 1024, model = MODEL) => {
 // ─────────────────────────────────────────────────────────────────
 // 1. GENERATE SCRIPT
 // ─────────────────────────────────────────────────────────────────
-const generateScript = async ({ topic, niche, tone }) => {
+const generateScript = async ({ topic, niche, tone, language = 'en' }) => {
+  const langInstruction = getLangInstruction(language)
   const prompt = `
 You are an expert short-form content coach who specializes in viral Instagram Reels and YouTube Shorts.
-
+${langInstruction ? '\n' + langInstruction + '\n' : ''}
 Generate a high-performing short-form video script for the following:
 - Topic : ${topic}
 - Niche  : ${niche || 'general'}
@@ -65,10 +77,11 @@ Script:
 // ─────────────────────────────────────────────────────────────────
 // 2. SCORE A HOOK
 // ─────────────────────────────────────────────────────────────────
-const scoreHook = async (hookText) => {
+const scoreHook = async (hookText, language = 'en') => {
+  const langInstruction = getLangInstruction(language)
   const prompt = `
 You are a viral content strategist who has analyzed thousands of short-form video hooks.
-
+${langInstruction ? '\n' + langInstruction + ' Write the "reasons" array values in that language, but keep the JSON keys in English.\n' : ''}
 Score this hook for its scroll-stopping potential on Instagram Reels / YouTube Shorts:
 
 HOOK: "${hookText}"
@@ -121,10 +134,11 @@ Scoring guide:
 // ─────────────────────────────────────────────────────────────────
 // 3. REWRITE A HOOK
 // ─────────────────────────────────────────────────────────────────
-const rewriteHook = async (originalHook, originalScore) => {
+const rewriteHook = async (originalHook, originalScore, language = 'en') => {
+  const langInstruction = getLangInstruction(language)
   const prompt = `
 You are a viral content strategist. This hook scored ${originalScore}/100 and needs improvement.
-
+${langInstruction ? '\n' + langInstruction + ' Write the rewritten hook and changes explanation in that language, but keep the JSON keys in English.\n' : ''}
 ORIGINAL HOOK: "${originalHook}"
 
 Rewrite it to score at least ${Math.min(originalScore + 15, 95)}/100.
@@ -154,7 +168,8 @@ Return your response in this EXACT JSON format (no extra text):
 // ─────────────────────────────────────────────────────────────────
 // 4. ANALYZE PERFORMANCE
 // ─────────────────────────────────────────────────────────────────
-const analyzePerformance = async ({ topic, hookUsed, views, watchTimePercent, likes, shares, comments, pastLogs }) => {
+const analyzePerformance = async ({ topic, hookUsed, views, watchTimePercent, likes, shares, comments, pastLogs, language = 'en' }) => {
+  const langInstruction = getLangInstruction(language)
   const pastContext = pastLogs && pastLogs.length > 0
     ? `\n\nThis creator's past content patterns:\n${pastLogs.map(l =>
         `- Topic: "${l.topic}" | Views: ${l.views} | Watch Time: ${l.watchTimePercent}%`
@@ -163,7 +178,7 @@ const analyzePerformance = async ({ topic, hookUsed, views, watchTimePercent, li
 
   const prompt = `
 You are a data-driven content coach analyzing a creator's video performance.
-
+${langInstruction ? '\n' + langInstruction + '\n' : ''}
 VIDEO DETAILS:
 - Topic        : ${topic}
 - Hook used    : "${hookUsed}"
@@ -319,9 +334,10 @@ ${content}`
 // ─────────────────────────────────────────────────────────────────
 // 9. GENERATE CAPTIONS + HASHTAGS
 // ─────────────────────────────────────────────────────────────────
-const generateCaptions = async ({ topic, niche, tone }) => {
+const generateCaptions = async ({ topic, niche, tone, language = 'en' }) => {
+  const langInstruction = getLangInstruction(language)
   const prompt = `You are an expert Instagram caption writer who specializes in viral short-form content.
-
+${langInstruction ? '\n' + langInstruction + ' Write all caption text in that language, but keep the JSON keys and style names in English.\n' : ''}
 Generate 4 caption styles and 25 relevant hashtags for this content:
 - Topic : ${topic}
 - Niche  : ${niche || 'general'}
@@ -374,10 +390,12 @@ Hashtag rules:
 // ─────────────────────────────────────────────────────────────────
 // 10. REMIX CONTENT
 // ─────────────────────────────────────────────────────────────────
-const remixContent = async ({ hook, body, cta, topic }) => {
+const remixContent = async ({ hook, body, cta, topic, language = 'en' }) => {
+  const langInstruction = getLangInstruction(language)
   const scriptText = `HOOK: ${hook}\n\nBODY: ${body}\n\nCTA: ${cta}`;
 
   const prompt = `You are a multi-platform content strategist. Take this short-form video script and reformat it for 4 different platforms.
+${langInstruction ? '\n' + langInstruction + ' Write all platform content in that language, but keep the JSON keys in English.\n' : ''}
 
 Original Reel script about "${topic}":
 ${scriptText}
@@ -415,7 +433,7 @@ Platform rules:
 // ─────────────────────────────────────────────────────────────────
 // 11. COACH CHAT
 // ─────────────────────────────────────────────────────────────────
-const coachChat = async ({ message, history = [], userContext }) => {
+const coachChat = async ({ message, history = [], userContext, language = 'en' }) => {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   const statsStr = userContext
@@ -428,7 +446,10 @@ const coachChat = async ({ message, history = [], userContext }) => {
 
   const contextStr = [statsStr, onboardingStr].filter(Boolean).join(' ') || 'No creator context available yet.';
 
-  const systemPrompt = `You are a sharp, expert content coach for Indian short-form video creators on Instagram Reels and YouTube Shorts. ${contextStr} Always tailor advice specifically to the creator's niche and goals when provided. Be direct, practical, and specific. No fluff, no generic advice. Give actionable tips they can use today. Keep replies under 200 words unless a longer explanation is genuinely needed.`;
+  const langInstruction = getLangInstruction(language)
+  const langSuffix = langInstruction ? ` ${langInstruction} Always respond in that language.` : ''
+
+  const systemPrompt = `You are a sharp, expert content coach for Indian short-form video creators on Instagram Reels and YouTube Shorts. ${contextStr} Always tailor advice specifically to the creator's niche and goals when provided. Be direct, practical, and specific. No fluff, no generic advice. Give actionable tips they can use today. Keep replies under 200 words unless a longer explanation is genuinely needed.${langSuffix}`;
 
   // Keep last 10 messages of history
   const trimmedHistory = (history || []).slice(-10);

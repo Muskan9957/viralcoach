@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { api } from '../api'
+import { useLang } from '../i18n.jsx'
 
 const PLATFORMS = [
   { key: 'twitter',   label: 'Twitter / X',        icon: '𝕏', color: '#1DA1F2' },
@@ -19,6 +20,7 @@ function PulsingDots() {
 }
 
 export default function Remix() {
+  const { t, lang } = useLang()
   const [hook,    setHook]    = useState('')
   const [body,    setBody]    = useState('')
   const [cta,     setCta]     = useState('')
@@ -59,7 +61,7 @@ export default function Remix() {
     setError('')
     setResult(null)
     try {
-      const data = await api.remixContent({ hook, body, cta, topic })
+      const data = await api.remixContent({ hook, body, cta, topic, language: lang })
       setResult(data)
     } catch (err) {
       setError(err.message || 'Something went wrong')
@@ -79,8 +81,8 @@ export default function Remix() {
   return (
     <div className="page-enter">
       <div style={{ marginBottom: 28 }}>
-        <h1 className="page-title">Content Remix</h1>
-        <p className="page-sub">Turn one Reel script into content for every platform.</p>
+        <h1 className="page-title">{t('remix_title')}</h1>
+        <p className="page-sub">{t('remix_sub')}</p>
       </div>
 
       <form onSubmit={handleRemix} style={{ maxWidth: 720 }}>
@@ -95,7 +97,7 @@ export default function Remix() {
               borderColor: showPaste ? 'var(--accent)' : 'var(--border)',
             }}
           >
-            {showPaste ? '✕ Close' : '⊕ Paste full script and auto-parse'}
+            {showPaste ? t('remix_close') : t('remix_paste_btn')}
           </button>
         </div>
 
@@ -104,7 +106,7 @@ export default function Remix() {
             <textarea
               className="input"
               style={{ width: '100%', minHeight: 120, resize: 'vertical', fontFamily: 'var(--font-body)' }}
-              placeholder="Paste your full script here. We'll split it into Hook, Body, and CTA automatically."
+              placeholder={t('remix_paste_ph')}
               value={fullScript}
               onChange={e => setFullScript(e.target.value)}
             />
@@ -114,18 +116,18 @@ export default function Remix() {
               className="btn btn-ghost btn-sm"
               style={{ marginTop: 8 }}
             >
-              Auto-Parse
+              {t('remix_auto_parse')}
             </button>
           </div>
         )}
 
         {/* Hook */}
         <div className="field" style={{ marginBottom: 16 }}>
-          <label style={s.label}>Hook <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>(opening line)</span></label>
+          <label style={s.label}>{t('remix_hook')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_hook_label')})</span></label>
           <textarea
             className="input"
             style={{ width: '100%', minHeight: 72, resize: 'vertical', fontFamily: 'var(--font-body)' }}
-            placeholder="e.g. I gained 10k followers in 30 days by doing ONE thing..."
+            placeholder={t('remix_hook_ph')}
             value={hook}
             onChange={e => setHook(e.target.value)}
           />
@@ -133,11 +135,11 @@ export default function Remix() {
 
         {/* Body */}
         <div className="field" style={{ marginBottom: 16 }}>
-          <label style={s.label}>Body <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>(main content)</span></label>
+          <label style={s.label}>{t('remix_body')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_body_label')})</span></label>
           <textarea
             className="input"
             style={{ width: '100%', minHeight: 100, resize: 'vertical', fontFamily: 'var(--font-body)' }}
-            placeholder="e.g. Most creators make the mistake of posting without a strategy..."
+            placeholder={t('remix_body_ph')}
             value={body}
             onChange={e => setBody(e.target.value)}
           />
@@ -145,11 +147,11 @@ export default function Remix() {
 
         {/* CTA */}
         <div className="field" style={{ marginBottom: 16 }}>
-          <label style={s.label}>CTA <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>(call to action)</span></label>
+          <label style={s.label}>{t('remix_cta')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_cta_label')})</span></label>
           <textarea
             className="input"
             style={{ width: '100%', minHeight: 60, resize: 'vertical', fontFamily: 'var(--font-body)' }}
-            placeholder="e.g. Follow for daily creator tips"
+            placeholder={t('remix_cta_ph')}
             value={cta}
             onChange={e => setCta(e.target.value)}
           />
@@ -157,12 +159,12 @@ export default function Remix() {
 
         {/* Topic */}
         <div className="field" style={{ marginBottom: 24 }}>
-          <label style={s.label}>Topic <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>(optional, helps AI)</span></label>
+          <label style={s.label}>{t('remix_topic')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>({t('remix_topic_label')})</span></label>
           <input
             className="input"
             style={{ width: '100%' }}
             type="text"
-            placeholder="e.g. Content strategy, fitness, finance..."
+            placeholder={t('remix_topic_ph')}
             value={topic}
             onChange={e => setTopic(e.target.value)}
           />
@@ -180,14 +182,14 @@ export default function Remix() {
           disabled={loading || (!hook.trim() && !body.trim())}
           style={{ minWidth: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          {loading ? (<>Remixing{<PulsingDots />}</>) : '⚡ Remix for All Platforms'}
+          {loading ? (<>{t('remix_remixing')}{<PulsingDots />}</>) : t('remix_btn')}
         </button>
       </form>
 
       {/* Results */}
       {result && (
         <div ref={resultsRef} style={{ marginTop: 40, maxWidth: 900 }}>
-          <h2 style={{ ...s.sectionTitle, marginBottom: 20 }}>Platform Content</h2>
+          <h2 style={{ ...s.sectionTitle, marginBottom: 20 }}>{t('remix_result_title')}</h2>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
@@ -222,7 +224,7 @@ export default function Remix() {
                         borderColor: copied[key] ? 'var(--teal)' : 'var(--border)',
                       }}
                     >
-                      {copied[key] ? '✓ Copied' : 'Copy'}
+                      {copied[key] ? t('remix_copied') : t('remix_copy')}
                     </button>
                   </div>
                   <p style={{ fontSize: '0.88rem', lineHeight: 1.7, color: 'var(--text)', margin: 0, whiteSpace: 'pre-wrap' }}>

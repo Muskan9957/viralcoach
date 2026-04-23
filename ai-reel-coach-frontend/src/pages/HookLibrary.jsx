@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
+import { useLang } from '../i18n.jsx'
 
 const CATEGORIES = ['All', 'Fitness', 'Finance', 'Food', 'Tech', 'Motivation', 'Relationships', 'Business', 'Health']
 const TYPES      = ['All', 'Question', 'Bold Claim', 'Story', 'Statistic', 'Controversy', 'How-To']
@@ -43,6 +44,7 @@ function HighlightedTemplate({ text }) {
 
 export default function HookLibrary() {
   const navigate = useNavigate()
+  const { t } = useLang()
   const [templates, setTemplates] = useState([])
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState('')
@@ -82,8 +84,8 @@ export default function HookLibrary() {
   return (
     <div className="page-enter">
       <div style={{ marginBottom: 24 }}>
-        <h1 className="page-title">Hook Library</h1>
-        <p className="page-sub">500+ proven hook templates. Click any to generate a script.</p>
+        <h1 className="page-title">{t('hooks_title')}</h1>
+        <p className="page-sub">{t('hooks_sub')}</p>
       </div>
 
       {/* Filter bar */}
@@ -117,7 +119,7 @@ export default function HookLibrary() {
           className="input"
           style={{ flex: '2 1 200px' }}
           type="text"
-          placeholder="Search hooks..."
+          placeholder={t('hooks_search')}
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -147,9 +149,9 @@ export default function HookLibrary() {
       {!loading && templates.length === 0 && !error && (
         <div className="empty-state">
           <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔍</div>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 6 }}>No hooks found</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 6 }}>{t('hooks_empty')}</p>
           <p style={{ color: 'var(--text-faint)', fontSize: '0.82rem' }}>
-            Try adjusting the filters or search terms.
+            {t('hooks_empty_sub')}
           </p>
         </div>
       )}
@@ -180,7 +182,7 @@ export default function HookLibrary() {
                 {/* Example */}
                 {tmpl.example && (
                   <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-faint)', lineHeight: 1.55, fontStyle: 'italic' }}>
-                    e.g. {tmpl.example}
+                    {t('hooks_eg')} {tmpl.example}
                   </p>
                 )}
 
@@ -216,7 +218,7 @@ export default function HookLibrary() {
                     e.currentTarget.style.background = 'rgba(255,95,31,0.08)'
                   }}
                 >
-                  Use This Hook →
+                  {t('hooks_use')}
                 </button>
               </div>
             )

@@ -4,7 +4,7 @@ const aiService = require('../services/aiService');
 // ─── POST /api/remix/generate ─────────────────────────────────────
 const generate = async (req, res, next) => {
   try {
-    const { hook, body, cta, topic, scriptId } = req.body;
+    const { hook, body, cta, topic, scriptId, language } = req.body;
 
     if (!hook || !hook.trim()) {
       return res.status(400).json({ error: 'hook is required' });
@@ -27,10 +27,11 @@ const generate = async (req, res, next) => {
     }
 
     const result = await aiService.remixContent({
-      hook : hook.trim(),
-      body : body.trim(),
-      cta  : cta.trim(),
-      topic: topic ? topic.trim() : hook.trim(),
+      hook    : hook.trim(),
+      body    : body.trim(),
+      cta     : cta.trim(),
+      topic   : topic ? topic.trim() : hook.trim(),
+      language: language || 'en',
     });
 
     return res.json({
