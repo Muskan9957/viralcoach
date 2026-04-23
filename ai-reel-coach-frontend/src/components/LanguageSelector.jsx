@@ -11,7 +11,6 @@ const LANGUAGES = [
   { code: 'ja',       label: '日本語',      flag: '🇯🇵' },
   { code: 'ko',       label: '한국어',      flag: '🇰🇷' },
   { code: 'hi',       label: 'हिंदी',      flag: '🇮🇳' },
-  { code: 'hinglish', label: 'Hinglish',   flag: '🇮🇳' },
 ]
 
 export default function LanguageSelector({ compact = false }) {

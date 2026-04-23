@@ -6,7 +6,6 @@ const MODEL_FAST  = 'claude-haiku-4-5-20251001';   // Fast model for scoring/rew
 // ─── Language instruction helper ─────────────────────────────────
 const LANG_INSTRUCTIONS = {
   hi:       'IMPORTANT: Write ALL content entirely in Hindi (Devanagari script). Every word must be in Hindi only.',
-  hinglish: 'IMPORTANT: Write ALL content in Hinglish — a natural mix of Hindi and English used by Indian millennials. Use Roman script (not Devanagari). Example: "Aaj main tumhe bataunga ek secret jo 10k followers dilayega."',
   es:       'IMPORTANT: Write ALL content entirely in Spanish. Every word must be in Spanish only.',
   fr:       'IMPORTANT: Write ALL content entirely in French. Every word must be in French only.',
   pt:       'IMPORTANT: Write ALL content entirely in Portuguese (Brazilian). Every word must be in Portuguese only.',
@@ -236,7 +235,6 @@ Return ONLY a JSON array of 10 strings. No extra text. Example:
   } catch {
     const fallbackTopics = {
       hi: ['30 दिनों में 1000 फॉलोअर्स कैसे पाए','नए क्रिएटर्स की सबसे बड़ी गलती','मेरी कंटेंट क्रिएशन रूटीन','वीडियो पर व्यूज़ क्यों नहीं आते','हुक फॉर्मूला जो हमेशा काम करता है','रोज़ काम आने वाले कंटेंट टूल्स','एक दिन में 30 वीडियो कैसे रिकॉर्ड करें','मेरी एडिटिंग वर्कफ़्लो','क्वालिटी से ज़्यादा कंसिस्टेंसी क्यों ज़रूरी है','वायरल होने की असली सच्चाई'],
-      hinglish: ['30 days mein 1000 followers kaise paye','Naye creators ki sabse badi galti','Meri honest content creation routine','Videos pe views kyun nahi aate','Hook formula jo hamesha kaam karta hai','Daily use hone wale content tools','Ek din mein 30 videos kaise record karein','Mera editing workflow revealed','Consistency quality se zyada kyun zaroori hai','Viral hone ki sach mein kya reality hai'],
       es: ['Cómo gané 1000 seguidores en 30 días','El mayor error de los nuevos creadores','Mi rutina honesta de creación de contenido','Por qué tus videos no tienen vistas','La fórmula de gancho que siempre funciona','Herramientas de contenido que uso a diario','Cómo grabar 30 videos en un día','Mi flujo de edición revelado','Por qué la consistencia supera a la calidad','La verdad sobre hacerse viral'],
       fr: ['Comment j\'ai gagné 1000 abonnés en 30 jours','La plus grande erreur des nouveaux créateurs','Ma routine honnête de création de contenu','Pourquoi vos vidéos n\'ont pas de vues','La formule d\'accroche qui fonctionne toujours','Outils de contenu que j\'utilise quotidiennement','Comment enregistrer 30 vidéos en une journée','Mon flux de montage révélé','Pourquoi la régularité bat la qualité','La vérité sur devenir viral'],
       pt: ['Como conquistei 1000 seguidores em 30 dias','O maior erro dos novos criadores','Minha rotina honesta de criação de conteúdo','Por que seus vídeos não têm visualizações','A fórmula de gancho que sempre funciona','Ferramentas de conteúdo que uso diariamente','Como gravar 30 vídeos em um dia','Meu fluxo de edição revelado','Por que consistência supera qualidade','A verdade sobre se tornar viral'],
@@ -326,14 +324,6 @@ Categories: Entertainment, Cricket, Finance, Tech, Food, Education, Lifestyle, F
           { title: 'शॉर्ट-फॉर्म वीडियो ट्रेंड', description: 'Reels और Shorts अभी फीड पर छाए हुए हैं।', category: 'Content' },
           { title: 'क्रिएटर इकोनॉमी की वृद्धि', description: 'ब्रांड्स अब माइक्रो-इन्फ्लुएंसर्स में ज़्यादा निवेश कर रहे हैं।', category: 'Business' },
           { title: 'असली कहानियां', description: 'रॉ, अनफिल्टर्ड कंटेंट पॉलिश्ड वीडियो से बेहतर प्रदर्शन कर रहा है।', category: 'Strategy' },
-        ],
-      },
-      hinglish: {
-        greeting: `${region} ka social media aaj buzz kar raha hai — chalo kuch viral banate hain!`,
-        trends: [
-          { title: 'Short-form video trends', description: 'Reels aur Shorts abhi feeds pe chhaye hue hain.', category: 'Content' },
-          { title: 'Creator economy ka growth', description: 'Brands ab micro-influencers mein zyada invest kar rahe hain.', category: 'Business' },
-          { title: 'Authentic storytelling', description: 'Raw, unfiltered content polished videos se better perform kar raha hai.', category: 'Strategy' },
         ],
       },
       es: {
