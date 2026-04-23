@@ -205,9 +205,8 @@ Keep it conversational — like advice from a smart friend, not a corporate repo
 // 5. GET TRENDING TOPICS
 // ─────────────────────────────────────────────────────────────────
 const getTrendingTopics = async (niche = 'general', language = 'en') => {
-  const langInstruction = language === 'hi'
-    ? 'Respond entirely in Hindi (Devanagari script).'
-    : 'Respond in English.'
+  const langInstruction = getLangInstruction(language) ||
+    'Respond in English.'
 
   const prompt = `
 You are a viral content strategist tracking what's hot on Instagram Reels and YouTube Shorts RIGHT NOW.
@@ -230,7 +229,33 @@ Return ONLY a JSON array of 10 strings. No extra text. Example:
     if (!match) throw new Error('No JSON array')
     return JSON.parse(match[0])
   } catch {
-    return [
+    const fallbackTopics = {
+      hi: [
+        '30 दिनों में 1000 फॉलोअर्स कैसे पाए',
+        'नए क्रिएटर्स की सबसे बड़ी गलती',
+        'मेरी कंटेंट क्रिएशन रूटीन',
+        'वीडियो पर व्यूज़ क्यों नहीं आते',
+        'हुक फॉर्मूला जो हमेशा काम करता है',
+        'रोज़ काम आने वाले कंटेंट टूल्स',
+        'एक दिन में 30 वीडियो कैसे रिकॉर्ड करें',
+        'मेरी एडिटिंग वर्कफ़्लो',
+        'क्वालिटी से ज़्यादा कंसिस्टेंसी क्यों ज़रूरी है',
+        'वायरल होने की असली सच्चाई',
+      ],
+      hinglish: [
+        '30 days mein 1000 followers kaise paye',
+        'Naye creators ki sabse badi galti',
+        'Meri honest content creation routine',
+        'Videos pe views kyun nahi aate',
+        'Hook formula jo hamesha kaam karta hai',
+        'Daily use hone wale content tools',
+        'Ek din mein 30 videos kaise record karein',
+        'Mera editing workflow revealed',
+        'Consistency quality se zyada kyun zaroori hai',
+        'Viral hone ki sach mein kya reality hai',
+      ],
+    }
+    return fallbackTopics[language] || [
       'How I gained 1000 followers in 30 days',
       'The biggest mistake new creators make',
       'My honest content creation routine',
@@ -249,8 +274,9 @@ Return ONLY a JSON array of 10 strings. No extra text. Example:
 // 6. GENERATE WEEKLY REPORT
 // ─────────────────────────────────────────────────────────────────
 const generateWeeklyReport = async (stats, language = 'en') => {
-  const langInstruction = language === 'hi'
-    ? 'Write the entire report in Hindi (Devanagari script). Be warm and encouraging.'
+  const base = getLangInstruction(language)
+  const langInstruction = base
+    ? `${base} Be warm and encouraging.`
     : 'Write in English. Be warm and encouraging.'
 
   const prompt = `
@@ -302,7 +328,25 @@ Categories: Entertainment, Cricket, Finance, Tech, Food, Education, Lifestyle, F
     if (!jsonMatch) throw new Error('No JSON')
     return JSON.parse(jsonMatch[0])
   } catch {
-    return {
+    const fallbacks = {
+      hi: {
+        greeting: `${region} का सोशल मीडिया आज बज़ रहा है — चलो कुछ वायरल बनाते हैं!`,
+        trends: [
+          { title: 'शॉर्ट-फॉर्म वीडियो ट्रेंड', description: 'Reels और Shorts अभी फीड पर छाए हुए हैं।', category: 'Content' },
+          { title: 'क्रिएटर इकोनॉमी की वृद्धि', description: 'ब्रांड्स अब माइक्रो-इन्फ्लुएंसर्स में ज़्यादा निवेश कर रहे हैं।', category: 'Business' },
+          { title: 'असली कहानियां', description: 'रॉ, अनफिल्टर्ड कंटेंट पॉलिश्ड वीडियो से बेहतर प्रदर्शन कर रहा है।', category: 'Strategy' },
+        ],
+      },
+      hinglish: {
+        greeting: `${region} ka social media aaj buzz kar raha hai — chalo kuch viral banate hain!`,
+        trends: [
+          { title: 'Short-form video trends', description: 'Reels aur Shorts abhi feeds pe chhaye hue hain.', category: 'Content' },
+          { title: 'Creator economy ka growth', description: 'Brands ab micro-influencers mein zyada invest kar rahe hain.', category: 'Business' },
+          { title: 'Authentic storytelling', description: 'Raw, unfiltered content polished videos se better perform kar raha hai.', category: 'Strategy' },
+        ],
+      },
+    }
+    const fb = fallbacks[language] || {
       greeting: `Welcome back! ${region}'s social media is buzzing today — let's create something viral!`,
       trends: [
         { title: 'Short-form video trends', description: 'Reels and Shorts are dominating feeds right now.', category: 'Content' },
@@ -310,6 +354,8 @@ Categories: Entertainment, Cricket, Finance, Tech, Food, Education, Lifestyle, F
         { title: 'Authentic storytelling', description: 'Raw, unfiltered content is outperforming polished videos.', category: 'Strategy' },
       ],
     }
+    // Mark as fallback so the controller skips caching this response
+    return { ...fb, _isFallback: true }
   }
 }
 

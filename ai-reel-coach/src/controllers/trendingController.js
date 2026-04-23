@@ -8,7 +8,7 @@ const getGreeting = async (req, res, next) => {
     const userLang = (req.query.language || 'en').trim()
     const today    = new Date().toISOString().slice(0, 10)
     const niche    = `greeting_${region.toLowerCase().replace(/\s+/g, '_')}`
-    const language = `greeting_${userLang}` // language-specific cache key
+    const language = `greetv2_${userLang}` // v2: language-specific cache key (busts old English-only cache)
 
     // Check cache (reuse TrendingCache, one entry per region+language per day)
     const cached = await prisma.trendingCache.findUnique({
@@ -19,12 +19,16 @@ const getGreeting = async (req, res, next) => {
     // Generate fresh in user's language
     const data = await aiService.getRegionalGreeting(region, userLang)
 
-    // Persist
-    await prisma.trendingCache.create({
-      data: { niche, language, topics: JSON.stringify(data), date: today },
-    })
+    // Only cache real AI responses — never cache fallback content
+    if (!data._isFallback) {
+      await prisma.trendingCache.create({
+        data: { niche, language, topics: JSON.stringify(data), date: today },
+      })
+    }
 
-    return res.json(data)
+    // Strip internal flag before sending to client
+    const { _isFallback, ...responseData } = data
+    return res.json(responseData)
   } catch (err) {
     next(err)
   }
