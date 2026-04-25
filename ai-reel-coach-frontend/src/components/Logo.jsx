@@ -1,26 +1,39 @@
 /**
- * ViralCoach Logo — faithful SVG reproduction of the reference design
+ * ViralCoach Logo
  *
- * LIGHT MODE: blue (#3B55F0) → purple (#7B40D0) V-arms, soft shadow
- * DARK  MODE: cyan (#00CCFF) → violet (#9060FF) V-arms, neon glow
+ * Exact match to reference image:
+ *  - Thick flowing V with 3-D ribbon look
+ *  - Left arm: entry stub → 270° loop arc (goes around left) → descent to V-bottom
+ *  - Right arm: V-bottom up to play circle
+ *  - Play circle: purple→pink gradient with white ▶ triangle
+ *  - Arrow: coral→amber bold diagonal arrow (↗)
  *
- * Colours driven by CSS custom properties (--logo-v1, --logo-v2) so
- * the mark recolours automatically when data-theme switches.
+ * Loop technique: SVG arc (A command, 270° counterclockwise) so no masking
+ * or background-colour hack needed — works on any background.
  *
- * Mark anatomy:
- *   Left arm  — enters loop from upper-right, sweeps left through loop,
- *               exits lower-right, descends to V-bottom
- *   Loop      — circular ring (fill:none stroke), drawn in front of arm
- *   Right arm — rises from V-bottom to play-circle
- *   Play circle — purple→pink filled circle with white ▶ inside
- *   Arrow     — coral→amber bold diagonal arrow (↗) from play circle
- *
- * 3-D ribbon effect: each arm = 3 stacked strokes (shadow / main / highlight)
- * Depth masking: SVG <mask> hides each arm where it passes behind its
- *   circle so no background-colour hack is needed (works on any bg).
+ * Theme colours via CSS custom properties:
+ *   dark  → cyan (#00CCFF) → violet (#9060FF)  + neon glow
+ *   light → blue (#3B55F0) → purple (#7B40D0)  + soft shadow
  */
 export default function Logo({ size = 40, showWordmark = true, className = '' }) {
   const uid = `vc-${Math.round(size)}`
+
+  const vGrad      = `url(#${uid}-v)`
+  const hGrad      = `url(#${uid}-h)`
+  const shadow     = 'var(--logo-shadow,#0A1880)'
+  const SW         = 13   // shadow stroke width
+  const MW         = 9    // main stroke width
+  const HW         = 3    // highlight stroke width
+  const cap        = 'round'
+
+  // 3-layer path renderer: shadow → gradient → highlight
+  const arm = (d, key) => (
+    <g key={key}>
+      <path d={d} stroke={shadow}  strokeWidth={SW} strokeLinecap={cap} strokeLinejoin={cap} fill="none" />
+      <path d={d} stroke={vGrad}   strokeWidth={MW} strokeLinecap={cap} strokeLinejoin={cap} fill="none" />
+      <path d={d} stroke={hGrad}   strokeWidth={HW} strokeLinecap={cap} strokeLinejoin={cap} fill="none" opacity="0.42" />
+    </g>
+  )
 
   return (
     <div
@@ -38,176 +51,114 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
         style={{ flexShrink: 0 }}
       >
         <defs>
-
-          {/* ── V arm gradient: --logo-v1 (top-left) → --logo-v2 (bottom-right) ── */}
-          <linearGradient id={`${uid}-v`} x1="8" y1="5" x2="82" y2="95" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stopColor="var(--logo-v1, #00CCFF)" />
-            <stop offset="100%" stopColor="var(--logo-v2, #9060FF)" />
+          {/* V arms — CSS vars flip between dark (cyan/violet) and light (blue/purple) */}
+          <linearGradient id={`${uid}-v`} x1="8" y1="4" x2="84" y2="96" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stopColor="var(--logo-v1,#00CCFF)" />
+            <stop offset="100%" stopColor="var(--logo-v2,#9060FF)" />
           </linearGradient>
 
-          {/* ── Highlight streak (inner shine on tube) ── */}
-          <linearGradient id={`${uid}-h`} x1="8" y1="5" x2="82" y2="95" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stopColor="var(--logo-h1, #80E8FF)" />
-            <stop offset="100%" stopColor="var(--logo-h2, #C0A0FF)" />
+          {/* Inner shine streak */}
+          <linearGradient id={`${uid}-h`} x1="8" y1="4" x2="84" y2="96" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stopColor="var(--logo-h1,#80EEFF)" />
+            <stop offset="100%" stopColor="var(--logo-h2,#C0A0FF)" />
           </linearGradient>
 
-          {/* ── Play circle: purple → hot pink ── */}
-          <linearGradient id={`${uid}-p`} x1="61" y1="7" x2="87" y2="33" gradientUnits="userSpaceOnUse">
+          {/* Play circle: indigo → hot-pink */}
+          <linearGradient id={`${uid}-p`} x1="57" y1="6" x2="89" y2="38" gradientUnits="userSpaceOnUse">
             <stop offset="0%"   stopColor="#9040D8" />
             <stop offset="100%" stopColor="#FF2878" />
           </linearGradient>
 
-          {/* ── Arrow: coral (base) → amber (tip) ── */}
-          <linearGradient id={`${uid}-a`} x1="84" y1="16" x2="98" y2="0" gradientUnits="userSpaceOnUse">
+          {/* Arrow: coral → amber */}
+          <linearGradient id={`${uid}-a`} x1="83" y1="14" x2="98" y2="1" gradientUnits="userSpaceOnUse">
             <stop offset="0%"   stopColor="#FF4820" />
             <stop offset="100%" stopColor="#FFB040" />
           </linearGradient>
-
-          {/* ── Mask: hides left arm INSIDE the loop circle ── */}
-          <mask id={`${uid}-lm`}>
-            <rect x="0" y="0" width="100" height="100" fill="white" />
-            <circle cx="18" cy="28" r="14" fill="black" />
-          </mask>
-
-          {/* ── Mask: hides right arm INSIDE the play circle ── */}
-          <mask id={`${uid}-pm`}>
-            <rect x="0" y="0" width="100" height="100" fill="white" />
-            <circle cx="74" cy="20" r="13" fill="black" />
-          </mask>
-
         </defs>
 
-        {/* ══════════════════════════════════════════════════════════════
-            LEFT ARM
-            Path: entry stub (30,18) → loop sweep (left, down, right) →
-                  exit (30,36) → descent to V-bottom (50,78)
-            Masked so the arm is hidden inside the loop circle.
-        ══════════════════════════════════════════════════════════════ */}
-        <g mask={`url(#${uid}-lm)`}>
-          {/* Shadow */}
-          <path
-            d="M 30 18
-               C 26 16, 16 14, 10 20
-               C  4 26,  4 32, 10 38
-               C 16 44, 26 42, 30 36
-               C 36 42, 44 60, 50 78"
-            stroke="var(--logo-shadow, #1020A0)"
-            strokeWidth="14"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {/* Main gradient */}
-          <path
-            d="M 30 18
-               C 26 16, 16 14, 10 20
-               C  4 26,  4 32, 10 38
-               C 16 44, 26 42, 30 36
-               C 36 42, 44 60, 50 78"
-            stroke={`url(#${uid}-v)`}
-            strokeWidth="10"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {/* Highlight streak */}
-          <path
-            d="M 30 18
-               C 26 16, 16 14, 10 20
-               C  4 26,  4 32, 10 38
-               C 16 44, 26 42, 30 36
-               C 36 42, 44 60, 50 78"
-            stroke={`url(#${uid}-h)`}
-            strokeWidth="3.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            opacity="0.45"
-          />
-        </g>
+        {/*
+          ══ LEFT ARM ══════════════════════════════════════════════════════
 
-        {/* ══════════════════════════════════════════════════════════════
-            RIGHT ARM
-            From V-bottom (50,78) up to play circle edge (72,28).
-            Masked inside play circle.
-        ══════════════════════════════════════════════════════════════ */}
-        <g mask={`url(#${uid}-pm)`}>
-          <path
-            d="M 50 78 C 56 64, 66 44, 72 28"
-            stroke="var(--logo-shadow, #1020A0)"
-            strokeWidth="14"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 50 78 C 56 64, 66 44, 72 28"
-            stroke={`url(#${uid}-v)`}
-            strokeWidth="10"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 50 78 C 56 64, 66 44, 72 28"
-            stroke={`url(#${uid}-h)`}
-            strokeWidth="3.5"
-            strokeLinecap="round"
-            opacity="0.45"
-          />
-        </g>
+          Three separate path segments, each drawn with 3 stroke layers.
+          They share start/end points so they blend seamlessly.
 
-        {/* ══════════════════════════════════════════════════════════════
-            LOOP CIRCLE  — drawn in front of left arm
-            Three stroke layers create the 3-D ring.
-            fill="none" so the masked-out arm stays hidden.
-        ══════════════════════════════════════════════════════════════ */}
-        <circle cx="18" cy="28" r="14"
-          stroke="var(--logo-shadow, #1020A0)" strokeWidth="14" fill="none" />
-        <circle cx="18" cy="28" r="14"
-          stroke={`url(#${uid}-v)`} strokeWidth="10" fill="none" />
-        <circle cx="18" cy="28" r="14"
-          stroke={`url(#${uid}-h)`} strokeWidth="3.5" fill="none" opacity="0.45" />
+          Loop geometry:
+            Circle center  : (30, 36)
+            Radius         : 17
+            Upper-right pt : (30 + 17·cos45°, 36 − 17·sin45°) ≈ (42, 24)
+            Lower-right pt : (30 + 17·cos45°, 36 + 17·sin45°) ≈ (42, 48)
 
-        {/* ══════════════════════════════════════════════════════════════
-            PLAY BUTTON CIRCLE — drawn in front of right arm
-        ══════════════════════════════════════════════════════════════ */}
-        <circle cx="74" cy="20" r="13" fill={`url(#${uid}-p)`} />
-        {/* ▶ triangle centred inside circle */}
-        <path d="M 69 14 L 69 26 L 83 20 Z" fill="white" opacity="0.93" />
+          Arc command "A 17 17 0 1 0" draws 270° counterclockwise arc
+          from (42,24) going LEFT around the circle to (42,48).
+          This creates the visible loop (the hidden 90° right arc is
+          replaced by the entry + exit stubs).
+        */}
 
-        {/* ══════════════════════════════════════════════════════════════
-            TRENDING ARROW  ↗
-            Shaft from play circle edge to top-right corner.
-            Right-angle bracket at tip = instant "trending" read.
-        ══════════════════════════════════════════════════════════════ */}
-        <line x1="84" y1="14" x2="97" y2="1"
-          stroke={`url(#${uid}-a)`} strokeWidth="7.5" strokeLinecap="round" />
-        <path d="M 90 1 L 97 1 L 97 8"
-          stroke={`url(#${uid}-a)`} strokeWidth="7.5"
-          strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        {/* 1. Entry stub: from arm entry point down to where the arc starts */}
+        {arm('M 50 15 C 48 15, 46 18, 42 24', 'le')}
+
+        {/* 2. Loop arc: 270° going left-around → creates the visible ring */}
+        {arm('M 42 24 A 17 17 0 1 0 42 48', 'la')}
+
+        {/* 3. Descent: from arc exit down to V-bottom */}
+        {arm('M 42 48 C 46 44, 52 64, 52 84', 'ld')}
+
+        {/*
+          ══ RIGHT ARM ═════════════════════════════════════════════════════
+          Rises from V-bottom (52,84) to the play circle (73,22).
+          The filled play circle covers the arm end — no masking needed.
+        */}
+        {arm('M 52 84 C 60 68, 68 46, 73 28', 'ra')}
+
+        {/*
+          ══ PLAY BUTTON CIRCLE ════════════════════════════════════════════
+          Filled circle sits on top of right arm, hiding the arm inside.
+          White ▶ triangle centred at (73, 22).
+        */}
+        <circle cx="73" cy="22" r="16" fill={`url(#${uid}-p)`} />
+        <path d="M 68 16 L 68 28 L 82 22 Z" fill="white" opacity="0.93" />
+
+        {/*
+          ══ TRENDING ARROW ↗ ══════════════════════════════════════════════
+          Shaft from play-circle edge to top-right corner.
+          Right-angle bracket at tip = instant "trending" signal.
+        */}
+        <line
+          x1="83" y1="12" x2="97" y2="1"
+          stroke={`url(#${uid}-a)`} strokeWidth="8" strokeLinecap="round"
+        />
+        <path
+          d="M 91 1 L 97 1 L 97 8"
+          stroke={`url(#${uid}-a)`} strokeWidth="8"
+          strokeLinecap="round" strokeLinejoin="round" fill="none"
+        />
 
       </svg>
 
-      {/* ── Wordmark ───────────────────────────────────────────────────── */}
+      {/* ── Wordmark ──────────────────────────────────────────────────── */}
       {showWordmark && (
         <div style={{ lineHeight: 1 }}>
           <div style={{
-            fontFamily:    'var(--font-display)',
-            fontWeight:    800,
+            fontFamily:    'var(--font-head)',
+            fontWeight:    900,
             fontSize:      Math.max(size * 0.42, 14),
             letterSpacing: '-0.02em',
             lineHeight:    1.1,
             display:       'flex',
             alignItems:    'baseline',
           }}>
-            {/* "Viral" — matches the V-mark gradient */}
             <span style={{
-              background:           'linear-gradient(135deg, var(--logo-v1, #00CCFF) 0%, var(--logo-v2, #9060FF) 100%)',
+              background:           'linear-gradient(135deg,var(--logo-v1,#00CCFF) 0%,var(--logo-v2,#9060FF) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor:  'transparent',
               backgroundClip:       'text',
             }}>
               Viral
             </span>
-            {/* "Coach" — auto dark/light via var(--text) */}
             <span style={{
               color:      'var(--text)',
-              fontWeight: 500,
-              opacity:    0.75,
+              fontWeight: 400,
+              opacity:    0.78,
             }}>
               Coach
             </span>
