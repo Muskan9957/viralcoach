@@ -1,5 +1,7 @@
 /* ─── Google Fonts ───────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+/* Syne: bold display — creator/youth energy, geometric, distinctive  */
+/* Manrope: body — modern, friendly, not corporate                     */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 
 /* ─── Design Tokens ─────────────────────────────────────────────── */
 :root {
@@ -37,9 +39,10 @@
   --text-faint:  #6B8DB8;
 
   /* ── Typography ── */
-  --font-head:   'Plus Jakarta Sans', sans-serif;
-  --font-body:   'Inter', sans-serif;
-  --font-mono:   'DM Mono', monospace;
+  --font-display: 'Syne', sans-serif;
+  --font-head:    'Syne', sans-serif;
+  --font-body:    'Manrope', sans-serif;
+  --font-mono:    'DM Mono', monospace;
 
   /* ── Shape ── */
   --radius:      14px;
@@ -69,24 +72,27 @@
   --surface-card:    rgba(11,15,46,0.93);
   --surface-card-alt: rgba(15,15,26,0.93);
 
-  /* ── Logo ── */
-  --logo-primary:   #7B5CF0;
-  --logo-secondary: #00C8FF;
+  /* ── Logo colours — dark mode: cyan → violet (matches reference) ── */
+  --logo-v1:     #00CCFF;
+  --logo-v2:     #9060FF;
+  --logo-h1:     #80E8FF;
+  --logo-h2:     #C0A0FF;
+  --logo-shadow: #0A1880;
 }
 
 /* ─── Logo mark ──────────────────────────────────────────────────── */
 
-/* Dark mode: blue-indigo glow matching the V-mark + faint coral from arrow */
+/* Dark mode: strong cyan + violet neon glow (matches reference dark version) */
 .vc-logo-mark {
-  filter:     drop-shadow(0 0 10px rgba(43, 78, 232, 0.65))
-              drop-shadow(0 0  4px rgba(107, 40, 220, 0.45))
-              drop-shadow(0 0  3px rgba(255, 80,  32, 0.20));
-  transition: filter 0.25s ease;
+  filter:     drop-shadow(0 0 12px rgba(0, 200, 255, 0.75))
+              drop-shadow(0 0  6px rgba(140, 80, 255, 0.55))
+              drop-shadow(0 0  3px rgba(255, 72,  32, 0.20));
+  transition: filter 0.3s ease;
 }
 
-/* Light mode: soft directional shadow — no neon glow */
+/* Light mode: soft shadow only — no neon (matches reference light version) */
 [data-theme="light"] .vc-logo-mark {
-  filter: drop-shadow(0 2px 6px rgba(43, 78, 232, 0.28));
+  filter: drop-shadow(0 3px 10px rgba(59, 85, 240, 0.22));
 }
 
 /*
@@ -138,6 +144,13 @@
   /* ── Dialog / card container backgrounds ── */
   --surface-card:     rgba(255,255,255,0.96);
   --surface-card-alt: rgba(255,255,255,0.96);
+
+  /* ── Logo colours — light mode: blue → purple (matches reference light version) ── */
+  --logo-v1:     #3B55F0;
+  --logo-v2:     #7B40D0;
+  --logo-h1:     #8AABFF;
+  --logo-h2:     #C090FF;
+  --logo-shadow: #1A30B0;
 }
 
 /* ─── Light Theme — Component Overrides ─────────────────────────── */
