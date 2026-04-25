@@ -68,6 +68,37 @@
   /* ── Dialog / card container backgrounds ── */
   --surface-card:    rgba(11,15,46,0.93);
   --surface-card-alt: rgba(15,15,26,0.93);
+
+  /* ── Logo ── */
+  --logo-primary:   #7B5CF0;
+  --logo-secondary: #00C8FF;
+}
+
+/* ─── Logo mark ──────────────────────────────────────────────────── */
+
+/* Dark mode: rich purple glow + faint cyan halo */
+.vc-logo-mark {
+  filter:     drop-shadow(0 0 8px rgba(123, 92, 240, 0.70))
+              drop-shadow(0 0 3px rgba(0, 200, 255, 0.40));
+  transition: filter 0.25s ease;
+}
+
+/* Light mode: no neon glow — soft directional shadow only */
+[data-theme="light"] .vc-logo-mark {
+  filter: drop-shadow(0 1px 4px rgba(123, 92, 240, 0.30));
+}
+
+/*
+  Watermark utility — use on the <Logo> wrapper div when overlaying
+  on video content. mix-blend-mode:difference auto-inverts the logo
+  color to stay visible regardless of what's behind it.
+  Usage: <Logo className="vc-logo-watermark" />
+*/
+.vc-logo-watermark {
+  opacity:        0.35;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  user-select:    none;
 }
 
 /* ─── Light Theme Override ───────────────────────────────────────── */
