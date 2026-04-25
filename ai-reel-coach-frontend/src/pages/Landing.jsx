@@ -42,12 +42,6 @@ const FEATURES = [
   },
 ]
 
-const STATS = [
-  { value: '50K+',  label: 'Creators',        color: '#00D4FF' },
-  { value: '2M+',   label: 'Scripts Made',    color: '#FF2D8B' },
-  { value: '94%',   label: 'Grade A Hooks',   color: '#A8FF3C' },
-  { value: '4.9★',  label: 'Creator Rating',  color: '#FFB800' },
-]
 
 /* ─── Feature Card ───────────────────────────────────────────────── */
 function FeatureCard({ icon, title, desc, accent }) {
@@ -167,90 +161,7 @@ export default function Landing() {
           <div style={{ position: 'absolute', top: '5%',   right: '5%',  width: 300, height: 240, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(255,184,0,0.08) 0%, transparent 65%)',  filter: 'blur(36px)' }} />
         </div>
 
-        {/* ── Floating badges — only shown on 1300px+ (fixed via CSS) ── */}
-
-        {/* Hook Score — left upper */}
-        <div className="hero-float" style={{
-          position: 'absolute', top: '28%', left: '4%',
-          animation: 'floatA 6s ease-in-out infinite',
-          background: 'rgba(8,11,36,0.94)',
-          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(0,212,255,0.28)',
-          borderRadius: 16, padding: '14px 18px', zIndex: 2,
-          display: 'flex', alignItems: 'center', gap: 12,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 24px rgba(0,212,255,0.14)',
-        }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-            background: 'linear-gradient(135deg, #00D4FF, #7B5CF0)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '0.9rem',
-            boxShadow: '0 0 16px rgba(0,212,255,0.5)',
-          }}>✦</div>
-          <div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', marginBottom: 2 }}>Hook Score: 94</div>
-            <div style={{ fontSize: '0.68rem', color: '#00D4FF', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>Grade A — Excellent</div>
-          </div>
-        </div>
-
-        {/* Streak — left lower */}
-        <div className="hero-float" style={{
-          position: 'absolute', bottom: '26%', left: '5%',
-          animation: 'floatB 7s ease-in-out infinite',
-          background: 'rgba(8,11,36,0.94)',
-          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,184,0,0.30)',
-          borderRadius: 16, padding: '14px 20px', zIndex: 2, minWidth: 128,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 22px rgba(255,184,0,0.14)',
-        }}>
-          <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Streak</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-            <span style={{ fontFamily: 'var(--font-head)', fontWeight: 900, fontSize: '1.9rem', lineHeight: 1, color: '#FFB800' }}>12</span>
-            <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.55)' }}>days 🔥</span>
-          </div>
-        </div>
-
-        {/* Script Generated — right upper */}
-        <div className="hero-float" style={{
-          position: 'absolute', top: '26%', right: '4%',
-          animation: 'floatC 5.5s ease-in-out infinite',
-          background: 'rgba(8,11,36,0.94)',
-          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,45,139,0.28)',
-          borderRadius: 16, padding: '14px 18px', zIndex: 2,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 22px rgba(255,45,139,0.13)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-              background: 'linear-gradient(135deg, rgba(255,45,139,0.22), rgba(168,85,247,0.22))',
-              border: '1px solid rgba(255,45,139,0.40)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.9rem',
-              boxShadow: '0 0 12px rgba(255,45,139,0.22)',
-            }}>✦</div>
-            <div>
-              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', marginBottom: 3 }}>Script generated</div>
-              <div style={{ fontSize: '0.65rem', color: '#FF2D8B', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>Hinglish · 12s · fitness</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Views up — right lower */}
-        <div className="hero-float" style={{
-          position: 'absolute', bottom: '28%', right: '5%',
-          animation: 'floatA 8s ease-in-out infinite',
-          background: 'rgba(8,11,36,0.94)',
-          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(168,255,60,0.25)',
-          borderRadius: 16, padding: '14px 20px', zIndex: 2,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 18px rgba(168,255,60,0.11)',
-        }}>
-          <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Views This Week</div>
-          <div style={{ fontFamily: 'var(--font-head)', fontWeight: 900, fontSize: '1.6rem', lineHeight: 1, color: '#A8FF3C' }}>+240%</div>
-        </div>
-
-        {/* ── Trending pill ── */}
+        {/* ── Badge ── */}
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           background: 'rgba(255,45,139,0.09)',
@@ -259,9 +170,9 @@ export default function Landing() {
           position: 'relative', zIndex: 3,
           animation: 'fadeUp 0.5s 0.04s cubic-bezier(0.22,1,0.36,1) both',
         }}>
-          <span style={{ fontSize: '0.82rem' }}>🔥</span>
+          <span style={{ fontSize: '0.82rem' }}>✦</span>
           <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#FF6EB4', fontFamily: 'var(--font-body)', letterSpacing: '0.01em' }}>
-            Trusted by 50,000+ Indian creators
+            AI-powered · Hindi · Hinglish · English
           </span>
         </div>
 
@@ -298,7 +209,7 @@ export default function Landing() {
         {/* ── CTA buttons ── */}
         <div style={{
           display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center',
-          marginBottom: 60, position: 'relative', zIndex: 3,
+          position: 'relative', zIndex: 3,
           animation: 'fadeUp 0.5s 0.22s cubic-bezier(0.22,1,0.36,1) both',
         }}>
           <Link to="/auth" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', minWidth: 195 }}>
@@ -307,34 +218,6 @@ export default function Landing() {
           <a href="#features" className="btn btn-ghost btn-lg" style={{ textDecoration: 'none' }}>
             See how it works ↓
           </a>
-        </div>
-
-        {/* ── Stats row ── */}
-        <div style={{
-          display: 'flex', gap: 40, flexWrap: 'wrap', justifyContent: 'center',
-          position: 'relative', zIndex: 3,
-          animation: 'fadeUp 0.5s 0.28s cubic-bezier(0.22,1,0.36,1) both',
-        }}>
-          {STATS.map((s, i) => (
-            <div key={s.label} style={{ textAlign: 'center', position: 'relative' }}>
-              {i < STATS.length - 1 && (
-                <div style={{
-                  position: 'absolute', right: -20, top: '50%', transform: 'translateY(-50%)',
-                  width: 1, height: 28, background: 'rgba(255,255,255,0.08)',
-                }} />
-              )}
-              <div style={{
-                fontFamily: 'var(--font-head)', fontWeight: 900,
-                fontSize: '1.6rem', lineHeight: 1,
-                color: s.color, marginBottom: 3,
-                filter: `drop-shadow(0 0 10px ${s.color}55)`,
-              }}>{s.value}</div>
-              <div style={{
-                fontSize: '0.7rem', color: 'var(--text-faint)',
-                fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase',
-              }}>{s.label}</div>
-            </div>
-          ))}
         </div>
       </section>
 
