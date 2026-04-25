@@ -26,10 +26,22 @@
   --violet-dim:  rgba(155,114,255,0.14);
   --orange2:     #2DA8FF;   /* mid blue-cyan (replaces orange2) */
 
+  /* ── Extended palette — youth / creator energy ── */
+  --pink:        #FF2D8B;
+  --pink-dim:    rgba(255,45,139,0.14);
+  --pink-glow:   rgba(255,45,139,0.30);
+  --lime:        #A8FF3C;
+  --lime-dim:    rgba(168,255,60,0.12);
+  --coral:       #FF5F4C;
+  --coral-dim:   rgba(255,95,76,0.14);
+  --amber:       #FFB800;
+  --amber-dim:   rgba(255,184,0,0.14);
+
   --gradient:        linear-gradient(135deg, #00C8FF, #7B5CF0);
-  --gradient-vivid:  linear-gradient(135deg, #00E5FF 0%, #2DA8FF 45%, #7B5CF0 100%);
-  --gradient-subtle: linear-gradient(135deg, rgba(0,200,255,0.15), rgba(123,92,240,0.12));
+  --gradient-vivid:  linear-gradient(135deg, #00D4FF 0%, #FF2D8B 55%, #FFB800 100%);
+  --gradient-subtle: linear-gradient(135deg, rgba(0,200,255,0.15), rgba(255,45,139,0.10));
   --gradient-cool:   linear-gradient(135deg, #00D4B1, #7B5CF0);
+  --gradient-fire:   linear-gradient(135deg, #FF5F4C, #FF2D8B, #A855F7);
 
   /* ── Text ── */
   --text:        #F0F6FF;
@@ -454,7 +466,7 @@ h1, h2, h3, h4 {
   animation: gradientShift 4s ease infinite;
 }
 .btn-primary:hover {
-  box-shadow: 0 8px 36px rgba(0,200,255,0.5), 0 1px 0 rgba(255,255,255,0.15) inset;
+  box-shadow: 0 8px 40px rgba(0,200,255,0.40), 0 4px 20px rgba(255,45,139,0.30), 0 1px 0 rgba(255,255,255,0.15) inset;
   transform: translateY(-2px);
 }
 .btn-primary:active { transform: translateY(0); }

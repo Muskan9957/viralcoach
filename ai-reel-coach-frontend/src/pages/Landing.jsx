@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Logo from '../components/Logo'
 import ThemeToggle from '../components/ThemeToggle'
@@ -9,40 +8,46 @@ const FEATURES = [
     icon: '✦',
     title: 'Script Generator',
     desc: 'Viral-ready scripts in 15 seconds. Hindi, Hinglish, or English — just describe your idea.',
-    accent: '#00C8FF',
+    accent: '#00D4FF',
   },
   {
     icon: '◎',
     title: 'Hook Scorer',
     desc: 'Know if your hook stops the scroll before you post. AI scores your first 3 seconds.',
-    accent: '#7B5CF0',
+    accent: '#FF2D8B',
   },
   {
     icon: '📊',
     title: 'Performance Coach',
     desc: 'Turn your video numbers into actionable insights. Know exactly what to do next.',
-    accent: '#00C9A7',
+    accent: '#A8FF3C',
   },
   {
     icon: '🎨',
     title: 'Caption Generator',
     desc: '4 caption styles + 25 trending hashtags, instantly. Stand out in every feed.',
-    accent: '#7B61FF',
+    accent: '#FFB800',
   },
   {
     icon: '🔁',
     title: 'Content Remix',
     desc: 'One script, every platform. Repurpose from Instagram to YouTube Shorts in seconds.',
-    accent: '#FFD60A',
+    accent: '#FF5F4C',
   },
   {
     icon: '🤖',
     title: 'AI Coach',
     desc: 'Your personal content strategist, available 24/7. Ask anything about growth.',
-    accent: '#00C8FF',
+    accent: '#A855F7',
   },
 ]
 
+const STATS = [
+  { value: '50K+',  label: 'Creators',        color: '#00D4FF' },
+  { value: '2M+',   label: 'Scripts Made',    color: '#FF2D8B' },
+  { value: '94%',   label: 'Grade A Hooks',   color: '#A8FF3C' },
+  { value: '4.9★',  label: 'Creator Rating',  color: '#FFB800' },
+]
 
 /* ─── Feature Card ───────────────────────────────────────────────── */
 function FeatureCard({ icon, title, desc, accent }) {
@@ -56,11 +61,12 @@ function FeatureCard({ icon, title, desc, accent }) {
         display: 'flex', flexDirection: 'column', gap: 12,
         transition: 'transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease',
         position: 'relative', overflow: 'hidden',
+        cursor: 'default',
       }}
       onMouseEnter={e => {
         e.currentTarget.style.transform = 'translateY(-4px)'
         e.currentTarget.style.borderColor = accent + '55'
-        e.currentTarget.style.boxShadow = `0 16px 48px ${accent}1A`
+        e.currentTarget.style.boxShadow = `0 20px 60px ${accent}18, 0 0 0 1px ${accent}22`
       }}
       onMouseLeave={e => {
         e.currentTarget.style.transform = 'translateY(0)'
@@ -68,37 +74,32 @@ function FeatureCard({ icon, title, desc, accent }) {
         e.currentTarget.style.boxShadow = 'none'
       }}
     >
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${accent}00, ${accent}CC, ${accent}00)`, borderRadius: '20px 20px 0 0' }} />
-      <div style={{ width: 44, height: 44, borderRadius: 12, background: accent + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0, border: `1px solid ${accent}25` }}>
+      {/* top accent line */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+        background: `linear-gradient(90deg, transparent, ${accent}BB, transparent)`,
+      }} />
+      {/* icon chip */}
+      <div style={{
+        width: 46, height: 46, borderRadius: 13,
+        background: accent + '16',
+        border: `1px solid ${accent}2E`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '1.35rem', flexShrink: 0,
+      }}>
         {icon}
       </div>
       <div>
-        <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '1rem', color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: 6 }}>
+        <div style={{
+          fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '1rem',
+          color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: 6,
+        }}>
           {title}
         </div>
-        <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+        <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.65 }}>
           {desc}
         </div>
       </div>
-    </div>
-  )
-}
-
-
-/* ─── Floating UI element ────────────────────────────────────────── */
-function FloatingCard({ style, className = '', children }) {
-  return (
-    <div className={`hero-float ${className}`.trim()} style={{
-      background: 'rgba(11,15,46,0.96)',
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      border: '1px solid rgba(255,255,255,0.1)',
-      borderRadius: 14,
-      padding: '12px 16px',
-      boxShadow: '0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,200,255,0.08)',
-      ...style,
-    }}>
-      {children}
     </div>
   )
 }
@@ -113,7 +114,7 @@ export default function Landing() {
         position: 'sticky', top: 0, zIndex: 100,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 5%',
-        background: 'rgba(7,9,28,0.9)',
+        background: 'rgba(7,9,28,0.92)',
         backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}>
@@ -129,8 +130,16 @@ export default function Landing() {
               border: '1px solid var(--border)', background: 'transparent',
               transition: 'all 0.18s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.borderColor = 'var(--border-bright)'; e.currentTarget.style.background = 'var(--surface2)' }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'transparent' }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = 'var(--text)'
+              e.currentTarget.style.borderColor = 'var(--border-bright)'
+              e.currentTarget.style.background = 'var(--surface2)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = 'var(--text-muted)'
+              e.currentTarget.style.borderColor = 'var(--border)'
+              e.currentTarget.style.background = 'transparent'
+            }}
           >
             Sign In
           </Link>
@@ -145,109 +154,154 @@ export default function Landing() {
         minHeight: 'calc(100vh - 57px)',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        textAlign: 'center',
-        padding: '80px 5% 80px',
+        textAlign: 'center', padding: '80px 5%',
         position: 'relative', overflow: 'hidden',
       }}>
-        {/* Extra hero glow */}
-        <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)', width: 700, height: 500, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,200,255,0.09) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '60%', right: '10%', width: 400, height: 300, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(123,92,240,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Floating cards — decorative, only shown on wide screens via .hero-float CSS class */}
+        {/* ── Colorful ambient mesh ── */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '10%',  left: '15%',  width: 640, height: 520, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,212,255,0.11) 0%, transparent 65%)',  filter: 'blur(48px)' }} />
+          <div style={{ position: 'absolute', top: '30%',  right: '10%', width: 520, height: 420, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(255,45,139,0.11) 0%, transparent 65%)', filter: 'blur(48px)' }} />
+          <div style={{ position: 'absolute', bottom: '15%', left: '25%', width: 460, height: 360, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(168,255,60,0.07) 0%, transparent 65%)',  filter: 'blur(48px)' }} />
+          <div style={{ position: 'absolute', bottom: '30%', right: '25%',width: 380, height: 300, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(168,85,247,0.09) 0%, transparent 65%)', filter: 'blur(40px)' }} />
+          <div style={{ position: 'absolute', top: '5%',   right: '5%',  width: 300, height: 240, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(255,184,0,0.08) 0%, transparent 65%)',  filter: 'blur(36px)' }} />
+        </div>
 
-        {/* Hook Score — left side, level with "Script." */}
-        <FloatingCard style={{
-          position: 'absolute', top: '28%', left: 'calc(50% - 460px)',
-          animation: 'floatCardA 6s ease-in-out infinite',
+        {/* ── Floating badges — only shown on 1300px+ (fixed via CSS) ── */}
+
+        {/* Hook Score — left upper */}
+        <div className="hero-float" style={{
+          position: 'absolute', top: '28%', left: '4%',
+          animation: 'floatA 6s ease-in-out infinite',
+          background: 'rgba(8,11,36,0.94)',
+          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(0,212,255,0.28)',
+          borderRadius: 16, padding: '14px 18px', zIndex: 2,
           display: 'flex', alignItems: 'center', gap: 12,
-          zIndex: 1,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 24px rgba(0,212,255,0.14)',
         }}>
           <div style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
+            width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+            background: 'linear-gradient(135deg, #00D4FF, #7B5CF0)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '0.8rem', flexShrink: 0,
-            boxShadow: '0 0 12px rgba(0,200,255,0.4)',
+            fontSize: '0.9rem',
+            boxShadow: '0 0 16px rgba(0,212,255,0.5)',
           }}>✦</div>
           <div>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>Hook Score: 94</div>
-            <div style={{ fontSize: '0.65rem', color: 'var(--teal)', fontFamily: 'var(--font-mono)', letterSpacing: '0.02em' }}>Grade A — Excellent</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fff', marginBottom: 2 }}>Hook Score: 94</div>
+            <div style={{ fontSize: '0.68rem', color: '#00D4FF', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>Grade A — Excellent</div>
           </div>
-        </FloatingCard>
+        </div>
 
-        {/* Streak — just left of the "Start for Free" button */}
-        <FloatingCard style={{
-          position: 'absolute', top: '62%', left: 'calc(50% - 420px)',
-          animation: 'floatCardB 7s ease-in-out infinite',
-          zIndex: 1, minWidth: 110,
+        {/* Streak — left lower */}
+        <div className="hero-float" style={{
+          position: 'absolute', bottom: '26%', left: '5%',
+          animation: 'floatB 7s ease-in-out infinite',
+          background: 'rgba(8,11,36,0.94)',
+          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,184,0,0.30)',
+          borderRadius: 16, padding: '14px 20px', zIndex: 2, minWidth: 128,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 22px rgba(255,184,0,0.14)',
         }}>
-          <div style={{ fontSize: '0.6rem', fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 5 }}>Streak</div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-            <span style={{ fontFamily: 'var(--font-head)', fontWeight: 900, fontSize: '1.6rem', lineHeight: 1, color: '#00C8FF' }}>12</span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>days 🔥</span>
+          <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Streak</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+            <span style={{ fontFamily: 'var(--font-head)', fontWeight: 900, fontSize: '1.9rem', lineHeight: 1, color: '#FFB800' }}>12</span>
+            <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.55)' }}>days 🔥</span>
           </div>
-        </FloatingCard>
+        </div>
 
-        {/* Script generated — right side, level with "Go Viral." */}
-        <FloatingCard style={{
-          position: 'absolute', top: '32%', right: 'calc(50% - 420px)',
-          animation: 'floatCardC 5.5s ease-in-out infinite',
-          zIndex: 1,
+        {/* Script Generated — right upper */}
+        <div className="hero-float" style={{
+          position: 'absolute', top: '26%', right: '4%',
+          animation: 'floatC 5.5s ease-in-out infinite',
+          background: 'rgba(8,11,36,0.94)',
+          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,45,139,0.28)',
+          borderRadius: 16, padding: '14px 18px', zIndex: 2,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 22px rgba(255,45,139,0.13)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              width: 32, height: 32, borderRadius: 9, flexShrink: 0,
-              background: 'linear-gradient(135deg, rgba(0,200,255,0.18), rgba(123,92,240,0.18))',
-              border: '1px solid rgba(0,200,255,0.3)',
+              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+              background: 'linear-gradient(135deg, rgba(255,45,139,0.22), rgba(168,85,247,0.22))',
+              border: '1px solid rgba(255,45,139,0.40)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.85rem',
-              boxShadow: '0 0 10px rgba(0,200,255,0.15)',
+              fontSize: '0.9rem',
+              boxShadow: '0 0 12px rgba(255,45,139,0.22)',
             }}>✦</div>
             <div>
-              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', marginBottom: 2 }}>Script generated</div>
-              <div style={{ fontSize: '0.62rem', color: 'var(--accent)', fontFamily: 'var(--font-mono)', letterSpacing: '0.02em' }}>Hinglish · 12s · fitness</div>
+              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', marginBottom: 3 }}>Script generated</div>
+              <div style={{ fontSize: '0.65rem', color: '#FF2D8B', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>Hinglish · 12s · fitness</div>
             </div>
           </div>
-        </FloatingCard>
+        </div>
 
-        {/* H1 */}
+        {/* Views up — right lower */}
+        <div className="hero-float" style={{
+          position: 'absolute', bottom: '28%', right: '5%',
+          animation: 'floatA 8s ease-in-out infinite',
+          background: 'rgba(8,11,36,0.94)',
+          backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(168,255,60,0.25)',
+          borderRadius: 16, padding: '14px 20px', zIndex: 2,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.55), 0 0 18px rgba(168,255,60,0.11)',
+        }}>
+          <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>Views This Week</div>
+          <div style={{ fontFamily: 'var(--font-head)', fontWeight: 900, fontSize: '1.6rem', lineHeight: 1, color: '#A8FF3C' }}>+240%</div>
+        </div>
+
+        {/* ── Trending pill ── */}
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          background: 'rgba(255,45,139,0.09)',
+          border: '1px solid rgba(255,45,139,0.28)',
+          borderRadius: 99, padding: '6px 16px', marginBottom: 26,
+          position: 'relative', zIndex: 3,
+          animation: 'fadeUp 0.5s 0.04s cubic-bezier(0.22,1,0.36,1) both',
+        }}>
+          <span style={{ fontSize: '0.82rem' }}>🔥</span>
+          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#FF6EB4', fontFamily: 'var(--font-body)', letterSpacing: '0.01em' }}>
+            Trusted by 50,000+ Indian creators
+          </span>
+        </div>
+
+        {/* ── H1 ── */}
         <h1 style={{
           fontFamily: 'var(--font-head)',
           fontSize: 'clamp(3rem, 8vw, 5.5rem)',
-          fontWeight: 900, letterSpacing: '-0.02em', lineHeight: 1.05,
-          color: 'var(--text)', marginBottom: 24, maxWidth: 760,
+          fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.05,
+          color: 'var(--text)', marginBottom: 24, maxWidth: 780,
           position: 'relative', zIndex: 3,
-          padding: '0 8px',
-          animation: 'fadeUp 0.5s 0.08s cubic-bezier(0.22,1,0.36,1) both',
+          animation: 'fadeUp 0.5s 0.1s cubic-bezier(0.22,1,0.36,1) both',
         }}>
           Script. Score.{' '}
           <span style={{
-            background: 'linear-gradient(135deg, #00E5FF 0%, #00C8FF 45%, #7B5CF0 100%)',
+            background: 'linear-gradient(135deg, #00D4FF 0%, #FF2D8B 55%, #FFB800 100%)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             display: 'inline-block',
-            filter: 'drop-shadow(0 0 32px rgba(0,200,255,0.25))',
+            filter: 'drop-shadow(0 0 40px rgba(255,45,139,0.35))',
           }}>
             Go Viral.
           </span>
         </h1>
 
-        {/* Sub */}
+        {/* ── Sub ── */}
         <p style={{
           fontSize: 'clamp(1rem, 2.2vw, 1.2rem)', color: 'var(--text-muted)',
           lineHeight: 1.65, maxWidth: 560, marginBottom: 44,
           position: 'relative', zIndex: 3,
-          animation: 'fadeUp 0.5s 0.14s cubic-bezier(0.22,1,0.36,1) both',
+          animation: 'fadeUp 0.5s 0.16s cubic-bezier(0.22,1,0.36,1) both',
         }}>
           AI-powered content studio for creators. Generate viral scripts in seconds, score your hooks, and grow with data.
         </p>
 
-        {/* CTA buttons */}
+        {/* ── CTA buttons ── */}
         <div style={{
           display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center',
-          marginBottom: 40, position: 'relative', zIndex: 3,
-          animation: 'fadeUp 0.5s 0.2s cubic-bezier(0.22,1,0.36,1) both',
+          marginBottom: 60, position: 'relative', zIndex: 3,
+          animation: 'fadeUp 0.5s 0.22s cubic-bezier(0.22,1,0.36,1) both',
         }}>
-          <Link to="/auth" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', minWidth: 190 }}>
+          <Link to="/auth" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', minWidth: 195 }}>
             Start for Free →
           </Link>
           <a href="#features" className="btn btn-ghost btn-lg" style={{ textDecoration: 'none' }}>
@@ -255,19 +309,30 @@ export default function Landing() {
           </a>
         </div>
 
-        {/* Feature pills */}
+        {/* ── Stats row ── */}
         <div style={{
-          display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center',
+          display: 'flex', gap: 40, flexWrap: 'wrap', justifyContent: 'center',
           position: 'relative', zIndex: 3,
-          animation: 'fadeUp 0.5s 0.26s cubic-bezier(0.22,1,0.36,1) both',
+          animation: 'fadeUp 0.5s 0.28s cubic-bezier(0.22,1,0.36,1) both',
         }}>
-          {['✦ Hindi + Hinglish scripts', '◎ Hook scoring', '🎙 Voice input', '🤖 AI Coach 24/7'].map(pill => (
-            <div key={pill} style={{
-              padding: '6px 14px', borderRadius: 99,
-              background: 'var(--surface2)', border: '1px solid var(--border)',
-              fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-muted)',
-            }}>
-              {pill}
+          {STATS.map((s, i) => (
+            <div key={s.label} style={{ textAlign: 'center', position: 'relative' }}>
+              {i < STATS.length - 1 && (
+                <div style={{
+                  position: 'absolute', right: -20, top: '50%', transform: 'translateY(-50%)',
+                  width: 1, height: 28, background: 'rgba(255,255,255,0.08)',
+                }} />
+              )}
+              <div style={{
+                fontFamily: 'var(--font-head)', fontWeight: 900,
+                fontSize: '1.6rem', lineHeight: 1,
+                color: s.color, marginBottom: 3,
+                filter: `drop-shadow(0 0 10px ${s.color}55)`,
+              }}>{s.value}</div>
+              <div style={{
+                fontSize: '0.7rem', color: 'var(--text-faint)',
+                fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase',
+              }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -275,9 +340,15 @@ export default function Landing() {
 
 
       {/* ── Features ─────────────────────────────────────────────────── */}
-      <section id="features" style={{ padding: '96px 5%', maxWidth: 1180, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
+      <section id="features" style={{ padding: '100px 5%', maxWidth: 1180, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 60 }}>
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 600,
+            letterSpacing: '0.14em', textTransform: 'uppercase',
+            background: 'linear-gradient(90deg, #00D4FF, #FF2D8B)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            marginBottom: 14,
+          }}>
             Everything you need
           </div>
           <h2 style={{
@@ -287,7 +358,10 @@ export default function Landing() {
             maxWidth: 580, margin: '0 auto',
           }}>
             Your full content toolkit,{' '}
-            <span style={{ background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+            <span style={{
+              background: 'linear-gradient(135deg, #00D4FF 0%, #FF2D8B 60%, #FFB800 100%)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>
               powered by AI
             </span>
           </h2>
@@ -301,10 +375,23 @@ export default function Landing() {
 
       {/* ── CTA section ──────────────────────────────────────────────── */}
       <section style={{ padding: '100px 5%', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 600, height: 400, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(0,200,255,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: 700, height: 480, borderRadius: '50%',
+            background: 'radial-gradient(ellipse, rgba(255,45,139,0.12) 0%, rgba(0,212,255,0.07) 50%, transparent 70%)',
+            filter: 'blur(48px)',
+          }} />
+        </div>
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 620, margin: '0 auto' }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 16 }}>
-            Start today — it's free
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: 'rgba(255,184,0,0.09)', border: '1px solid rgba(255,184,0,0.28)',
+            borderRadius: 99, padding: '5px 14px', marginBottom: 20,
+            fontSize: '0.75rem', fontWeight: 600, color: '#FFB800',
+            fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase',
+          }}>
+            ✦ Start today — it's free
           </div>
           <h2 style={{
             fontFamily: 'var(--font-head)',
@@ -318,11 +405,11 @@ export default function Landing() {
             Generate viral scripts, score your hooks, and grow with data — all in one place.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/auth" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', display: 'inline-flex', minWidth: 210 }}>
+            <Link to="/auth" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', display: 'inline-flex', minWidth: 215 }}>
               Start Free Today →
             </Link>
           </div>
-          <div style={{ marginTop: 16, fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
+          <div style={{ marginTop: 18, fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
             No credit card · Cancel anytime · Free to start
           </div>
         </div>
@@ -345,39 +432,36 @@ export default function Landing() {
         </div>
       </footer>
 
-      {/* ── Responsive + Animation styles ────────────────────────────── */}
+      {/* ── Styles ───────────────────────────────────────────────────── */}
       <style>{`
         .landing-features-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 20px;
         }
-        .landing-testimonials-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-        }
         @media (max-width: 900px) {
           .landing-features-grid { grid-template-columns: repeat(2, 1fr); }
-          .landing-testimonials-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 580px) {
           .landing-features-grid { grid-template-columns: 1fr; }
         }
-        @keyframes floatCardA {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
+
+        /* Hide floating badges below 1300px so they never overlap hero text */
+        @media (max-width: 1300px) {
+          .hero-float { display: none !important; }
         }
-        @keyframes floatCardB {
+
+        @keyframes floatA {
           0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-14px); }
+          50%       { transform: translateY(-10px); }
         }
-        @keyframes floatCardC {
+        @keyframes floatB {
           0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
+          50%       { transform: translateY(-14px); }
         }
-        @media (max-width: 900px) {
-          .landing-float-card { display: none !important; }
+        @keyframes floatC {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-9px); }
         }
       `}</style>
     </div>
