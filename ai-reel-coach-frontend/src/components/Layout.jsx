@@ -4,6 +4,7 @@ import { useAuth } from '../store'
 import { useLang } from '../i18n.jsx'
 import LanguageSelector from './LanguageSelector'
 import Logo from './Logo'
+import AppWatermark from './AppWatermark'
 
 /* ─── useIsMobile hook ───────────────────────────────────────────── */
 const useIsMobile = () => {
@@ -185,6 +186,7 @@ export default function Layout({ children }) {
 
   return (
     <div style={styles.root}>
+      <AppWatermark />
 
       {/* ── Desktop Sidebar ─────────────────────────────────────── */}
       {!isMobile && (
