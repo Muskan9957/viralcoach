@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../store'
 import { api } from '../api'
 import { useLang } from '../i18n.jsx'
@@ -17,8 +17,6 @@ const C = {
   violet: '#A855F7',
   teal:   '#00D4B1',
 }
-
-const gradeColor = { A: C.lime, B: C.amber, C: C.coral, D: C.pink, F: '#FF4757' }
 
 const BADGE_META = {
   FIRST_SCRIPT: { emoji: '🎬', label: 'First Script'    },
@@ -38,92 +36,13 @@ const CATEGORY_COLORS = {
   Education:     C.violet,  Food:      C.coral,
 }
 
-/* ─── Time-of-day mood ──────────────────────────────────────────── */
 function getTimeMood() {
   const h = new Date().getHours()
-  if (h < 5)  return { key: 'evening',  emoji: '🌙', label: 'late-night creator', color: C.violet }
-  if (h < 12) return { key: 'morning',  emoji: '☀️', label: 'fresh start',         color: C.amber  }
-  if (h < 17) return { key: 'afternoon',emoji: '🔆', label: 'in the zone',         color: C.cyan   }
-  if (h < 21) return { key: 'evening',  emoji: '✨', label: 'golden hour',         color: C.coral  }
-  return            { key: 'evening',  emoji: '🌙', label: 'late-night creator', color: C.violet }
-}
-
-/* ─── Reusable: noise texture + gradient mesh background ─────────── */
-const noiseUrl = "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")"
-
-function MeshBg({ colors = [C.cyan, C.pink, C.amber], opacity = 0.18, noise = 0.045 }) {
-  return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', borderRadius: 'inherit' }}>
-      <div style={{
-        position: 'absolute', top: '-30%', left: '-20%', width: '80%', height: '120%',
-        background: `radial-gradient(ellipse, ${colors[0]}${Math.round(opacity*255).toString(16).padStart(2,'0')} 0%, transparent 60%)`,
-        filter: 'blur(60px)',
-      }} />
-      <div style={{
-        position: 'absolute', top: '20%', right: '-15%', width: '70%', height: '120%',
-        background: `radial-gradient(ellipse, ${colors[1]}${Math.round(opacity*255).toString(16).padStart(2,'0')} 0%, transparent 60%)`,
-        filter: 'blur(60px)',
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '-30%', left: '30%', width: '60%', height: '100%',
-        background: `radial-gradient(ellipse, ${colors[2]}${Math.round(opacity*255).toString(16).padStart(2,'0')} 0%, transparent 60%)`,
-        filter: 'blur(60px)',
-      }} />
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: noiseUrl, opacity: noise, mixBlendMode: 'overlay',
-      }} />
-    </div>
-  )
-}
-
-/* ─── Story-card chip / sticker ──────────────────────────────────── */
-function Sticker({ children, color = C.pink, tilt = 0, style = {} }) {
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '5px 12px', borderRadius: 99,
-      background: `${color}1A`, border: `1.5px solid ${color}55`,
-      color, fontFamily: 'var(--font-mono)', fontSize: '0.7rem', fontWeight: 700,
-      letterSpacing: '0.08em', textTransform: 'uppercase',
-      transform: tilt ? `rotate(${tilt}deg)` : undefined,
-      ...style,
-    }}>
-      {children}
-    </span>
-  )
-}
-
-/* ─── Bento Tile wrapper ─────────────────────────────────────────── */
-function BentoTile({ span = 4, rowSpan = 1, color = C.cyan, mesh = null, padding = 22, children, style = {}, hover = true }) {
-  return (
-    <div
-      style={{
-        gridColumn: `span ${span}`,
-        gridRow: `span ${rowSpan}`,
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 22,
-        padding,
-        position: 'relative', overflow: 'hidden',
-        transition: 'transform 0.22s, border-color 0.22s, box-shadow 0.22s',
-        ...style,
-      }}
-      onMouseEnter={hover ? (e => {
-        e.currentTarget.style.borderColor = `${color}55`
-        e.currentTarget.style.boxShadow = `0 18px 50px ${color}1F`
-      }) : undefined}
-      onMouseLeave={hover ? (e => {
-        e.currentTarget.style.borderColor = 'var(--border)'
-        e.currentTarget.style.boxShadow = 'none'
-      }) : undefined}
-    >
-      {mesh && <MeshBg colors={mesh} />}
-      <div style={{ position: 'relative', zIndex: 1, height: '100%' }}>
-        {children}
-      </div>
-    </div>
-  )
+  if (h < 5)  return { key: 'evening',   emoji: '🌙', label: 'late-night creator', color: C.violet }
+  if (h < 12) return { key: 'morning',   emoji: '☀️', label: 'fresh start',         color: C.amber  }
+  if (h < 17) return { key: 'afternoon', emoji: '🔆', label: 'in the zone',         color: C.cyan   }
+  if (h < 21) return { key: 'evening',   emoji: '✨', label: 'golden hour',         color: C.coral  }
+  return            { key: 'evening',   emoji: '🌙', label: 'late-night creator', color: C.violet }
 }
 
 /* ─── Today's Brief ──────────────────────────────────────────────── */
@@ -150,12 +69,21 @@ function TrendingBrief({ userName }) {
   }
 
   return (
-    <BentoTile span={12} color={C.pink} padding={26}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-        <Sticker color={C.pink}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.pink, boxShadow: `0 0 8px ${C.pink}`, animation: 'pulse 2s ease-in-out infinite' }} />
+    <div style={{
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderRadius: 18,
+      padding: '22px 26px',
+      marginBottom: 24,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+        <span style={{
+          fontSize: '0.74rem', fontFamily: 'var(--font-mono)',
+          color: 'var(--text-muted)', letterSpacing: '0.1em',
+          textTransform: 'uppercase', fontWeight: 700,
+        }}>
           {t('dash_todays_brief')}
-        </Sticker>
+        </span>
         <div style={{ flex: 1 }} />
         <button
           onClick={playGreeting}
@@ -181,7 +109,7 @@ function TrendingBrief({ userName }) {
         </div>
       ) : greeting ? (
         <>
-          <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginBottom: 18, lineHeight: 1.65, maxWidth: 760 }}>
+          <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
             {greeting.greeting}
           </p>
           <div style={{
@@ -200,26 +128,23 @@ function TrendingBrief({ userName }) {
                 >
                   <div style={{
                     height: '100%',
-                    padding: 16,
-                    background: `linear-gradient(150deg, ${color}1A 0%, ${color}08 60%, transparent 100%)`,
-                    border: `1px solid ${color}33`,
-                    borderRadius: 16,
-                    position: 'relative', overflow: 'hidden',
-                    transition: 'transform 0.2s, border-color 0.2s',
+                    padding: 14,
+                    background: 'var(--surface2)',
+                    border: '1px solid var(--border)',
+                    borderLeft: `3px solid ${color}`,
+                    borderRadius: 12,
+                    transition: 'transform 0.18s, border-color 0.18s',
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = `${color}77` }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = `${color}33` }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = `${color}77`; e.currentTarget.style.borderLeftColor = color }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.borderLeftColor = color }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <Sticker color={color} style={{ padding: '3px 9px', fontSize: '0.62rem' }}>
-                        {trend.category}
-                      </Sticker>
-                      <span style={{ color, fontSize: '1rem' }}>↗</span>
+                    <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 6 }}>
+                      {trend.category}
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: '0.92rem', marginBottom: 6, color: 'var(--text)', letterSpacing: '-0.015em', lineHeight: 1.3 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: 5, color: 'var(--text)', letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                       {trend.title}
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-faint)', lineHeight: 1.5 }}>
+                    <div style={{ fontSize: '0.76rem', color: 'var(--text-faint)', lineHeight: 1.5 }}>
                       {trend.description}
                     </div>
                   </div>
@@ -229,11 +154,11 @@ function TrendingBrief({ userName }) {
           </div>
         </>
       ) : null}
-    </BentoTile>
+    </div>
   )
 }
 
-/* ─── Creator Score (story-card) ─────────────────────────────────── */
+/* ─── Creator Score (horizontal) ─────────────────────────────────── */
 function CreatorScoreCard({ score }) {
   const { t } = useLang()
   const [copied, setCopied] = useState(false)
@@ -257,193 +182,144 @@ function CreatorScoreCard({ score }) {
   }
 
   return (
-    <BentoTile span={4} rowSpan={2} color={C.pink} mesh={[C.cyan, C.pink, C.amber]} padding={26}>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', minHeight: 280 }}>
-        <div>
-          <Sticker color={C.pink} style={{ marginBottom: 14 }}>
-            ✦ Creator Score
-          </Sticker>
+    <div style={{
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderRadius: 18,
+      padding: '22px 26px',
+      marginBottom: 24,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
+        {/* Score + Level */}
+        <div style={{ flexShrink: 0 }}>
           <div style={{
-            fontSize: 'clamp(3.6rem, 9vw, 5.2rem)',
             fontFamily: 'var(--font-creator)', fontWeight: 800,
-            lineHeight: 0.92, letterSpacing: '-0.05em',
+            fontSize: '3.4rem', lineHeight: 0.95, letterSpacing: '-0.04em',
             background: `linear-gradient(135deg, ${C.cyan} 0%, ${C.pink} 55%, ${C.amber} 100%)`,
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            filter: `drop-shadow(0 0 32px ${C.pink}55)`,
-            marginBottom: 12,
           }}>
             {val}
           </div>
           <div style={{
-            fontSize: '0.78rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
-            color: 'var(--text)', letterSpacing: '0.06em',
+            fontSize: '0.72rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+            color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em',
+            marginTop: 6,
           }}>
             {level || 'Rising Creator'}
           </div>
         </div>
 
-        <div>
-          {/* Bar */}
-          <div style={{ display: 'flex', height: 8, borderRadius: 99, overflow: 'hidden', gap: 3, marginBottom: 12 }}>
+        {/* Breakdown */}
+        <div style={{ flex: 1, minWidth: 220 }}>
+          <div style={{
+            fontSize: '0.7rem', color: 'var(--text-faint)',
+            fontFamily: 'var(--font-mono)', textTransform: 'uppercase',
+            letterSpacing: '0.1em', fontWeight: 700, marginBottom: 10,
+          }}>
+            {t('dash_score_breakdown')}
+          </div>
+          <div style={{ display: 'flex', height: 8, borderRadius: 99, overflow: 'hidden', gap: 2, marginBottom: 10 }}>
             {segments.map(seg => {
               const v = breakdown[seg.key] || 0
               const pct = (v / total) * 100
               return (
                 <div key={seg.key} title={`${seg.label}: ${v}`} style={{
-                  flex: pct, minWidth: pct > 0 ? 5 : 0, borderRadius: 99,
-                  background: seg.color, boxShadow: `0 0 10px ${seg.color}66`,
+                  flex: pct, minWidth: pct > 0 ? 4 : 0, borderRadius: 99,
+                  background: seg.color,
                   transition: 'flex 0.4s ease',
                 }} />
               )
             })}
           </div>
-          {/* Legend grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 10px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {segments.map(seg => (
-              <div key={seg.key} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: seg.color, flexShrink: 0, boxShadow: `0 0 5px ${seg.color}88` }} />
-                <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontWeight: 600, letterSpacing: '0.02em' }}>
+              <div key={seg.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: seg.color, flexShrink: 0 }} />
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
                   {seg.label} <span style={{ color: 'var(--text)', fontWeight: 700 }}>{breakdown[seg.key] ?? '—'}</span>
                 </span>
               </div>
             ))}
           </div>
-
-          <button
-            onClick={shareScore}
-            style={{
-              width: '100%', padding: '10px 14px', borderRadius: 12,
-              border: `1.5px solid ${copied ? C.teal : C.pink}66`,
-              background: copied ? `${C.teal}14` : `${C.pink}14`,
-              color: copied ? C.teal : C.pink,
-              fontSize: '0.82rem', fontFamily: 'var(--font-body)', fontWeight: 700,
-              cursor: 'pointer', transition: 'all 0.15s',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            }}
-          >
-            {copied ? '✓' : '↗'} {copied ? t('dash_score_copied') : t('dash_share_score')}
-          </button>
         </div>
+
+        {/* Share */}
+        <button
+          onClick={shareScore}
+          style={{
+            padding: '9px 16px', borderRadius: 10,
+            border: `1px solid ${copied ? C.teal : 'var(--border)'}`,
+            background: copied ? `${C.teal}14` : 'transparent',
+            color: copied ? C.teal : 'var(--text-muted)',
+            fontSize: '0.8rem', fontFamily: 'var(--font-body)', fontWeight: 600,
+            cursor: 'pointer', transition: 'all 0.15s',
+            flexShrink: 0,
+          }}
+        >
+          {copied ? t('dash_score_copied') : t('dash_share_score')}
+        </button>
       </div>
-    </BentoTile>
+    </div>
   )
 }
 
-/* ─── Stat Tile ──────────────────────────────────────────────────── */
-function StatTile({ span = 4, label, value, sub, color, icon, progress, accent }) {
+/* ─── Stat tile ──────────────────────────────────────────────────── */
+function StatTile({ label, value, sub, color, progress }) {
   return (
-    <BentoTile span={span} color={color} padding={20}>
-      {accent && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <span style={{
-          width: 30, height: 30, borderRadius: 9,
-          background: `${color}1A`, border: `1px solid ${color}33`,
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '0.88rem', color,
-        }}>{icon}</span>
-        <span style={{
-          fontSize: '0.66rem', fontWeight: 700, textTransform: 'uppercase',
-          letterSpacing: '0.12em', color: 'var(--text-muted)',
-        }}>{label}</span>
-      </div>
+    <div style={{
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderLeft: `2px solid ${color}88`,
+      borderRadius: 14,
+      padding: '18px 20px',
+      transition: 'transform 0.18s, border-color 0.18s',
+    }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = `${color}55`; e.currentTarget.style.borderLeftColor = color }}
+      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.borderLeftColor = `${color}88` }}
+    >
       <div style={{
-        fontFamily: 'var(--font-creator)', fontSize: '2.6rem', fontWeight: 800,
-        letterSpacing: '-0.04em', lineHeight: 1, color, marginBottom: 6,
-        filter: `drop-shadow(0 0 12px ${color}3F)`,
+        fontSize: '0.66rem', fontWeight: 700, textTransform: 'uppercase',
+        letterSpacing: '0.12em', color: 'var(--text-muted)', marginBottom: 8,
+      }}>{label}</div>
+      <div style={{
+        fontFamily: 'var(--font-creator)', fontSize: '2.2rem', fontWeight: 800,
+        letterSpacing: '-0.04em', lineHeight: 1, color, marginBottom: 4,
       }}>
         {value}
       </div>
-      {sub && (
-        <div style={{ fontSize: '0.74rem', color: 'var(--text-faint)' }}>{sub}</div>
-      )}
+      {sub && <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)' }}>{sub}</div>}
       {progress != null && (
-        <div style={{ height: 5, background: 'var(--surface3)', borderRadius: 99, overflow: 'hidden', marginTop: 10 }}>
+        <div style={{ height: 4, background: 'var(--surface3)', borderRadius: 99, overflow: 'hidden', marginTop: 10 }}>
           <div style={{
             height: '100%', borderRadius: 99,
             width: `${Math.min(progress, 100)}%`,
             background: progress > 80
               ? `linear-gradient(90deg, ${C.coral}, ${C.pink})`
-              : `linear-gradient(90deg, ${color}, ${color}CC)`,
-            boxShadow: `0 0 8px ${color}66`,
+              : color,
             transition: 'width 0.6s ease',
           }} />
         </div>
       )}
-    </BentoTile>
+    </div>
   )
 }
 
-/* ─── Streak story-tile ──────────────────────────────────────────── */
-function StreakTile({ streak, t }) {
+/* ─── Quick action card ──────────────────────────────────────────── */
+function ActionCard({ to, icon, label, color }) {
   return (
-    <BentoTile span={4} color={C.amber} mesh={[C.amber, C.coral, C.pink]} padding={22}>
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%', minHeight: 130 }}>
-        <Sticker color={C.amber}>
-          🔥 Streak
-        </Sticker>
-        <div>
-          <div style={{
-            fontFamily: 'var(--font-creator)', fontWeight: 800,
-            fontSize: 'clamp(2.6rem, 6vw, 3.8rem)', lineHeight: 0.95,
-            color: C.amber, letterSpacing: '-0.04em',
-            filter: `drop-shadow(0 0 16px ${C.amber}66)`,
-          }}>
-            {streak}
-          </div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: 4, fontWeight: 600 }}>
-            {t('dash_day_streak')}
-          </div>
-        </div>
-      </div>
-    </BentoTile>
-  )
-}
-
-/* ─── Upgrade story-tile ─────────────────────────────────────────── */
-function UpgradeTile({ used, limit, t }) {
-  return (
-    <BentoTile span={4} color={C.pink} mesh={[C.cyan, C.pink, C.amber]} padding={22}>
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%', minHeight: 130, gap: 14 }}>
-        <div>
-          <Sticker color={C.amber} style={{ marginBottom: 12 }}>
-            ⚡ {used}/{limit} used
-          </Sticker>
-          <div style={{
-            fontFamily: 'var(--font-creator)', fontWeight: 800,
-            fontSize: '1.4rem', letterSpacing: '-0.025em', lineHeight: 1.1,
-            background: `linear-gradient(135deg, ${C.cyan}, ${C.pink} 60%, ${C.amber})`,
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            marginBottom: 6,
-          }}>
-            {t('dash_unlock_title')}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            {t('dash_free_desc')}
-          </div>
-        </div>
-        <Link to="/pricing" className="btn btn-primary btn-sm" style={{ alignSelf: 'flex-start', textDecoration: 'none' }}>
-          {t('dash_upgrade_btn')}
-        </Link>
-      </div>
-    </BentoTile>
-  )
-}
-
-/* ─── Quick action pill (horizontal scroll) ──────────────────────── */
-function ActionPill({ to, icon, label, color }) {
-  return (
-    <Link to={to} style={{ textDecoration: 'none', flexShrink: 0 }}>
+    <Link to={to} style={{ textDecoration: 'none' }}>
       <div style={{
         background: 'var(--surface)',
-        border: `1px solid var(--border)`,
-        borderRadius: 99,
-        padding: '9px 16px 9px 9px',
-        display: 'flex', alignItems: 'center', gap: 10,
-        cursor: 'pointer', transition: 'all 0.18s ease',
+        border: '1px solid var(--border)',
+        borderRadius: 12,
+        padding: '13px 16px',
+        display: 'flex', alignItems: 'center', gap: 11,
+        cursor: 'pointer',
+        transition: 'all 0.18s',
       }}
         onMouseEnter={e => {
-          e.currentTarget.style.borderColor = `${color}77`
-          e.currentTarget.style.background = `${color}10`
+          e.currentTarget.style.borderColor = `${color}66`
+          e.currentTarget.style.background = `${color}0C`
           e.currentTarget.style.transform = 'translateY(-2px)'
         }}
         onMouseLeave={e => {
@@ -453,12 +329,12 @@ function ActionPill({ to, icon, label, color }) {
         }}
       >
         <span style={{
-          width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-          background: `${color}1F`, border: `1px solid ${color}55`,
+          width: 32, height: 32, borderRadius: 9, flexShrink: 0,
+          background: `${color}18`, border: `1px solid ${color}33`,
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '0.92rem', color,
+          fontSize: '1rem', color,
         }}>{icon}</span>
-        <span style={{ fontWeight: 700, fontSize: '0.84rem', color: 'var(--text)', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+        <span style={{ fontWeight: 700, fontSize: '0.86rem', color: 'var(--text)', letterSpacing: '-0.01em' }}>
           {label}
         </span>
       </div>
@@ -504,150 +380,117 @@ export default function Dashboard() {
   const mood = getTimeMood()
 
   return (
-    <div className="page-enter dash-bento">
-      <style>{`
-        .dash-bento {
-          display: grid;
-          grid-template-columns: repeat(12, 1fr);
-          gap: 14px;
-        }
-        .dash-bento > * { min-width: 0; }
-        @media (max-width: 980px) {
-          .dash-bento { grid-template-columns: repeat(6, 1fr); }
-          .dash-bento > [data-bento-mob="full"] { grid-column: span 6 !important; }
-          .dash-bento > [data-bento-mob="half"] { grid-column: span 3 !important; }
-        }
-        @media (max-width: 580px) {
-          .dash-bento { grid-template-columns: 1fr; }
-          .dash-bento > * { grid-column: 1 / -1 !important; grid-row: auto !important; }
-        }
-        @keyframes meshDriftA {
-          0%, 100% { transform: translate(0,0) scale(1); }
-          50%       { transform: translate(2%, -2%) scale(1.05); }
-        }
-      `}</style>
+    <div className="page-enter">
 
-      {/* ─── Hero greeting (span 8) ──────────────────────────────── */}
-      <div data-bento-mob="full" style={{
-        gridColumn: 'span 8', gridRow: 'span 1',
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 22,
-        padding: '32px 32px 28px',
-        position: 'relative', overflow: 'hidden',
-        minHeight: 180,
-      }}>
-        <MeshBg colors={[C.cyan, C.pink, C.amber]} opacity={0.22} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-            <Sticker color={mood.color}>
-              {mood.emoji} {mood.label}
-            </Sticker>
-            <span style={{
-              fontSize: '0.7rem', color: 'var(--text-faint)',
-              fontFamily: 'var(--font-mono)', fontWeight: 600, letterSpacing: '0.04em',
-            }}>
-              {new Date().toLocaleDateString(lang === 'hi' ? 'hi-IN' : 'en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </span>
-          </div>
-
-          <h1 style={{
-            fontFamily: 'var(--font-creator)', fontWeight: 800,
-            fontSize: 'clamp(2.2rem, 5vw, 3.4rem)',
-            letterSpacing: '-0.045em', lineHeight: 1.02, marginBottom: 12,
+      {/* ─── Greeting ────────────────────────────────────────────── */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          padding: '5px 12px', borderRadius: 99,
+          background: `${mood.color}14`,
+          border: `1px solid ${mood.color}40`,
+          marginBottom: 14,
+        }}>
+          <span style={{ fontSize: '0.92rem' }}>{mood.emoji}</span>
+          <span style={{
+            fontSize: '0.7rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+            color: mood.color, textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
-            {t('dash_greeting_' + mood.key)},{' '}
-            <span style={{
-              background: `linear-gradient(135deg, ${C.cyan} 0%, ${C.pink} 50%, ${C.amber} 100%)`,
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-              filter: `drop-shadow(0 0 32px ${C.pink}55)`,
-            }}>
-              {firstName}
-            </span>
-            <span style={{ color: C.amber }}> ✦</span>
-          </h1>
-          <p style={{ fontSize: '0.96rem', color: 'var(--text-muted)', maxWidth: 600, lineHeight: 1.55 }}>
-            {t('dash_overview')}
-          </p>
+            {mood.label}
+          </span>
         </div>
+
+        <h1 style={{
+          fontFamily: 'var(--font-creator)', fontWeight: 800,
+          fontSize: 'clamp(2rem, 4vw, 2.8rem)',
+          letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 8,
+        }}>
+          {t('dash_greeting_' + mood.key)},{' '}
+          <span style={{
+            background: `linear-gradient(135deg, ${C.cyan} 0%, ${C.pink} 50%, ${C.amber} 100%)`,
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+          }}>
+            {firstName}
+          </span>
+        </h1>
+        <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', maxWidth: 600, lineHeight: 1.55, margin: 0 }}>
+          {t('dash_overview')}
+        </p>
       </div>
 
-      {/* ─── Creator Score (span 4, rowspan 2) ──────────────────── */}
-      {creatorScore && <CreatorScoreCard score={creatorScore} />}
-      {!creatorScore && (
-        <div data-bento-mob="full" style={{
-          gridColumn: 'span 4', gridRow: 'span 2',
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 22, minHeight: 280,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+      {/* ─── Today's Brief ───────────────────────────────────────── */}
+      <TrendingBrief userName={firstName} />
+
+      {/* ─── Stats row ───────────────────────────────────────────── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: 12, marginBottom: 24,
+      }}>
+        <StatTile
+          label={t('weekly_scripts')}
+          value={scripts.length} sub={t('dash_all_time')}
+          color={C.cyan}
+        />
+        <StatTile
+          label={t('dash_this_month')}
+          value={<span>{used}<span style={{ fontSize: '1.2rem', color: 'var(--text-faint)', fontWeight: 600 }}>/{limit}</span></span>}
+          color={C.pink} progress={pct}
+        />
+        <StatTile
+          label={t('weekly_analyses')}
+          value={logs.length} sub={t('dash_videos_reviewed')}
+          color={C.lime}
+        />
+      </div>
+
+      {/* ─── Creator Score ───────────────────────────────────────── */}
+      <CreatorScoreCard score={creatorScore} />
+
+      {/* ─── Streak chip ─────────────────────────────────────────── */}
+      {streak > 0 && (
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 12,
+          padding: '12px 18px',
+          background: 'var(--surface)',
+          border: `1px solid ${C.amber}40`,
+          borderRadius: 14,
+          marginBottom: 24,
         }}>
-          <span style={{ fontSize: '0.82rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-            Score loading…
-          </span>
+          <div style={{ fontSize: '1.6rem', lineHeight: 1 }}>🔥</div>
+          <div>
+            <span style={{
+              fontFamily: 'var(--font-creator)', fontWeight: 800, fontSize: '1.4rem',
+              color: C.amber, letterSpacing: '-0.02em',
+            }}>{streak}</span>
+            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginLeft: 8, fontWeight: 600 }}>
+              {t('dash_day_streak')}
+            </span>
+          </div>
         </div>
       )}
 
-      {/* ─── Stats row: cyan / pink / lime, each span 2.66 ≈ 3+3+2 ─ */}
-      <div data-bento-mob="half" style={{ gridColumn: 'span 3', gridRow: 'span 1' }}>
-        <StatTile
-          span={12} icon="✦" label={t('weekly_scripts')}
-          value={scripts.length} sub={t('dash_all_time')}
-          color={C.cyan} accent
-        />
-      </div>
-      <div data-bento-mob="half" style={{ gridColumn: 'span 3', gridRow: 'span 1' }}>
-        <StatTile
-          span={12} icon="⚡" label={t('dash_this_month')}
-          value={<span>{used}<span style={{ fontSize: '1.4rem', color: 'var(--text-faint)', fontWeight: 600 }}>/{limit}</span></span>}
-          color={C.pink} progress={pct} accent
-        />
-      </div>
-      <div data-bento-mob="full" style={{ gridColumn: 'span 2', gridRow: 'span 1' }}>
-        <StatTile
-          span={12} icon="◈" label={t('weekly_analyses')}
-          value={logs.length} sub={t('dash_videos_reviewed')}
-          color={C.lime} accent
-        />
-      </div>
-
-      {/* ─── Today's brief (span 12) ────────────────────────────── */}
-      <TrendingBrief userName={firstName} />
-
-      {/* ─── Streak + Upgrade row (only when applicable) ────────── */}
-      {streak > 0 && <StreakTile streak={streak} t={t} />}
-      {user?.plan === 'FREE' && <UpgradeTile used={used} limit={limit} t={t} />}
-
-      {/* ─── Badges (span 12) ───────────────────────────────────── */}
+      {/* ─── Badges ──────────────────────────────────────────────── */}
       {badges.length > 0 && (
-        <div data-bento-mob="full" style={{
-          gridColumn: 'span 12',
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 22, padding: 22, position: 'relative', overflow: 'hidden',
-        }}>
+        <div style={{ marginBottom: 24 }}>
           <h2 style={{
-            fontFamily: 'var(--font-head)', fontSize: '0.78rem', fontWeight: 700,
-            color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.14em',
-            marginBottom: 12,
+            fontFamily: 'var(--font-head)', fontSize: '0.74rem', fontWeight: 700,
+            color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em',
+            marginBottom: 10,
           }}>{t('dash_badges')}</h2>
-          <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
             {badges.map((badge, i) => {
               const meta = BADGE_META[badge.type || badge] || { emoji: '⭐', label: badge.type || badge }
-              const tilt = (i % 3 - 1) * 1.2
               return (
                 <div key={i} title={meta.label} style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                  padding: '10px 14px',
-                  background: 'var(--surface2)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                  padding: '8px 12px',
+                  background: 'var(--surface)',
                   border: '1px solid var(--border)',
-                  borderRadius: 12, flexShrink: 0, minWidth: 90,
-                  transform: `rotate(${tilt}deg)`,
-                  transition: 'transform 0.2s',
-                }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = 'rotate(0) scale(1.05)' }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = `rotate(${tilt}deg)` }}
-                >
-                  <span style={{ fontSize: '1.5rem' }}>{meta.emoji}</span>
-                  <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', fontWeight: 600 }}>
+                  borderRadius: 10, flexShrink: 0, minWidth: 84,
+                }}>
+                  <span style={{ fontSize: '1.3rem' }}>{meta.emoji}</span>
+                  <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap', fontWeight: 600 }}>
                     {meta.label}
                   </span>
                 </div>
@@ -657,36 +500,56 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ─── Quick actions: horizontal scroll-strip (span 12) ───── */}
-      <div data-bento-mob="full" style={{
-        gridColumn: 'span 12',
-        background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 22, padding: 22, position: 'relative', overflow: 'hidden',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h2 style={{
-            fontFamily: 'var(--font-creator)', fontWeight: 800, fontSize: '1.05rem',
-            color: 'var(--text)', letterSpacing: '-0.02em', margin: 0,
-          }}>Jump back in</h2>
-          <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>swipe →</span>
-        </div>
+      {/* ─── Quick actions ──────────────────────────────────────── */}
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{
+          fontFamily: 'var(--font-head)', fontSize: '0.74rem', fontWeight: 700,
+          color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em',
+          marginBottom: 10,
+        }}>Jump back in</h2>
         <div style={{
-          display: 'flex', gap: 10, overflowX: 'auto',
-          paddingBottom: 6, scrollSnapType: 'x mandatory',
+          display: 'grid', gap: 10,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
         }}>
-          <ActionPill to="/generate"    icon="✦"  label={t('dash_action_generate')} color={C.cyan} />
-          <ActionPill to="/score"       icon="◎"  label={t('dash_action_score')}    color={C.pink} />
-          <ActionPill to="/coach"       icon="🤖" label={t('dash_action_coach')}    color={C.violet} />
-          <ActionPill to="/trending"    icon="📈" label={t('dash_action_trending')} color={C.lime} />
-          <ActionPill to="/performance" icon="◈"  label={t('dash_action_analyze')}  color={C.amber} />
-          <ActionPill to="/calendar"    icon="📅" label={t('dash_action_calendar')} color={C.coral} />
+          <ActionCard to="/generate"    icon="✦"  label={t('dash_action_generate')} color={C.cyan} />
+          <ActionCard to="/score"       icon="◎"  label={t('dash_action_score')}    color={C.pink} />
+          <ActionCard to="/coach"       icon="🤖" label={t('dash_action_coach')}    color={C.violet} />
+          <ActionCard to="/trending"    icon="📈" label={t('dash_action_trending')} color={C.lime} />
+          <ActionCard to="/performance" icon="◈"  label={t('dash_action_analyze')}  color={C.amber} />
+          <ActionCard to="/calendar"    icon="📅" label={t('dash_action_calendar')} color={C.coral} />
         </div>
       </div>
 
-      {/* ─── Weekly report (span 12) ────────────────────────────── */}
-      <div data-bento-mob="full" style={{ gridColumn: 'span 12' }}>
-        <WeeklyReport />
-      </div>
+      <WeeklyReport />
+
+      {/* ─── Upgrade banner ──────────────────────────────────────── */}
+      {user?.plan === 'FREE' && (
+        <div style={{
+          marginTop: 32,
+          background: 'var(--surface)',
+          border: `1px solid ${C.pink}33`,
+          borderRadius: 16,
+          padding: '20px 24px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
+        }}>
+          <div>
+            <div style={{
+              fontFamily: 'var(--font-creator)', fontWeight: 800, fontSize: '1.15rem',
+              letterSpacing: '-0.02em', marginBottom: 4,
+              background: `linear-gradient(135deg, ${C.cyan}, ${C.pink} 60%, ${C.amber})`,
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>
+              {t('dash_unlock_title')}
+            </div>
+            <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)' }}>
+              <span style={{ color: C.pink, fontWeight: 700 }}>{used}/{limit}</span> {t('generate_usage')} · {t('dash_free_desc')}
+            </div>
+          </div>
+          <Link to="/pricing" className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>
+            {t('dash_upgrade_btn')}
+          </Link>
+        </div>
+      )}
 
     </div>
   )
