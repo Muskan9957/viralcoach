@@ -106,7 +106,7 @@ function TrendingBrief({ userName }) {
             transition: 'all 0.15s',
           }}
         >
-          {speaking ? '⏸' : '▶'} {speaking ? t('dash_stop') : played ? t('dash_replay') : t('dash_listen')}
+          {speaking ? t('dash_stop') : played ? t('dash_replay') : t('dash_listen')}
         </button>
       </div>
 
@@ -212,14 +212,13 @@ function CreatorScoreCard({ score }) {
           }}>
             {val}
           </div>
-          {/* sticker-style level badge */}
+          {/* level badge */}
           <div style={{
-            display: 'inline-block', marginTop: 8,
+            display: 'inline-block', marginTop: 10,
             padding: '5px 12px', borderRadius: 99,
             background: `${C.pink}1A`, border: `1.5px solid ${C.pink}55`,
             fontSize: '0.72rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
             color: C.pink, textTransform: 'uppercase', letterSpacing: '0.08em',
-            transform: 'rotate(-1.5deg)',
           }}>
             ✦ {level || 'Rising Creator'}
           </div>
@@ -621,7 +620,7 @@ export default function Dashboard() {
             </div>
           </div>
           <Link to="/pricing" className="btn btn-primary btn-sm" style={{ position: 'relative', zIndex: 1, textDecoration: 'none' }}>
-            {t('dash_upgrade_btn')} →
+            {t('dash_upgrade_btn')}
           </Link>
         </div>
       )}
