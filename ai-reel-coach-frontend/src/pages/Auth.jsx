@@ -26,64 +26,7 @@ const YouTubeIcon = () => (
   </svg>
 )
 
-/* ─── Left Panel app mockup ──────────────────────────────────────── */
-function AppMockup() {
-  return (
-    <div style={{
-      background: 'rgba(11,15,46,0.9)',
-      border: '1px solid rgba(0,200,255,0.12)',
-      borderRadius: 16,
-      padding: '18px',
-      width: '100%',
-      maxWidth: 320,
-      boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,200,255,0.06)',
-    }}>
-      {/* Mock header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF5F5F' }} />
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FFBD2E' }} />
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#28C840' }} />
-        <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.06)', borderRadius: 99, marginLeft: 4 }} />
-      </div>
-      {/* Mock title */}
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ height: 8, width: '60%', background: 'rgba(0,200,255,0.15)', borderRadius: 4, marginBottom: 6 }} />
-        <div style={{ height: 6, width: '40%', background: 'rgba(255,255,255,0.06)', borderRadius: 4 }} />
-      </div>
-      {/* Hook score card */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(0,200,255,0.12), rgba(123,92,240,0.08))',
-        border: '1px solid rgba(0,200,255,0.2)',
-        borderRadius: 10,
-        padding: '12px 14px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        marginBottom: 10,
-      }}>
-        <div style={{ fontFamily: 'sans-serif', fontWeight: 900, fontSize: '1.8rem', lineHeight: 1, background: 'linear-gradient(135deg, #00E5FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>94</div>
-        <div>
-          <div style={{ height: 6, width: 80, background: 'rgba(0,200,255,0.2)', borderRadius: 4, marginBottom: 4 }} />
-          <div style={{ height: 5, width: 55, background: 'rgba(0,212,177,0.3)', borderRadius: 4 }} />
-        </div>
-      </div>
-      {/* Script section mock */}
-      <div style={{ background: 'rgba(16,21,56,0.8)', borderRadius: 8, padding: '10px 12px', marginBottom: 8, borderLeft: '3px solid #00C8FF' }}>
-        <div style={{ height: 5, width: '45%', background: 'rgba(0,200,255,0.15)', borderRadius: 3, marginBottom: 6 }} />
-        <div style={{ height: 5, width: '90%', background: 'rgba(255,255,255,0.1)', borderRadius: 3, marginBottom: 4 }} />
-        <div style={{ height: 5, width: '75%', background: 'rgba(255,255,255,0.1)', borderRadius: 3 }} />
-      </div>
-      <div style={{ background: 'rgba(16,21,56,0.8)', borderRadius: 8, padding: '10px 12px', borderLeft: '3px solid #00D4B1' }}>
-        <div style={{ height: 5, width: '40%', background: 'rgba(0,212,177,0.15)', borderRadius: 3, marginBottom: 6 }} />
-        <div style={{ height: 5, width: '95%', background: 'rgba(255,255,255,0.1)', borderRadius: 3, marginBottom: 4 }} />
-        <div style={{ height: 5, width: '80%', background: 'rgba(255,255,255,0.1)', borderRadius: 3, marginBottom: 4 }} />
-        <div style={{ height: 5, width: '60%', background: 'rgba(255,255,255,0.1)', borderRadius: 3 }} />
-      </div>
-    </div>
-  )
-}
-
-/* ─── Main Component ─────────────────────────────────────────────── */
+/* ─── Auth ───────────────────────────────────────────────────────── */
 export default function Auth() {
   const [mode, setMode]       = useState('login')
   const [email, setEmail]     = useState('')
@@ -119,231 +62,127 @@ export default function Auth() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--bg)', overflow: 'hidden' }}>
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--bg)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '40px 24px',
+      position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Subtle ambient glow — keeps background alive without competing */}
+      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 65%)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,45,139,0.07) 0%, transparent 65%)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
-      {/* ── Left Brand Panel (desktop only) ──────────────────────── */}
-      <div className="auth-left-panel">
-        {/* Gradient orbs */}
-        <div style={{ position: 'absolute', top: -100, left: -80, width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,200,255,0.12) 0%, transparent 65%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -120, right: -60, width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(123,92,240,0.10) 0%, transparent 65%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '40%', left: '50%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,229,255,0.05) 0%, transparent 70%)', pointerEvents: 'none', transform: 'translate(-50%, -50%)' }} />
+      <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }} className="page-enter">
 
-        {/* Content */}
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
-
-          {/* Logo — same component as dashboard/landing */}
-          <div style={{ marginBottom: 52 }}>
-            <Logo size={40} showWordmark />
-          </div>
-
-          {/* Headline */}
-          <div style={{ marginBottom: 32 }}>
-            <h2 style={{
-              fontFamily: 'var(--font-head)', fontWeight: 900,
-              fontSize: '2.2rem', lineHeight: 1.1, letterSpacing: '-0.04em',
-              color: 'var(--text)', marginBottom: 14,
-            }}>
-              Make content that<br />
-              <span style={{ background: 'linear-gradient(135deg, #00E5FF, #00C8FF 50%, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                actually goes viral.
-              </span>
-            </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.65 }}>
-              AI-powered scripts, hook scoring & performance insights — built for creators.
-            </p>
-          </div>
-
-          {/* Feature list */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 40 }}>
-            {[
-              { icon: '✦', color: '#00C8FF', title: 'Script Generator', desc: 'Viral-ready scripts in 15 seconds' },
-              { icon: '◎', color: '#7B5CF0', title: 'Hook Scorer',       desc: 'Know if your first 3 seconds will stop the scroll' },
-              { icon: '◈', color: '#00D4B1', title: 'AI Coach',           desc: 'Personal strategy for your niche, 24/7' },
-            ].map(f => (
-              <div key={f.title} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                <div style={{
-                  width: 34, height: 34, borderRadius: 9,
-                  background: f.color + '18',
-                  border: `1px solid ${f.color}33`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.85rem', flexShrink: 0, color: f.color,
-                }}>{f.icon}</div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text)', marginBottom: 1 }}>{f.title}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>{f.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* App mockup */}
-          <div style={{ marginBottom: 'auto' }}>
-            <AppMockup />
-          </div>
-
-          {/* Footer */}
-          <div style={{ borderTop: '1px solid rgba(0,200,255,0.1)', paddingTop: 20, marginTop: 24 }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-              Free to start · No credit card · Cancel anytime
-            </div>
-          </div>
+        {/* Logo */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
+          <Logo size={42} showWordmark />
         </div>
-      </div>
 
-      {/* ── Right Form Panel ─────────────────────────────────────── */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 24px',
-        minHeight: '100vh',
-        overflowY: 'auto',
-      }}>
-        <div style={{ width: '100%', maxWidth: 380 }} className="page-enter">
-
-          {/* Mobile-only logo */}
-          <div className="auth-mobile-logo">
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-              <Logo size={36} showWordmark />
-            </div>
-          </div>
-
-          {/* Auth card */}
-          <div style={{
-            background: 'var(--surface-card)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid var(--border-bright)',
-            borderRadius: 20,
-            padding: '32px',
-            boxShadow: 'var(--shadow-glass)',
+        {/* Auth card */}
+        <div style={{
+          background: 'var(--surface-card)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid var(--border-bright)',
+          borderRadius: 20,
+          padding: '32px',
+          boxShadow: 'var(--shadow-glass)',
+        }}>
+          <h1 style={{
+            fontFamily: 'var(--font-head)', fontWeight: 800,
+            fontSize: '1.6rem', letterSpacing: '-0.03em',
+            color: 'var(--text)', marginBottom: 4, lineHeight: 1.2,
           }}>
-            <h1 style={{
-              fontFamily: 'var(--font-head)', fontWeight: 800,
-              fontSize: '1.6rem', letterSpacing: '-0.03em',
-              color: 'var(--text)', marginBottom: 4, lineHeight: 1.2,
-            }}>
-              {mode === 'login' ? 'Welcome back' : 'Get started free'}
-            </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 24 }}>
-              {mode === 'login' ? 'Sign in to your ViralCoach studio' : 'No credit card required'}
-            </p>
+            {mode === 'login' ? 'Welcome back' : 'Get started free'}
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 24 }}>
+            {mode === 'login' ? 'Sign in to your ViralCoach studio' : 'No credit card required'}
+          </p>
 
-            {/* Social buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 20 }}>
-              {[
-                { id: 'google',    label: 'Continue with Google',    icon: <GoogleIcon />,    bg: '#fff',              color: '#1f1f1f', border: '1px solid rgba(0,0,0,0.15)' },
-                { id: 'instagram', label: 'Continue with Instagram',  icon: <InstagramIcon />, bg: 'linear-gradient(45deg, #405DE6, #833AB4, #C13584, #E1306C)', color: '#fff', border: 'none' },
-                { id: 'youtube',   label: 'Continue with YouTube',    icon: <YouTubeIcon />,   bg: '#FF0000',           color: '#fff', border: 'none' },
-              ].map(btn => (
-                <button
-                  key={btn.id}
-                  type="button"
-                  onClick={() => handleSocialClick(btn.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    width: '100%', height: 44, padding: '0 16px',
-                    borderRadius: 10, cursor: 'pointer',
-                    fontFamily: 'var(--font-body)', fontSize: '0.875rem',
-                    fontWeight: 600, transition: 'opacity 0.15s, transform 0.15s',
-                    background: btn.bg, color: btn.color, border: btn.border || 'none',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                  onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, flexShrink: 0 }}>{btn.icon}</span>
-                  <span style={{ flex: 1, textAlign: 'center' }}>{btn.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Divider */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>or</span>
-              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
-            </div>
-
-            {/* Email form */}
-            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {mode === 'register' && (
-                <div className="field">
-                  <label>Name</label>
-                  <input className="input" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} autoComplete="name" />
-                </div>
-              )}
-              <div className="field">
-                <label>Email</label>
-                <input className="input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required />
-              </div>
-              <div className="field">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label style={{ margin: 0 }}>Password</label>
-                  {mode === 'login' && (
-                    <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
-                      Forgot password?
-                    </Link>
-                  )}
-                </div>
-                <input className="input" type="password" placeholder={mode === 'register' ? 'Min 8 characters' : '••••••••'} value={password} onChange={e => setPass(e.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required />
-              </div>
+          {/* Social buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 20 }}>
+            {[
+              { id: 'google',    label: 'Continue with Google',     icon: <GoogleIcon />,    bg: '#fff',                                                            color: '#1f1f1f', border: '1px solid rgba(0,0,0,0.15)' },
+              { id: 'instagram', label: 'Continue with Instagram',  icon: <InstagramIcon />, bg: 'linear-gradient(45deg, #405DE6, #833AB4, #C13584, #E1306C)',     color: '#fff',    border: 'none' },
+              { id: 'youtube',   label: 'Continue with YouTube',    icon: <YouTubeIcon />,   bg: '#FF0000',                                                         color: '#fff',    border: 'none' },
+            ].map(btn => (
               <button
-                type="submit"
-                className="btn btn-primary btn-full btn-lg"
-                disabled={loading}
-                style={{ marginTop: 4, fontSize: '1rem', fontWeight: 700, letterSpacing: '0.01em' }}
-              >
-                {loading
-                  ? <><span className="spinner" /> Processing...</>
-                  : mode === 'login' ? 'Sign In →' : 'Create Account →'}
-              </button>
-            </form>
-
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 18 }}>
-              {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-              <button
+                key={btn.id}
                 type="button"
-                onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 700, fontFamily: 'var(--font-body)', padding: 0 }}
+                onClick={() => handleSocialClick(btn.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  width: '100%', height: 44, padding: '0 16px',
+                  borderRadius: 10, cursor: 'pointer',
+                  fontFamily: 'var(--font-body)', fontSize: '0.875rem',
+                  fontWeight: 600, transition: 'opacity 0.15s, transform 0.15s',
+                  background: btn.bg, color: btn.color, border: btn.border || 'none',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)' }}
               >
-                {mode === 'login' ? 'Sign up free' : 'Sign in'}
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, flexShrink: 0 }}>{btn.icon}</span>
+                <span style={{ flex: 1, textAlign: 'center' }}>{btn.label}</span>
               </button>
-            </p>
-          </div>
-
-          {/* Feature chips */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginTop: 20 }}>
-            {['✦ Script generation', '◎ Hook scoring', '◈ Performance analysis', '🎙 Voice input'].map(c => (
-              <div key={c} style={{
-                padding: '4px 10px', borderRadius: 6,
-                background: 'rgba(0,200,255,0.04)',
-                border: '1px solid rgba(0,200,255,0.1)',
-                fontSize: '0.7rem', color: 'var(--text-faint)',
-              }}>{c}</div>
             ))}
           </div>
+
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>or</span>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+          </div>
+
+          {/* Email form */}
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {mode === 'register' && (
+              <div className="field">
+                <label>Name</label>
+                <input className="input" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} autoComplete="name" />
+              </div>
+            )}
+            <div className="field">
+              <label>Email</label>
+              <input className="input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+            </div>
+            <div className="field">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={{ margin: 0 }}>Password</label>
+                {mode === 'login' && (
+                  <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
+                    Forgot password?
+                  </Link>
+                )}
+              </div>
+              <input className="input" type="password" placeholder={mode === 'register' ? 'Min 8 characters' : '••••••••'} value={password} onChange={e => setPass(e.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required />
+            </div>
+            <button
+              type="submit"
+              className="btn btn-primary btn-full btn-lg"
+              disabled={loading}
+              style={{ marginTop: 4, fontSize: '1rem', fontWeight: 700, letterSpacing: '0.01em' }}
+            >
+              {loading
+                ? <><span className="spinner" /> Processing...</>
+                : mode === 'login' ? 'Sign In →' : 'Create Account →'}
+            </button>
+          </form>
+
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 18 }}>
+            {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+            <button
+              type="button"
+              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 700, fontFamily: 'var(--font-body)', padding: 0 }}
+            >
+              {mode === 'login' ? 'Sign up free' : 'Sign in'}
+            </button>
+          </p>
         </div>
       </div>
-
-      {/* ── Responsive styles ────────────────────────────────────── */}
-      <style>{`
-        .auth-left-panel {
-          flex: 0 0 460px;
-          background: linear-gradient(160deg, #07091C 0%, #0B0F2E 60%, #07091C 100%);
-          border-right: 1px solid rgba(0,200,255,0.08);
-          padding: 40px 44px;
-          position: relative;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-        }
-        .auth-mobile-logo { display: none; }
-        @media (max-width: 900px) {
-          .auth-left-panel { display: none !important; }
-          .auth-mobile-logo { display: block !important; }
-        }
-      `}</style>
     </div>
   )
 }
