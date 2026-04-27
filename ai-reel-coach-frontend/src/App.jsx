@@ -15,7 +15,7 @@ import Calendar from './pages/Calendar'
 import Trending from './pages/Trending'
 import Templates from './pages/Templates'
 import Captions from './pages/Captions'
-import Remix from './pages/Remix'
+import Multiply from './pages/Multiply'
 import Coach from './pages/Coach'
 import HookLibrary from './pages/HookLibrary'
 import Onboarding from './pages/Onboarding'
@@ -87,7 +87,8 @@ export default function App() {
                 <Route path="/trending"     element={<Protected><Trending /></Protected>} />
                 <Route path="/templates"    element={<Protected><Templates /></Protected>} />
                 <Route path="/captions"     element={<Protected><Captions /></Protected>} />
-                <Route path="/remix"        element={<Protected><Remix /></Protected>} />
+                <Route path="/multiply"     element={<Protected><Multiply /></Protected>} />
+                <Route path="/remix"        element={<Navigate to="/multiply" replace />} />
                 <Route path="/coach"        element={<Protected><Coach /></Protected>} />
                 <Route path="/hooks"        element={<Protected><HookLibrary /></Protected>} />
                 <Route path="/profile"      element={<Protected><Profile /></Protected>} />
