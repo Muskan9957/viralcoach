@@ -173,20 +173,6 @@ export default function Landing() {
           <div style={{ position: 'absolute', top: '5%',   right: '5%',  width: 300, height: 240, borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(255,184,0,0.08) 0%, transparent 65%)',  filter: 'blur(36px)' }} />
         </div>
 
-        {/* ── Badge ── */}
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          background: 'rgba(255,45,139,0.09)',
-          border: '1px solid rgba(255,45,139,0.28)',
-          borderRadius: 99, padding: '6px 16px', marginBottom: 26,
-          position: 'relative', zIndex: 3,
-          animation: 'fadeUp 0.5s 0.04s cubic-bezier(0.22,1,0.36,1) both',
-        }}>
-          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#FF6EB4', fontFamily: 'var(--font-body)', letterSpacing: '0.01em' }}>
-            {t('landing_pill')}
-          </span>
-        </div>
-
         {/* ── H1 ── */}
         <h1 style={{
           fontFamily: 'var(--font-head)',
