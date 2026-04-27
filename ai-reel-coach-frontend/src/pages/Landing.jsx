@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import Logo from '../components/Logo'
-import ThemeToggle from '../components/ThemeToggle'
 import { useLang } from '../i18n.jsx'
 
 /* ─── Feature meta (icons + colors only — text comes from i18n) ─── */
@@ -125,7 +124,6 @@ export default function Landing() {
         <Logo size={44} showWordmark />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <LangFlip />
-          <ThemeToggle size="sm" />
           <Link
             to="/auth"
             className="landing-signin"
