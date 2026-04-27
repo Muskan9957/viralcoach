@@ -1,46 +1,55 @@
 import { Link } from 'react-router-dom'
 import Logo from '../components/Logo'
 import ThemeToggle from '../components/ThemeToggle'
+import { useLang } from '../i18n.jsx'
 
-/* ─── Data ───────────────────────────────────────────────────────── */
-const FEATURES = [
-  {
-    icon: '✦',
-    title: 'Script Generator',
-    desc: 'Viral-ready scripts in 15 seconds. Hindi, Hinglish, or English — just describe your idea.',
-    accent: '#00D4FF',
-  },
-  {
-    icon: '◎',
-    title: 'Hook Scorer',
-    desc: 'Know if your hook stops the scroll before you post. AI scores your first 3 seconds.',
-    accent: '#FF2D8B',
-  },
-  {
-    icon: '📊',
-    title: 'Performance Coach',
-    desc: 'Turn your video numbers into actionable insights. Know exactly what to do next.',
-    accent: '#A8FF3C',
-  },
-  {
-    icon: '🎨',
-    title: 'Caption Generator',
-    desc: '4 caption styles + 25 trending hashtags, instantly. Stand out in every feed.',
-    accent: '#FFB800',
-  },
-  {
-    icon: '🔁',
-    title: 'Content Remix',
-    desc: 'One script, every platform. Repurpose from Instagram to YouTube Shorts in seconds.',
-    accent: '#FF5F4C',
-  },
-  {
-    icon: '🤖',
-    title: 'AI Coach',
-    desc: 'Your personal content strategist, available 24/7. Ask anything about growth.',
-    accent: '#A855F7',
-  },
+/* ─── Feature meta (icons + colors only — text comes from i18n) ─── */
+const FEATURE_META = [
+  { icon: '✦',  accent: '#00D4FF', tk: 'landing_f1_t', dk: 'landing_f1_d' },
+  { icon: '◎',  accent: '#FF2D8B', tk: 'landing_f2_t', dk: 'landing_f2_d' },
+  { icon: '📊', accent: '#A8FF3C', tk: 'landing_f3_t', dk: 'landing_f3_d' },
+  { icon: '🎨', accent: '#FFB800', tk: 'landing_f4_t', dk: 'landing_f4_d' },
+  { icon: '⇄',  accent: '#FF5F4C', tk: 'landing_f5_t', dk: 'landing_f5_d' },
+  { icon: '🤖', accent: '#A855F7', tk: 'landing_f6_t', dk: 'landing_f6_d' },
 ]
+
+/* ─── Language flip button ───────────────────────────────────────── */
+function LangFlip() {
+  const { lang, setLanguage } = useLang()
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center',
+      background: 'var(--surface2)', border: '1px solid var(--border)',
+      borderRadius: 99, padding: 3, gap: 0,
+    }}>
+      {[
+        { code: 'en', label: 'EN'  },
+        { code: 'hi', label: 'हिं' },
+      ].map(o => {
+        const active = lang === o.code
+        return (
+          <button
+            key={o.code}
+            type="button"
+            onClick={() => !active && setLanguage(o.code)}
+            aria-pressed={active}
+            style={{
+              border: 'none', cursor: active ? 'default' : 'pointer',
+              padding: '4px 11px', borderRadius: 99,
+              background: active ? 'linear-gradient(135deg, #00D4FF, #FF2D8B)' : 'transparent',
+              color: active ? '#fff' : 'var(--text-muted)',
+              fontFamily: o.code === 'hi' ? 'var(--font-body)' : 'var(--font-mono)',
+              fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.04em',
+              transition: 'background 0.18s, color 0.18s',
+            }}
+          >
+            {o.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 
 /* ─── Feature Card ───────────────────────────────────────────────── */
@@ -100,6 +109,7 @@ function FeatureCard({ icon, title, desc, accent }) {
 
 /* ─── Landing Page ───────────────────────────────────────────────── */
 export default function Landing() {
+  const { t } = useLang()
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', overflowX: 'hidden' }}>
 
@@ -114,9 +124,11 @@ export default function Landing() {
       }}>
         <Logo size={44} showWordmark />
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <LangFlip />
           <ThemeToggle size="sm" />
           <Link
             to="/auth"
+            className="landing-signin"
             style={{
               fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.875rem',
               color: 'var(--text-muted)', textDecoration: 'none',
@@ -135,10 +147,10 @@ export default function Landing() {
               e.currentTarget.style.background = 'transparent'
             }}
           >
-            Sign In
+            {t('landing_signin')}
           </Link>
           <Link to="/auth" className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>
-            Get Started →
+            {t('landing_get_started')}
           </Link>
         </div>
       </nav>
@@ -170,9 +182,8 @@ export default function Landing() {
           position: 'relative', zIndex: 3,
           animation: 'fadeUp 0.5s 0.04s cubic-bezier(0.22,1,0.36,1) both',
         }}>
-          <span style={{ fontSize: '0.82rem' }}>✦</span>
           <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#FF6EB4', fontFamily: 'var(--font-body)', letterSpacing: '0.01em' }}>
-            AI-powered · Hindi · Hinglish · English
+            {t('landing_pill')}
           </span>
         </div>
 
@@ -185,14 +196,14 @@ export default function Landing() {
           position: 'relative', zIndex: 3,
           animation: 'fadeUp 0.5s 0.1s cubic-bezier(0.22,1,0.36,1) both',
         }}>
-          Script. Score.{' '}
+          {t('landing_h1_a')}{' '}
           <span style={{
             background: 'linear-gradient(135deg, #00D4FF 0%, #FF2D8B 55%, #FFB800 100%)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             display: 'inline-block',
             filter: 'drop-shadow(0 0 40px rgba(255,45,139,0.35))',
           }}>
-            Go Viral.
+            {t('landing_h1_b')}
           </span>
         </h1>
 
@@ -203,7 +214,7 @@ export default function Landing() {
           position: 'relative', zIndex: 3,
           animation: 'fadeUp 0.5s 0.16s cubic-bezier(0.22,1,0.36,1) both',
         }}>
-          AI-powered content studio for creators. Generate viral scripts in seconds, score your hooks, and grow with data.
+          {t('landing_sub')}
         </p>
 
         {/* ── CTA buttons ── */}
@@ -213,10 +224,10 @@ export default function Landing() {
           animation: 'fadeUp 0.5s 0.22s cubic-bezier(0.22,1,0.36,1) both',
         }}>
           <Link to="/auth" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', minWidth: 195 }}>
-            Start for Free →
+            {t('landing_cta_primary')}
           </Link>
           <a href="#features" className="btn btn-ghost btn-lg" style={{ textDecoration: 'none' }}>
-            See how it works ↓
+            {t('landing_cta_secondary')}
           </a>
         </div>
       </section>
@@ -232,7 +243,7 @@ export default function Landing() {
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             marginBottom: 14,
           }}>
-            Everything you need
+            {t('landing_features_eyebrow')}
           </div>
           <h2 style={{
             fontFamily: 'var(--font-head)',
@@ -240,18 +251,26 @@ export default function Landing() {
             fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text)', lineHeight: 1.15,
             maxWidth: 580, margin: '0 auto',
           }}>
-            Your full content toolkit,{' '}
+            {t('landing_features_h2_a')}{' '}
             <span style={{
               background: 'linear-gradient(135deg, #00D4FF 0%, #FF2D8B 60%, #FFB800 100%)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             }}>
-              powered by AI
+              {t('landing_features_h2_b')}
             </span>
           </h2>
         </div>
 
         <div className="landing-features-grid">
-          {FEATURES.map(f => <FeatureCard key={f.title} {...f} />)}
+          {FEATURE_META.map(f => (
+            <FeatureCard
+              key={f.tk}
+              icon={f.icon}
+              accent={f.accent}
+              title={t(f.tk)}
+              desc={t(f.dk)}
+            />
+          ))}
         </div>
       </section>
 
@@ -274,7 +293,7 @@ export default function Landing() {
             fontSize: '0.75rem', fontWeight: 600, color: '#FFB800',
             fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase',
           }}>
-            ✦ Start today — it's free
+            {t('landing_cta_eyebrow')}
           </div>
           <h2 style={{
             fontFamily: 'var(--font-head)',
@@ -282,18 +301,18 @@ export default function Landing() {
             fontWeight: 900, letterSpacing: '-0.04em',
             color: 'var(--text)', lineHeight: 1.1, marginBottom: 20,
           }}>
-            Ready to grow faster?
+            {t('landing_cta_h2')}
           </h2>
           <p style={{ fontSize: '1rem', color: 'var(--text-muted)', lineHeight: 1.65, marginBottom: 36 }}>
-            Generate viral scripts, score your hooks, and grow with data — all in one place.
+            {t('landing_cta_sub')}
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/auth" className="btn btn-primary btn-lg" style={{ textDecoration: 'none', display: 'inline-flex', minWidth: 215 }}>
-              Start Free Today →
+              {t('landing_cta_btn')}
             </Link>
           </div>
           <div style={{ marginTop: 18, fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-            No credit card · Cancel anytime · Free to start
+            {t('landing_cta_fine')}
           </div>
         </div>
       </section>
@@ -307,11 +326,11 @@ export default function Landing() {
       }}>
         <Logo size={40} showWordmark />
         <div style={{ fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', letterSpacing: '0.02em' }}>
-          © Anahat Aura LLP · ViralCoach
+          {t('landing_footer_legal')}
         </div>
         <div style={{ display: 'flex', gap: 20 }}>
-          <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--text-faint)', textDecoration: 'none' }}>Privacy</Link>
-          <Link to="/terms"   style={{ fontSize: '0.78rem', color: 'var(--text-faint)', textDecoration: 'none' }}>Terms</Link>
+          <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--text-faint)', textDecoration: 'none' }}>{t('landing_privacy')}</Link>
+          <Link to="/terms"   style={{ fontSize: '0.78rem', color: 'var(--text-faint)', textDecoration: 'none' }}>{t('landing_terms')}</Link>
         </div>
       </footer>
 
