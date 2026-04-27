@@ -149,7 +149,7 @@ const NAV_CONFIG = [
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'       },
   { section: 'Content' },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'    },
-  { to: '/multiply',    icon: RemixIcon,       labelKey: 'nav_remix'       },
+  { to: '/crosspost',   icon: RemixIcon,       labelKey: 'nav_remix'       },
   { to: '/hooks',       icon: HookIcon,        labelKey: 'nav_hooks'       },
   { to: '/templates',   icon: TemplateIcon,    labelKey: 'nav_templates'   },
   { section: 'Insights' },

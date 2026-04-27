@@ -44,7 +44,7 @@ function autoSplit(text) {
   }
 }
 
-export default function Multiply() {
+export default function Crosspost() {
   const { t, lang } = useLang()
 
   // Source: 'library' | 'paste'
@@ -163,12 +163,12 @@ export default function Multiply() {
           background: `${C.pink}14`, border: `1px solid ${C.pink}40`,
           marginBottom: 14,
         }}>
-          <span style={{ fontSize: '0.92rem' }}>×</span>
+          <span style={{ fontSize: '0.85rem', color: C.pink }}>⇄</span>
           <span style={{
             fontSize: '0.7rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
             color: C.pink, textTransform: 'uppercase', letterSpacing: '0.08em',
           }}>
-            {t('multiply_pill')}
+            {t('crosspost_pill')}
           </span>
         </div>
         <h1 style={{
@@ -176,16 +176,16 @@ export default function Multiply() {
           fontSize: 'clamp(1.8rem, 3.5vw, 2.4rem)',
           letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 8,
         }}>
-          {t('multiply_title_pre')}{' '}
+          {t('crosspost_title_pre')}{' '}
           <span style={{
             background: `linear-gradient(135deg, ${C.cyan} 0%, ${C.pink} 50%, ${C.amber} 100%)`,
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
           }}>
-            {t('multiply_title_post')}
+            {t('crosspost_title_post')}
           </span>
         </h1>
         <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', lineHeight: 1.55, margin: 0 }}>
-          {t('multiply_sub')}
+          {t('crosspost_sub')}
         </p>
       </div>
 
@@ -198,8 +198,8 @@ export default function Multiply() {
           marginBottom: 18,
         }}>
           {[
-            { key: 'library', label: t('multiply_src_library') },
-            { key: 'paste',   label: t('multiply_src_paste') },
+            { key: 'library', label: t('crosspost_src_library') },
+            { key: 'paste',   label: t('crosspost_src_paste') },
           ].map(s => {
             const active = source === s.key
             return (
@@ -228,7 +228,7 @@ export default function Multiply() {
             {scriptsLoading ? (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '20px 0' }}>
                 <div className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-faint)' }}>{t('multiply_loading_lib')}</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-faint)' }}>{t('crosspost_loading_lib')}</span>
               </div>
             ) : scripts.length === 0 ? (
               <div style={{
@@ -237,10 +237,10 @@ export default function Multiply() {
                 borderRadius: 14, textAlign: 'center',
               }}>
                 <div style={{ fontSize: '0.92rem', color: 'var(--text-muted)', marginBottom: 12 }}>
-                  {t('multiply_lib_empty')}
+                  {t('crosspost_lib_empty')}
                 </div>
                 <Link to="/generate" className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>
-                  {t('multiply_lib_empty_cta')}
+                  {t('crosspost_lib_empty_cta')}
                 </Link>
               </div>
             ) : (
@@ -292,7 +292,7 @@ export default function Multiply() {
             {pickLoading && (
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 14 }}>
                 <div className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} />
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-faint)' }}>{t('multiply_loading_script')}</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-faint)' }}>{t('crosspost_loading_script')}</span>
               </div>
             )}
             {pickedDetail && !pickLoading && (
@@ -305,7 +305,7 @@ export default function Multiply() {
                   fontSize: '0.66rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
                   color: C.pink, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6,
                 }}>
-                  {t('multiply_preview_label')}
+                  {t('crosspost_preview_label')}
                 </div>
                 <div style={{ fontSize: '0.84rem', color: 'var(--text)', lineHeight: 1.55, fontWeight: 600, marginBottom: 4 }}>
                   {pickedDetail.hook}
@@ -325,7 +325,7 @@ export default function Multiply() {
           <div style={{ marginBottom: 22 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                {t('multiply_paste_label')}
+                {t('crosspost_paste_label')}
               </label>
               <span style={{
                 fontSize: '0.7rem', fontFamily: 'var(--font-mono)',
@@ -337,13 +337,13 @@ export default function Multiply() {
             <textarea
               className="input"
               style={{ width: '100%', minHeight: 160, resize: 'vertical', fontFamily: 'var(--font-body)' }}
-              placeholder={t('multiply_paste_ph')}
+              placeholder={t('crosspost_paste_ph')}
               value={pasted}
               onChange={e => setPasted(e.target.value)}
               maxLength={2000}
             />
             <div style={{ fontSize: '0.74rem', color: 'var(--text-faint)', marginTop: 6, fontStyle: 'italic' }}>
-              {t('multiply_paste_hint')}
+              {t('crosspost_paste_hint')}
             </div>
           </div>
         )}
@@ -351,13 +351,13 @@ export default function Multiply() {
         {/* Optional topic */}
         <div className="field" style={{ marginBottom: 22 }}>
           <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, display: 'block' }}>
-            {t('multiply_topic')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>· {t('multiply_topic_hint')}</span>
+            {t('crosspost_topic')} <span style={{ color: 'var(--text-faint)', fontWeight: 400 }}>· {t('crosspost_topic_hint')}</span>
           </label>
           <input
             className="input"
             style={{ width: '100%' }}
             type="text"
-            placeholder={t('multiply_topic_ph')}
+            placeholder={t('crosspost_topic_ph')}
             value={topic}
             onChange={e => setTopic(e.target.value)}
             maxLength={100}
@@ -380,7 +380,7 @@ export default function Multiply() {
           disabled={!canMultiply}
           style={{ minWidth: 220, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          {loading ? (<>{t('multiply_running')}<PulsingDots /></>) : (<>× {t('multiply_btn')}</>)}
+          {loading ? (<>{t('crosspost_running')}<PulsingDots /></>) : (<>⇄ {t('crosspost_btn')}</>)}
         </button>
       </form>
 
@@ -392,10 +392,10 @@ export default function Multiply() {
               fontFamily: 'var(--font-creator)', fontWeight: 800,
               fontSize: '1.2rem', letterSpacing: '-0.025em', margin: 0, marginBottom: 4,
             }}>
-              {t('multiply_result_title')}
+              {t('crosspost_result_title')}
             </h2>
             <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', margin: 0 }}>
-              {t('multiply_result_sub')}
+              {t('crosspost_result_sub')}
             </p>
           </div>
 
@@ -447,7 +447,7 @@ export default function Multiply() {
                         fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
                       }}
                     >
-                      {copied[key] ? t('multiply_copied') : t('multiply_copy')}
+                      {copied[key] ? t('crosspost_copied') : t('crosspost_copy')}
                     </button>
                   </div>
                   <p style={{
