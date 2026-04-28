@@ -235,6 +235,42 @@ function AppPhone() {
           </div>
         ))}
       </div>
+
+      {/* ══ Virality decorations — around the phone ══════════════
+          Purely decorative. Hidden on mobile (<781px).
+          Positioned relative to ap-outer (position:relative).
+      ════════════════════════════════════════════════════════ */}
+
+      {/* LEFT SIDE */}
+      <div className="vb vb-thumb"   aria-hidden>👍</div>
+      <div className="vb vb-eyes"    aria-hidden>👀</div>
+      <div className="vb vb-comment" aria-hidden>💬</div>
+      <div className="vb vb-pill vb-pill-likes" aria-hidden>
+        <span>❤️</span><span className="vb-pill-num">847K</span>
+      </div>
+
+      {/* RIGHT SIDE */}
+      <div className="vb vb-heart"   aria-hidden>❤️</div>
+      <div className="vb vb-fire"    aria-hidden>🔥</div>
+      <div className="vb vb-pill vb-pill-views" aria-hidden>
+        <span>👁</span><span className="vb-pill-num">2.4M</span>
+      </div>
+      <div className="vb vb-share"   aria-hidden>
+        <span className="vb-share-icon">↗</span>
+        <span className="vb-share-txt">Share</span>
+        <span className="vb-share-cnt">2.4K</span>
+      </div>
+
+      {/* Rising hearts — right edge of phone */}
+      <div className="vb vb-rise vb-rise-1" aria-hidden>❤️</div>
+      <div className="vb vb-rise vb-rise-2" aria-hidden>🧡</div>
+      <div className="vb vb-rise vb-rise-3" aria-hidden>❤️</div>
+      <div className="vb vb-rise vb-rise-4" aria-hidden>😍</div>
+
+      {/* Accent sparks */}
+      <div className="vb vb-spark vb-spark-1" aria-hidden>✦</div>
+      <div className="vb vb-spark vb-spark-2" aria-hidden>✦</div>
+      <div className="vb vb-spark vb-spark-3" aria-hidden>✸</div>
     </div>
   )
 }
@@ -779,6 +815,114 @@ export default function Landing() {
           .ap-phone { transform:scale(0.72); transform-origin:top center; }
           .ap-dots    { margin-top:-42px; }
           .ap-label-wrap { margin-top:-40px; }
+        }
+
+        /* ══════════════════════════════════════════════════════
+           VIBE / VIRALITY DECORATIONS
+           All .vb elements are absolutely positioned inside
+           .ap-outer and hidden on mobile to stay clean.
+        ══════════════════════════════════════════════════════ */
+        @media (min-width: 781px) {
+          .ap-outer { padding: 0 72px; }
+        }
+
+        .vb {
+          position: absolute;
+          pointer-events: none;
+          z-index: 4;
+          user-select: none;
+          font-size: 1.5rem;
+          line-height: 1;
+        }
+        @media (max-width: 780px) { .vb { display: none; } }
+
+        /* ── Left side ──────────────────────────────────────── */
+        .vb-thumb   { left: 6px;  top: 148px; animation: vbBobL 4s ease-in-out infinite; }
+        .vb-eyes    { left: 10px; top: 58px;  font-size: 1.2rem; animation: vbBobSlow 5.5s ease-in-out 0.5s infinite; }
+        .vb-comment { left: 6px;  top: 342px; font-size: 1.3rem; animation: vbBobL 4.2s ease-in-out 0.8s infinite; }
+
+        /* ── Right side ─────────────────────────────────────── */
+        .vb-heart { right: 8px;  top: 92px;  animation: vbHeartbeat 1.8s ease-in-out infinite; }
+        .vb-fire  { right: 12px; top: 30px;  animation: vbBobR 3.2s ease-in-out infinite; }
+
+        /* ── Count pills ────────────────────────────────────── */
+        .vb-pill {
+          display: flex; align-items: center; gap: 5px;
+          background: rgba(8,10,30,0.82);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.10);
+          border-radius: 99px;
+          padding: 5px 11px;
+          font-size: 0.65rem;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+          animation: vbBobSlow 6s ease-in-out infinite, vbPopIn 0.5s cubic-bezier(0.34,1.6,0.64,1) 0.4s both;
+        }
+        .vb-pill-num { font-weight: 800; color: rgba(255,255,255,0.92); font-family: var(--font-mono,monospace); }
+        .vb-pill-likes { left: -8px;  top: 222px; animation-delay: 0.2s, 0.4s; }
+        .vb-pill-views { right: -8px; top: 270px; animation-delay: 0.7s, 0.7s; }
+
+        /* ── Share chip ─────────────────────────────────────── */
+        .vb-share {
+          right: 6px; top: 374px;
+          display: flex; align-items: center; gap: 5px;
+          background: rgba(8,10,30,0.82);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(0,212,255,0.25);
+          border-radius: 99px; padding: 5px 11px;
+          font-size: 0.65rem;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 14px rgba(0,212,255,0.12);
+          animation: vbBobSlow 5s ease-in-out 1s infinite;
+        }
+        .vb-share-icon { color: #00D4FF; font-size: 0.8rem; font-style: normal; }
+        .vb-share-txt  { color: rgba(255,255,255,0.85); font-weight: 700; }
+        .vb-share-cnt  { color: rgba(255,255,255,0.4); font-family: var(--font-mono,monospace); font-size: 0.6rem; }
+
+        /* ── Rising hearts ──────────────────────────────────── */
+        .vb-rise { right: 26px; font-size: 1.2rem; animation: vbRise 3s ease-out infinite; }
+        .vb-rise-1 { top: 395px; animation-delay: 0.0s; }
+        .vb-rise-2 { top: 375px; animation-delay: 0.8s; right: 40px; font-size: 1.0rem; }
+        .vb-rise-3 { top: 412px; animation-delay: 1.6s; font-size: 1.1rem; }
+        .vb-rise-4 { top: 382px; animation-delay: 2.4s; right: 34px; font-size: 0.95rem; }
+
+        /* ── Accent sparks ──────────────────────────────────── */
+        .vb-spark { font-size: 0.72rem; animation: vbSparkle 2.5s ease-in-out infinite; }
+        .vb-spark-1 { left: 62px;  top: 14px;  color: #00D4FF; animation-delay: 0s; }
+        .vb-spark-2 { right: 60px; top: 20px;  color: #FF2D8B; animation-delay: 0.9s; }
+        .vb-spark-3 { left: 58px;  top: 488px; color: #FFB800; animation-delay: 1.7s; }
+
+        /* ══ Keyframes ══════════════════════════════════════════ */
+        @keyframes vbBobL {
+          0%,100% { transform: translateY(0) rotate(-6deg); }
+          50%     { transform: translateY(-9px) rotate(-3deg); }
+        }
+        @keyframes vbBobR {
+          0%,100% { transform: translateY(0) rotate(5deg); }
+          50%     { transform: translateY(-10px) rotate(2deg); }
+        }
+        @keyframes vbBobSlow {
+          0%,100% { transform: translateY(0); }
+          50%     { transform: translateY(-7px); }
+        }
+        @keyframes vbHeartbeat {
+          0%,100% { transform: scale(1); }
+          15%     { transform: scale(1.4); }
+          30%     { transform: scale(1.1); }
+        }
+        @keyframes vbRise {
+          0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+          12%  { opacity: 1; transform: translateY(-15px) scale(1.2); }
+          80%  { opacity: 0.6; }
+          100% { opacity: 0; transform: translateY(-110px) scale(0.7); }
+        }
+        @keyframes vbPopIn {
+          from { opacity: 0; transform: scale(0.5); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes vbSparkle {
+          0%,100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); }
+          50%     { opacity: 1;   transform: scale(1.4) rotate(180deg); }
         }
 
       `}</style>
