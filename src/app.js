@@ -20,6 +20,7 @@ const remixRoutes       = require('./routes/remix');
 const creatorScoreRoutes = require('./routes/creatorScore');
 const coachRoutes       = require('./routes/coach');
 const hookLibraryRoutes = require('./routes/hookLibrary');
+const ttsRoutes         = require('./routes/tts');
 const errorHandler      = require('./middleware/errorHandler');
 
 const app = express();
@@ -81,6 +82,7 @@ app.use('/api/remix',       remixRoutes);
 app.use('/api/score',       creatorScoreRoutes);
 app.use('/api/coach',       coachRoutes);
 app.use('/api/hooks',       hookLibraryRoutes);
+app.use('/api/tts',         ttsRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────────
 app.use((req, res) => {
