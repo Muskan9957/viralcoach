@@ -8,7 +8,8 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`\n🚀 AI Reel Coach API running on port ${PORT}`);
   console.log(`   Environment : ${process.env.NODE_ENV || 'development'}`);
-  console.log(`   Docs        : http://localhost:${PORT}/api/health\n`);
+  console.log(`   Docs        : http://localhost:${PORT}/api/health`);
+  console.log(`   TTS route   : /api/tts (ElevenLabs)\n`);
 
   // ── Warm trending cache in background ──────────────────────────
   // Runs after startup so it never delays boot. Generates today's topics
