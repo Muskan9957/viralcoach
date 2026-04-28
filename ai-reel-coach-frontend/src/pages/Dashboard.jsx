@@ -6,6 +6,7 @@ import { useLang } from '../i18n.jsx'
 import { useTextToSpeech } from '../components/VoiceAssistant'
 import WeeklyReport from '../components/WeeklyReport'
 import { usePrefs } from '../hooks/usePrefs'
+import ThemeToggle from '../components/ThemeToggle'
 
 /* ─── Creator palette ────────────────────────────────────────────── */
 const C = {
@@ -380,7 +381,12 @@ export default function Dashboard() {
   const mood = getTimeMood()
 
   return (
-    <div className="page-enter">
+    <div className="page-enter" style={{ position: 'relative' }}>
+
+      {/* ─── Theme toggle — top-right of dashboard ───────────────── */}
+      <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 10 }}>
+        <ThemeToggle size="sm" />
+      </div>
 
       {/* ─── Greeting ────────────────────────────────────────────── */}
       <div style={{ marginBottom: 28 }}>

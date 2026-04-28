@@ -331,13 +331,6 @@ export default function Layout({ children }) {
         </aside>
       )}
 
-      {/* ── Theme toggle — fixed top-right corner (desktop only) ── */}
-      {!isMobile && (
-        <div style={{ position: 'fixed', top: 18, right: 22, zIndex: 200 }}>
-          <ThemeToggle size="sm" />
-        </div>
-      )}
-
       {/* ── Main content area ───────────────────────────────────── */}
       <main style={styles.main}>
 
@@ -349,7 +342,6 @@ export default function Layout({ children }) {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <LanguageSelector compact />
-              <ThemeToggle size="sm" />
               <div
                 style={{ ...styles.mobileAvatar, overflow: 'hidden', padding: 0 }}
                 title={userName}
