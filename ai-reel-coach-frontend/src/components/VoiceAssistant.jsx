@@ -109,14 +109,14 @@ function chunkText(text) {
 
   const chunks = []
   for (const sentence of sentences) {
-    if (sentence.length <= 180) {
+    if (sentence.length <= 220) {
       chunks.push(sentence)
     } else {
       // Further split long sentences on commas / semicolons
       const parts = sentence.split(/[,;]\s*/)
       let current = ''
       for (const part of parts) {
-        if (current && (current + ', ' + part).length > 180) {
+        if (current && (current + ', ' + part).length > 220) {
           chunks.push(current.trim())
           current = part
         } else {
@@ -149,11 +149,8 @@ export function useTextToSpeech() {
     const utt     = new SpeechSynthesisUtterance(text)
 
     utt.lang   = langCode
-    // Slightly slower than default — sounds more conversational, less robotic
-    // Tiny random wobble (±0.04) so back-to-back chunks don't feel metronomic
-    utt.rate   = 0.88 + (Math.random() * 0.08 - 0.04)
-    // Default pitch (1.0) is the most natural — raising it sounds synthetic
-    utt.pitch  = 1.0
+    utt.rate   = 1.05   // slightly above default — crisp, natural pace
+    utt.pitch  = 1.0    // default pitch is the most natural
     utt.volume = 1
     if (voice) utt.voice = voice
 
