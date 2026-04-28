@@ -40,9 +40,11 @@ router.post('/', async (req, res) => {
     res.set('Cache-Control', 'public, max-age=86400')
     res.send(Buffer.from(resp.data))
   } catch (err) {
-    const msg = err.response?.data?.toString() || err.message
-    console.error('[TTS] ElevenLabs error:', msg)
-    res.status(err.response?.status || 500).json({ error: 'TTS request failed' })
+    const status = err.response?.status || 500
+    const msg    = err.response?.data?.toString() || err.message
+    console.error('[TTS] ElevenLabs error:', status, msg)
+    if (status === 401) return res.status(503).json({ error: 'ElevenLabs API key invalid or missing' })
+    res.status(503).json({ error: `TTS failed: ${status}` })
   }
 })
 
