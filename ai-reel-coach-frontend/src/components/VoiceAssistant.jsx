@@ -2,8 +2,9 @@ import { useState, useRef } from 'react'
 import { useLang } from '../i18n.jsx'
 
 // Language codes for Web Speech API
+// en → en-IN so browsers serve an Indian-English voice by default
 const LANG_CODES = {
-  en:       'en-US',
+  en:       'en-IN',
   es:       'es-ES',
   fr:       'fr-FR',
   pt:       'pt-BR',
@@ -16,18 +17,21 @@ const LANG_CODES = {
 }
 
 // ─── Pick the best available voice ────────────────────────────────
-// Priority (most human-sounding first):
-//  1. Microsoft Neural/Natural "Online" voices  (Edge & modern Windows)
-//  2. Any other "Online (Natural)" voice
-//  3. Google voices                             (WaveNet-backed on Chrome)
-//  4. Any remaining Microsoft voice
-//  5. Known warm female names
-//  6. First matching voice as fallback
-// We deliberately avoid old system voices like "David" / "Mark"
-// which are robotic SAPI voices.
+// Priority ladder (most natural / most Indian-accented first):
+//  1. Microsoft Neerja / Aarav / Swara Online (Natural)  ← best Indian neural voices on Edge
+//  2. Any Microsoft *Online (Natural)* en-IN / hi-IN voice
+//  3. Any "Online (Natural)" voice (any vendor)
+//  4. Any "Online" network voice
+//  5. Google voices (WaveNet — good on Chrome)
+//  6. Any remaining Microsoft voice
+//  7. Known Indian-named / warm female voices
+//  8. First matching voice as fallback
+// Blocklist: old Windows SAPI robots (David, Mark, George …)
 let cachedVoice = {}
 
-const ROBOTIC_BLOCKLIST = /\b(david|mark|george|richard|james)\b/i
+const ROBOTIC_BLOCKLIST  = /\b(david|mark|george|richard|james)\b/i
+// Indian voice names shipped by Microsoft (Edge) and Google
+const INDIAN_VOICE_NAMES = /neerja|aarav|swara|heera|aditi|raveena|priya|kalpana|hemant|samantha.*in/i
 
 function getBestVoice(langCode) {
   if (cachedVoice[langCode]) return cachedVoice[langCode]
@@ -35,37 +39,48 @@ function getBestVoice(langCode) {
   const voices = window.speechSynthesis.getVoices()
   if (!voices.length) return null
 
+  // Cast a wide net: exact match OR same primary language tag
   const matching = voices.filter(v =>
     (v.lang === langCode || v.lang.startsWith(langCode.split('-')[0]))
     && !ROBOTIC_BLOCKLIST.test(v.name)
   )
   if (!matching.length) return null
 
-  // 1. Microsoft Neural / Natural online voices (best quality in Edge/Windows)
+  // 1. Named Indian neural voices (Neerja, Aarav, Swara…) — Online preferred
+  const indianOnline = matching.find(v =>
+    INDIAN_VOICE_NAMES.test(v.name) && /online/i.test(v.name)
+  )
+  if (indianOnline) { cachedVoice[langCode] = indianOnline; return indianOnline }
+
+  // 2. Any named Indian voice (local fallback if offline)
+  const indianAny = matching.find(v => INDIAN_VOICE_NAMES.test(v.name))
+  if (indianAny) { cachedVoice[langCode] = indianAny; return indianAny }
+
+  // 3. Microsoft Neural / Natural online voices (e.g. Aria, Jenny — still great)
   const msNatural = matching.find(v =>
-    v.name.includes('Microsoft') && /natural|neural/i.test(v.name) && v.name.includes('Online')
+    v.name.includes('Microsoft') && /natural|neural/i.test(v.name) && /online/i.test(v.name)
   )
   if (msNatural) { cachedVoice[langCode] = msNatural; return msNatural }
 
-  // 2. Any "Online (Natural)" voice regardless of vendor
+  // 4. Any "Online (Natural)" voice
   const anyNatural = matching.find(v => /online.*natural|natural.*online/i.test(v.name))
   if (anyNatural) { cachedVoice[langCode] = anyNatural; return anyNatural }
 
-  // 3. Any "Online" voice (still network-quality, better than local)
+  // 5. Any "Online" network voice
   const online = matching.find(v => /online/i.test(v.name))
   if (online) { cachedVoice[langCode] = online; return online }
 
-  // 4. Google voices (WaveNet on Chrome — noticeably more natural than OS voices)
+  // 6. Google WaveNet voices (Chrome)
   const google = matching.find(v => v.name.includes('Google'))
   if (google) { cachedVoice[langCode] = google; return google }
 
-  // 5. Any remaining Microsoft voice
+  // 7. Any remaining Microsoft voice
   const microsoft = matching.find(v => v.name.includes('Microsoft'))
   if (microsoft) { cachedVoice[langCode] = microsoft; return microsoft }
 
-  // 6. Known warm female names (generally less robotic than male system voices)
+  // 8. Warm female names as last resort
   const female = matching.find(v =>
-    /female|zira|heera|swara|priya|aditi|raveena|aria|jenny|sonia|neerja/i.test(v.name)
+    /female|zira|aria|jenny|sonia/i.test(v.name)
   )
   if (female) { cachedVoice[langCode] = female; return female }
 
