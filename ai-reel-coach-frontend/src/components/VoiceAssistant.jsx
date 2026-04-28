@@ -47,75 +47,101 @@ function chunkText(text, maxLen = 190) {
   return chunks.filter(c => c.length > 0)
 }
 
-// ─── Google Neural TTS ────────────────────────────────────────────
-// Uses Google Translate's TTS endpoint — same neural engine as Google
-// Assistant. Sounds like a real person, supports en-IN Indian accent.
-// Audio elements bypass CORS so no backend proxy needed.
-function googleTTSUrl(text, langCode) {
+// ─── Pick best available voice ────────────────────────────────────
+function getBestVoice(langCode) {
+  const voices   = window.speechSynthesis.getVoices()
+  if (!voices.length) return null
+
+  const lang2 = langCode.split('-')[0]   // e.g. 'en' from 'en-IN'
+  const pool   = voices.filter(v =>
+    v.lang === langCode || v.lang.startsWith(lang2)
+  )
+  if (!pool.length) return null
+
+  // Prefer exact lang match (en-IN over en-US when asking for en-IN)
+  const exact   = pool.filter(v => v.lang === langCode)
+  const search  = exact.length ? exact : pool
+
+  // Best quality order: Neural/Natural Online > Online > Google > Microsoft > any
   return (
-    'https://translate.google.com/translate_tts' +
-    '?ie=UTF-8' +
-    `&q=${encodeURIComponent(text)}` +
-    `&tl=${langCode}` +
-    '&client=tw-ob'
+    search.find(v => /natural|neural/i.test(v.name) && /online/i.test(v.name)) ||
+    search.find(v => /online/i.test(v.name)) ||
+    search.find(v => /google/i.test(v.name)) ||
+    search.find(v => /microsoft/i.test(v.name)) ||
+    search[0]
   )
 }
 
+// ─── Text-to-Speech ───────────────────────────────────────────────
 export function useTextToSpeech() {
-  const { lang }         = useLang()
+  const { lang }                = useLang()
   const [speaking, setSpeaking] = useState(false)
-  const cancelledRef     = useRef(false)
-  const audioRef         = useRef(null)
+  const cancelRef               = useRef(false)
+  const chunksRef               = useRef([])
+  const idxRef                  = useRef(0)
 
-  const stopCurrent = () => {
-    cancelledRef.current = true
-    if (audioRef.current) {
-      audioRef.current.onended = null
-      audioRef.current.onerror = null
-      audioRef.current.pause()
-      audioRef.current.src = ''
-      audioRef.current     = null
-    }
-  }
-
-  const playChunks = (chunks, langCode, index) => {
-    if (cancelledRef.current || index >= chunks.length) {
+  const speakChunk = (langCode) => {
+    if (cancelRef.current || idxRef.current >= chunksRef.current.length) {
       setSpeaking(false)
       return
     }
 
-    const audio = new Audio(googleTTSUrl(chunks[index], langCode))
-    audioRef.current = audio
+    const utt   = new SpeechSynthesisUtterance(chunksRef.current[idxRef.current])
+    const voice = getBestVoice(langCode)
 
-    audio.onended = () => {
-      if (!cancelledRef.current) playChunks(chunks, langCode, index + 1)
+    if (voice) { utt.voice = voice; utt.lang = voice.lang }
+    else        { utt.lang = langCode.startsWith('hi') ? 'hi-IN' : 'en-US' }
+
+    utt.rate   = 1.05
+    utt.pitch  = 1.0
+    utt.volume = 1.0
+
+    utt.onend = () => {
+      if (!cancelRef.current) { idxRef.current++; speakChunk(langCode) }
     }
-    // If a chunk fails (network / quota), skip it and continue
-    audio.onerror = () => {
-      if (!cancelledRef.current) playChunks(chunks, langCode, index + 1)
+    utt.onerror = (e) => {
+      if (e.error === 'interrupted' || e.error === 'canceled') return
+      if (!cancelRef.current) { idxRef.current++; speakChunk(langCode) }
     }
 
-    audio.play().catch(() => {
-      if (!cancelledRef.current) playChunks(chunks, langCode, index + 1)
-    })
+    window.speechSynthesis.speak(utt)
   }
 
   const speak = (text) => {
-    if (!text?.trim()) return
-
-    stopCurrent()
-    cancelledRef.current = false
+    if (!('speechSynthesis' in window) || !text?.trim()) return
 
     const langCode = LANG_CODES[lang] || 'en-IN'
     const chunks   = chunkText(text)
     if (!chunks.length) return
 
+    // Cancel anything currently playing
+    cancelRef.current = true
+    window.speechSynthesis.cancel()
+    cancelRef.current = false
+
+    chunksRef.current = chunks
+    idxRef.current    = 0
     setSpeaking(true)
-    playChunks(chunks, langCode, 0)
+
+    // Voices may not be ready on very first call
+    if (!window.speechSynthesis.getVoices().length) {
+      window.speechSynthesis.addEventListener(
+        'voiceschanged',
+        () => { if (!cancelRef.current) speakChunk(langCode) },
+        { once: true }
+      )
+    } else if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      // Give cancel() a moment to flush before re-queuing
+      setTimeout(() => { if (!cancelRef.current) speakChunk(langCode) }, 80)
+    } else {
+      // Queue is empty — speak immediately (keeps desktop Chrome gesture context)
+      speakChunk(langCode)
+    }
   }
 
   const stopSpeaking = () => {
-    stopCurrent()
+    cancelRef.current = true
+    window.speechSynthesis.cancel()
     setSpeaking(false)
   }
 
