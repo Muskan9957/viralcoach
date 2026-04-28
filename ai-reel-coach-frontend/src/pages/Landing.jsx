@@ -282,29 +282,15 @@ export default function Landing() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', overflowX: 'hidden', display: 'flex', flexDirection: 'column' }}>
 
       {/* ── Navbar ───────────────────────────────────────────────── */}
-      <nav style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 5%',
-        background: 'rgba(7,9,28,0.92)',
-        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        position: 'sticky', top: 0, zIndex: 100,
-      }}>
-        <Logo size={42} showWordmark />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <nav className="lp-nav">
+        <Logo size={36} showWordmark />
+        <div className="lp-nav-actions">
           <LangFlip />
-          <Link to="/auth"
-            style={{
-              fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '0.875rem',
-              color: 'var(--text-muted)', textDecoration: 'none',
-              padding: '8px 16px', borderRadius: 10,
-              border: '1px solid var(--border)', background: 'transparent',
-              transition: 'all 0.18s',
-            }}
+          <Link to="/auth" className="lp-nav-signin"
             onMouseEnter={e => { e.currentTarget.style.color='var(--text)'; e.currentTarget.style.borderColor='var(--border-bright)'; e.currentTarget.style.background='var(--surface2)'; }}
             onMouseLeave={e => { e.currentTarget.style.color='var(--text-muted)'; e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.background='transparent'; }}
           >{t('landing_signin')}</Link>
-          <Link to="/auth" className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>
+          <Link to="/auth" className="btn btn-primary btn-sm lp-nav-cta" style={{ textDecoration: 'none' }}>
             {t('landing_get_started')}
           </Link>
         </div>
@@ -355,6 +341,39 @@ export default function Landing() {
           STYLES
       ══════════════════════════════════════════════════════════ */}
       <style>{`
+
+        /* ── Navbar ──────────────────────────────────────────────── */
+        .lp-nav {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 12px 5%;
+          background: rgba(7,9,28,0.92);
+          backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          position: sticky; top: 0; z-index: 100;
+          gap: 10px;
+        }
+        .lp-nav-actions {
+          display: flex; align-items: center; gap: 8px;
+          flex-shrink: 0;
+        }
+        .lp-nav-signin {
+          font-family: var(--font-body); font-weight: 600; font-size: 0.875rem;
+          color: var(--text-muted); text-decoration: none;
+          padding: 7px 14px; border-radius: 10;
+          border: 1px solid var(--border); background: transparent;
+          border-radius: 10px;
+          transition: all 0.18s; white-space: nowrap;
+        }
+        /* on small phones hide the ghost "Sign in" link — CTA is enough */
+        @media (max-width: 480px) {
+          .lp-nav { padding: 10px 4%; }
+          .lp-nav-signin { display: none; }
+          .lp-nav-cta { font-size: 0.78rem !important; padding: 7px 13px !important; }
+        }
+        /* on very small screens also shrink the lang toggle */
+        @media (max-width: 360px) {
+          .lp-nav { padding: 8px 3%; }
+        }
 
         /* ── Hero layout ─────────────────────────────────────────── */
         .lp-hero {
