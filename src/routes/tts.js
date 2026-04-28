@@ -1,13 +1,12 @@
 const express = require('express')
 const axios   = require('axios')
 const router  = express.Router()
-const { protect: auth } = require('../middleware/auth')
 
 // ─── ElevenLabs TTS ───────────────────────────────────────────────
 // "Adam" — built-in premade voice, available on ALL ElevenLabs plans
 const VOICE_ID = 'pNInz6obpgDQGcFmaJgB'
 
-router.post('/', auth, async (req, res) => {
+router.post('/', async (req, res) => {
   const { text } = req.body
   if (!text?.trim()) return res.status(400).json({ error: 'text required' })
 
