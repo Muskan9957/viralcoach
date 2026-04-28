@@ -1,17 +1,68 @@
 const prisma    = require('../config/prisma')
 const aiService = require('../services/aiService')
 
+// ─── In-memory greeting cache (per process, instant after first hit) ─
+const greetingMem = new Map()
+
 // ─── GET /api/trending/greeting?region=India&language=hi ─────────
-// Always calls AI fresh — no DB cache — so language changes are instant
+// Cached per region+language+day in memory AND DB so it's instant on repeat visits.
 const getGreeting = async (req, res, next) => {
+  const region   = (req.query.region   || 'India').trim()
+  const userLang = (req.query.language || 'en').trim()
+  const today    = new Date().toISOString().slice(0, 10)
+  const memKey   = `${region}:${userLang}:${today}`
+  const dbNiche  = `_greeting_${region}`
+
+  // 1. Memory hit — instant
+  if (greetingMem.has(memKey)) {
+    return res.json(greetingMem.get(memKey))
+  }
+
+  // 2. DB cache hit — fast (survives server restarts)
   try {
-    const region   = (req.query.region   || 'India').trim()
-    const userLang = (req.query.language || 'en').trim()
+    const dbRow = await prisma.trendingCache.findUnique({
+      where: { niche_language_date: { niche: dbNiche, language: userLang, date: today } },
+    })
+    if (dbRow) {
+      const cached = JSON.parse(dbRow.topics)
+      greetingMem.set(memKey, cached)
+      return res.json(cached)
+    }
 
+    // 3. Stale DB (yesterday or earlier) — return immediately, refresh silently
+    const stale = await prisma.trendingCache.findFirst({
+      where: { niche: dbNiche, language: userLang },
+      orderBy: { date: 'desc' },
+    })
+    if (stale) {
+      const staleData = JSON.parse(stale.topics)
+      greetingMem.set(memKey, staleData)   // treat as today so no re-fetch this session
+      res.json(staleData)
+      // Silently regenerate for tomorrow's visits
+      aiService.getRegionalGreeting(region, userLang)
+        .then(fresh => {
+          const { _isFallback, ...d } = fresh
+          greetingMem.set(memKey, d)
+          prisma.trendingCache.upsert({
+            where:  { niche_language_date: { niche: dbNiche, language: userLang, date: today } },
+            create: { niche: dbNiche, language: userLang, date: today, topics: JSON.stringify(d) },
+            update: { topics: JSON.stringify(d) },
+          }).catch(() => {})
+        }).catch(() => {})
+      return
+    }
+  } catch {}
+
+  // 4. No cache at all — must call AI (first ever request for this combo)
+  try {
     const data = await aiService.getRegionalGreeting(region, userLang)
-
-    // Strip internal flag before sending to client
     const { _isFallback, ...responseData } = data
+    greetingMem.set(memKey, responseData)
+    prisma.trendingCache.upsert({
+      where:  { niche_language_date: { niche: dbNiche, language: userLang, date: today } },
+      create: { niche: dbNiche, language: userLang, date: today, topics: JSON.stringify(responseData) },
+      update: { topics: JSON.stringify(responseData) },
+    }).catch(() => {})
     return res.json(responseData)
   } catch (err) {
     next(err)

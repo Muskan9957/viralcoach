@@ -6,6 +6,7 @@ import { useLang } from '../i18n.jsx'
 import { useTextToSpeech } from '../components/VoiceAssistant'
 import WeeklyReport from '../components/WeeklyReport'
 import { usePrefs } from '../hooks/usePrefs'
+import { getSavedRegion } from '../utils/detectRegion'
 import ThemeToggle from '../components/ThemeToggle'
 
 /* ─── Creator palette ────────────────────────────────────────────── */
@@ -47,17 +48,31 @@ function getTimeMood() {
 }
 
 /* ─── Today's Brief ──────────────────────────────────────────────── */
+const BRIEF_CACHE_KEY = 'arc_brief_cache'
+
 function TrendingBrief({ userName }) {
   const { t, lang } = useLang()
   const { speak, speaking, stopSpeaking } = useTextToSpeech()
-  const [greeting, setGreeting] = useState(null)
-  const [loading, setLoading]   = useState(true)
-  const [played, setPlayed]     = useState(false)
+  const [played, setPlayed] = useState(false)
+
+  // Load from localStorage instantly so screen never shows blank
+  const [greeting, setGreeting] = useState(() => {
+    try {
+      const c = JSON.parse(localStorage.getItem(BRIEF_CACHE_KEY) || 'null')
+      if (c?.lang === lang && c?.date === new Date().toISOString().slice(0,10)) return c.data
+    } catch {}
+    return null
+  })
+  const [loading, setLoading] = useState(!greeting)
 
   useEffect(() => {
-    setLoading(true); setGreeting(null)
-    api.getGreeting('Global', lang)
-      .then(data => setGreeting(data))
+    const region = getSavedRegion() || 'India'
+    const today  = new Date().toISOString().slice(0, 10)
+    api.getGreeting(region, lang)
+      .then(data => {
+        setGreeting(data)
+        localStorage.setItem(BRIEF_CACHE_KEY, JSON.stringify({ data, lang, date: today }))
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [lang])
