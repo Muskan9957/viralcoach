@@ -104,27 +104,39 @@ export default function Auth() {
           {/* Social buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 20 }}>
             {[
-              { id: 'google',    label: 'Continue with Google',     icon: <GoogleIcon />,    bg: '#fff',                                                            color: '#1f1f1f', border: '1px solid rgba(0,0,0,0.15)' },
-              { id: 'instagram', label: 'Continue with Instagram',  icon: <InstagramIcon />, bg: 'linear-gradient(45deg, #405DE6, #833AB4, #C13584, #E1306C)',     color: '#fff',    border: 'none' },
-              { id: 'youtube',   label: 'Continue with YouTube',    icon: <YouTubeIcon />,   bg: '#FF0000',                                                         color: '#fff',    border: 'none' },
+              { id: 'google',    label: 'Continue with Google',     icon: <GoogleIcon />,    bg: '#fff',                                                            color: '#1f1f1f', border: '1px solid rgba(0,0,0,0.15)', soon: false },
+              { id: 'instagram', label: 'Continue with Instagram',  icon: <InstagramIcon />, bg: 'linear-gradient(45deg, #405DE6, #833AB4, #C13584, #E1306C)',     color: '#fff',    border: 'none',                       soon: true  },
+              { id: 'youtube',   label: 'Continue with YouTube',    icon: <YouTubeIcon />,   bg: '#FF0000',                                                         color: '#fff',    border: 'none',                       soon: true  },
             ].map(btn => (
               <button
                 key={btn.id}
                 type="button"
-                onClick={() => handleSocialClick(btn.id)}
+                disabled={btn.soon}
+                onClick={() => !btn.soon && handleSocialClick(btn.id)}
                 style={{
+                  position: 'relative',
                   display: 'flex', alignItems: 'center', gap: 10,
                   width: '100%', height: 44, padding: '0 16px',
-                  borderRadius: 10, cursor: 'pointer',
+                  borderRadius: 10, cursor: btn.soon ? 'not-allowed' : 'pointer',
                   fontFamily: 'var(--font-body)', fontSize: '0.875rem',
                   fontWeight: 600, transition: 'opacity 0.15s, transform 0.15s',
                   background: btn.bg, color: btn.color, border: btn.border || 'none',
+                  opacity: btn.soon ? 0.38 : 1,
+                  filter: btn.soon ? 'grayscale(0.4)' : 'none',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-                onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)' }}
               >
                 <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, flexShrink: 0 }}>{btn.icon}</span>
                 <span style={{ flex: 1, textAlign: 'center' }}>{btn.label}</span>
+                {btn.soon && (
+                  <span style={{
+                    fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.06em',
+                    padding: '2px 7px', borderRadius: 99,
+                    background: 'rgba(0,0,0,0.35)', color: 'rgba(255,255,255,0.8)',
+                    textTransform: 'uppercase', flexShrink: 0,
+                  }}>
+                    Coming Soon
+                  </span>
+                )}
               </button>
             ))}
           </div>
