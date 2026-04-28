@@ -16,7 +16,18 @@ const LANG_CODES = {
 }
 
 // ─── Pick the best available voice ────────────────────────────────
+// Priority (most human-sounding first):
+//  1. Microsoft Neural/Natural "Online" voices  (Edge & modern Windows)
+//  2. Any other "Online (Natural)" voice
+//  3. Google voices                             (WaveNet-backed on Chrome)
+//  4. Any remaining Microsoft voice
+//  5. Known warm female names
+//  6. First matching voice as fallback
+// We deliberately avoid old system voices like "David" / "Mark"
+// which are robotic SAPI voices.
 let cachedVoice = {}
+
+const ROBOTIC_BLOCKLIST = /\b(david|mark|george|richard|james)\b/i
 
 function getBestVoice(langCode) {
   if (cachedVoice[langCode]) return cachedVoice[langCode]
@@ -25,18 +36,36 @@ function getBestVoice(langCode) {
   if (!voices.length) return null
 
   const matching = voices.filter(v =>
-    v.lang === langCode || v.lang.startsWith(langCode.split('-')[0])
+    (v.lang === langCode || v.lang.startsWith(langCode.split('-')[0]))
+    && !ROBOTIC_BLOCKLIST.test(v.name)
   )
   if (!matching.length) return null
 
-  const google    = matching.find(v => v.name.includes('Google'))
+  // 1. Microsoft Neural / Natural online voices (best quality in Edge/Windows)
+  const msNatural = matching.find(v =>
+    v.name.includes('Microsoft') && /natural|neural/i.test(v.name) && v.name.includes('Online')
+  )
+  if (msNatural) { cachedVoice[langCode] = msNatural; return msNatural }
+
+  // 2. Any "Online (Natural)" voice regardless of vendor
+  const anyNatural = matching.find(v => /online.*natural|natural.*online/i.test(v.name))
+  if (anyNatural) { cachedVoice[langCode] = anyNatural; return anyNatural }
+
+  // 3. Any "Online" voice (still network-quality, better than local)
+  const online = matching.find(v => /online/i.test(v.name))
+  if (online) { cachedVoice[langCode] = online; return online }
+
+  // 4. Google voices (WaveNet on Chrome — noticeably more natural than OS voices)
+  const google = matching.find(v => v.name.includes('Google'))
   if (google) { cachedVoice[langCode] = google; return google }
 
+  // 5. Any remaining Microsoft voice
   const microsoft = matching.find(v => v.name.includes('Microsoft'))
   if (microsoft) { cachedVoice[langCode] = microsoft; return microsoft }
 
-  const female    = matching.find(v =>
-    /female|zira|heera|swara|priya|aditi|raveena/i.test(v.name)
+  // 6. Known warm female names (generally less robotic than male system voices)
+  const female = matching.find(v =>
+    /female|zira|heera|swara|priya|aditi|raveena|aria|jenny|sonia|neerja/i.test(v.name)
   )
   if (female) { cachedVoice[langCode] = female; return female }
 
@@ -105,8 +134,11 @@ export function useTextToSpeech() {
     const utt     = new SpeechSynthesisUtterance(text)
 
     utt.lang   = langCode
-    utt.rate   = 1.0
-    utt.pitch  = 1.05
+    // Slightly slower than default — sounds more conversational, less robotic
+    // Tiny random wobble (±0.04) so back-to-back chunks don't feel metronomic
+    utt.rate   = 0.88 + (Math.random() * 0.08 - 0.04)
+    // Default pitch (1.0) is the most natural — raising it sounds synthetic
+    utt.pitch  = 1.0
     utt.volume = 1
     if (voice) utt.voice = voice
 
