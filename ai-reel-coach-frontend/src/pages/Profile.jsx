@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getSavedRegion, saveRegion, REGIONS } from '../utils/detectRegion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../store'
 import { useTheme } from '../context/ThemeContext'
@@ -195,7 +196,15 @@ export default function Profile() {
   const [selectedAvatar, setSelectedAvatar] = useState(null)
   const [custom, setCustom]               = useState(DEFAULT_CUSTOM)
 
-  const prefs    = (() => { try { return JSON.parse(localStorage.getItem('vs_prefs') || '{}') } catch { return {} } })()
+  const [region, setRegion] = useState(getSavedRegion)
+
+  const handleRegionChange = (e) => {
+    setRegion(e.target.value)
+    saveRegion(e.target.value)
+    toast('Region saved!', 'success')
+  }
+
+  const prefs = (() => { try { return JSON.parse(localStorage.getItem('vs_prefs') || '{}') } catch { return {} } })()
   const planMeta = PLAN_META[user?.plan] || PLAN_META.FREE
   const usagePercent = Math.min(100, Math.round((user?.generationsUsed / planMeta.limit) * 100))
   const joinDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'
@@ -354,7 +363,31 @@ export default function Profile() {
         <Section title="Account">
           <Row icon="👤" label="Full name"    value={user?.name || 'Not set'} />
           <Row icon="📧" label="Email"        value={user?.email || '—'} />
-          <Row icon="🌐" label="Language"     value={user?.language === 'hi' ? 'Hindi' : user?.language === 'en-IN' ? 'Hinglish' : 'English'} />
+          <Row icon="🌐" label="Language" value={user?.language === 'hi' ? 'Hindi' : user?.language === 'en-IN' ? 'Hinglish' : 'English'} />
+          <Row
+            icon="📍"
+            label="Content Region"
+            value={REGIONS.find(r => r.value === region)?.label || '— Not set —'}
+            action={
+              <select
+                value={region}
+                onChange={handleRegionChange}
+                style={{
+                  background: 'var(--surface2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                  color: 'var(--text)',
+                  padding: '5px 10px',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                }}
+              >
+                <option value="">— Select —</option>
+                {REGIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
+            }
+          />
           <Row
             icon="🎯"
             label="Niche"

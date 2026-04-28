@@ -6,16 +6,10 @@ import { useLang } from '../i18n.jsx'
 import { MicButton, SpeakButton } from '../components/VoiceAssistant'
 import { usePrefs } from '../hooks/usePrefs'
 
-const TONES = ['motivational', 'educational', 'funny', 'storytelling', 'controversial', 'conversational']
+import { detectAndSaveRegion, getSavedRegion, saveRegion, REGIONS } from '../utils/detectRegion'
+
+const TONES  = ['motivational', 'educational', 'funny', 'storytelling', 'controversial', 'conversational']
 const NICHES = ['fitness', 'finance', 'food', 'travel', 'tech', 'fashion', 'lifestyle', 'education', 'comedy', 'business']
-const AUDIENCES = [
-  { value: 'India',          label: '🇮🇳 India'          },
-  { value: 'Global',         label: '🌐 Global'          },
-  { value: 'US',             label: '🇺🇸 United States'  },
-  { value: 'UK',             label: '🇬🇧 United Kingdom' },
-  { value: 'Middle East',    label: '🇦🇪 Middle East'    },
-  { value: 'Southeast Asia', label: '🌏 Southeast Asia'  },
-]
 
 const gradeColor = { A: '#00C9A7', B: '#00C9A7', C: '#FFD60A', D: '#FF9F43', F: '#FF6B6B' }
 const gradeLabel = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
@@ -25,14 +19,23 @@ export default function Generate() {
   const { t, lang } = useLang()
   const location   = useLocation()
   const resultRef  = useRef(null)
-  const { primaryNiche, targetAudience } = usePrefs()
+  const { primaryNiche } = usePrefs()
 
-  const [form, setForm]     = useState({
+  const [form, setForm] = useState({
     topic:    '',
     niche:    primaryNiche,
     tone:     'motivational',
-    audience: targetAudience || 'India',
+    audience: getSavedRegion(),   // blank until detected or set by user
   })
+
+  // Auto-detect region on first visit (runs once, only if nothing saved)
+  useEffect(() => {
+    if (!getSavedRegion()) {
+      detectAndSaveRegion().then(region => {
+        if (region) setForm(f => ({ ...f, audience: region }))
+      })
+    }
+  }, [])
   const [loading, setLd]    = useState(false)
   const [result, setResult] = useState(null)
   const [copied, setCopied] = useState(false)
@@ -68,7 +71,7 @@ export default function Generate() {
     setLd(true)
     setResult(null)
     try {
-      localStorage.setItem('arc_audience', form.audience)
+      saveRegion(form.audience)
       const data = await api.generate({ ...form, language: lang })
       setResult(data)
     } catch (err) {
@@ -158,11 +161,17 @@ export default function Generate() {
               </select>
             </div>
             <div className="field">
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Target Audience
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 6 }}>
+                Target Region
+                {form.audience && (
+                  <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'var(--accent)', background: 'var(--accent-dim)', padding: '1px 7px', borderRadius: 99, textTransform: 'none', letterSpacing: 0, fontWeight: 500 }}>
+                    📍 auto
+                  </span>
+                )}
               </label>
               <select className="select" value={form.audience} onChange={set('audience')}>
-                {AUDIENCES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+                <option value="">— Select region —</option>
+                {REGIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
               </select>
             </div>
           </div>
