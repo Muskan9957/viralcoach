@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useLang } from '../i18n.jsx'
+import { api } from '../api'
 
 // Language codes for Web Speech API
 // en → en-IN so browsers serve an Indian-English voice by default
@@ -47,103 +48,99 @@ function chunkText(text, maxLen = 190) {
   return chunks.filter(c => c.length > 0)
 }
 
-// ─── Pick best available voice ────────────────────────────────────
-function getBestVoice(langCode) {
-  const voices   = window.speechSynthesis.getVoices()
-  if (!voices.length) return null
-
-  const lang2 = langCode.split('-')[0]   // e.g. 'en' from 'en-IN'
-  const pool   = voices.filter(v =>
-    v.lang === langCode || v.lang.startsWith(lang2)
-  )
-  if (!pool.length) return null
-
-  // Prefer exact lang match (en-IN over en-US when asking for en-IN)
-  const exact   = pool.filter(v => v.lang === langCode)
-  const search  = exact.length ? exact : pool
-
-  // Best quality order: Neural/Natural Online > Online > Google > Microsoft > any
-  return (
-    search.find(v => /natural|neural/i.test(v.name) && /online/i.test(v.name)) ||
-    search.find(v => /online/i.test(v.name)) ||
-    search.find(v => /google/i.test(v.name)) ||
-    search.find(v => /microsoft/i.test(v.name)) ||
-    search[0]
-  )
-}
-
 // ─── Text-to-Speech ───────────────────────────────────────────────
+// Primary:  backend /api/tts  →  Google Neural2 (real Indian voice, consistent
+//           across Chrome / Edge / Safari / iPhone — sounds the same everywhere)
+// Fallback: Web Speech API    →  OS voice (works offline / if key not set)
 export function useTextToSpeech() {
   const { lang }                = useLang()
   const [speaking, setSpeaking] = useState(false)
   const cancelRef               = useRef(false)
+  const audioRef                = useRef(null)
   const chunksRef               = useRef([])
   const idxRef                  = useRef(0)
 
-  const speakChunk = (langCode) => {
-    if (cancelRef.current || idxRef.current >= chunksRef.current.length) {
-      setSpeaking(false)
-      return
+  // ── Stop whatever is currently playing ──────────────────────────
+  const stopAll = () => {
+    cancelRef.current = true
+    if (audioRef.current) {
+      audioRef.current.onended = null
+      audioRef.current.onerror = null
+      audioRef.current.pause()
+      if (audioRef.current._blobUrl) URL.revokeObjectURL(audioRef.current._blobUrl)
+      audioRef.current = null
     }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+  }
 
+  // ── Web Speech API fallback (chunked queue) ──────────────────────
+  const wsFallback = (langCode) => {
+    if (!('speechSynthesis' in window)) { setSpeaking(false); return }
+    if (cancelRef.current || idxRef.current >= chunksRef.current.length) {
+      setSpeaking(false); return
+    }
     const utt   = new SpeechSynthesisUtterance(chunksRef.current[idxRef.current])
-    const voice = getBestVoice(langCode)
-
+    const voices = window.speechSynthesis.getVoices()
+    const voice  = voices.find(v => v.lang === langCode)
+               || voices.find(v => v.lang.startsWith(langCode.split('-')[0]))
     if (voice) { utt.voice = voice; utt.lang = voice.lang }
     else        { utt.lang = langCode.startsWith('hi') ? 'hi-IN' : 'en-US' }
-
-    utt.rate   = 1.05
-    utt.pitch  = 1.0
-    utt.volume = 1.0
-
-    utt.onend = () => {
-      if (!cancelRef.current) { idxRef.current++; speakChunk(langCode) }
-    }
+    utt.rate = 1.05; utt.pitch = 1.0; utt.volume = 1.0
+    utt.onend   = () => { if (!cancelRef.current) { idxRef.current++; wsFallback(langCode) } }
     utt.onerror = (e) => {
       if (e.error === 'interrupted' || e.error === 'canceled') return
-      if (!cancelRef.current) { idxRef.current++; speakChunk(langCode) }
+      if (!cancelRef.current) { idxRef.current++; wsFallback(langCode) }
     }
-
     window.speechSynthesis.speak(utt)
   }
 
-  const speak = (text) => {
-    if (!('speechSynthesis' in window) || !text?.trim()) return
+  // ── Google Neural TTS via backend (primary path) ─────────────────
+  const playBackend = async (text, langCode) => {
+    const resp = await api.tts(text, langCode)
+    if (!resp.ok) throw new Error(await resp.text())
+    const blob    = await resp.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    const audio   = new Audio(blobUrl)
+    audio._blobUrl     = blobUrl
+    audioRef.current   = audio
+    audio.onended = () => { URL.revokeObjectURL(blobUrl); setSpeaking(false) }
+    audio.onerror = () => { URL.revokeObjectURL(blobUrl); setSpeaking(false) }
+    await audio.play()
+  }
 
-    const langCode = LANG_CODES[lang] || 'en-IN'
-    const chunks   = chunkText(text)
-    if (!chunks.length) return
-
-    // Cancel anything currently playing
-    cancelRef.current = true
-    window.speechSynthesis.cancel()
+  const speak = async (text) => {
+    if (!text?.trim()) return
+    stopAll()
     cancelRef.current = false
 
-    chunksRef.current = chunks
-    idxRef.current    = 0
+    const langCode = LANG_CODES[lang] || 'en-IN'
     setSpeaking(true)
 
-    // Voices may not be ready on very first call
-    if (!window.speechSynthesis.getVoices().length) {
-      window.speechSynthesis.addEventListener(
-        'voiceschanged',
-        () => { if (!cancelRef.current) speakChunk(langCode) },
-        { once: true }
-      )
-    } else if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      // Give cancel() a moment to flush before re-queuing
-      setTimeout(() => { if (!cancelRef.current) speakChunk(langCode) }, 80)
-    } else {
-      // Queue is empty — speak immediately (keeps desktop Chrome gesture context)
-      speakChunk(langCode)
+    try {
+      // Try Google Neural TTS backend — best quality, consistent on all devices
+      await playBackend(text, langCode)
+    } catch {
+      // Backend not configured or offline — fall back to Web Speech API
+      const chunks = chunkText(text)
+      if (!chunks.length) { setSpeaking(false); return }
+      chunksRef.current = chunks
+      idxRef.current    = 0
+      if (!('speechSynthesis' in window)) { setSpeaking(false); return }
+      window.speechSynthesis.cancel()
+      // Speak synchronously to satisfy desktop Chrome's gesture requirement
+      if (!window.speechSynthesis.getVoices().length) {
+        window.speechSynthesis.addEventListener(
+          'voiceschanged',
+          () => { if (!cancelRef.current) wsFallback(langCode) },
+          { once: true }
+        )
+      } else {
+        wsFallback(langCode)
+      }
     }
   }
 
-  const stopSpeaking = () => {
-    cancelRef.current = true
-    window.speechSynthesis.cancel()
-    setSpeaking(false)
-  }
+  const stopSpeaking = () => { stopAll(); setSpeaking(false) }
 
   return { speaking, speak, stopSpeaking }
 }

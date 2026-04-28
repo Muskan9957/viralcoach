@@ -91,4 +91,17 @@ export const api = {
   markOnboarded:   ()         => req('PATCH', '/user/onboarded'),
   generateAvatar:  (style)    => req('POST',  '/user/generate-avatar', { style }),
   saveAvatar:      (url)      => req('PATCH', '/user/avatar', { url }),
+
+  // TTS — returns audio/mpeg blob (Google Neural2 Indian voice)
+  tts: (text, lang) => {
+    const token = getToken()
+    return fetch(`${BASE}/tts`, {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ text, lang }),
+    })
+  },
 }
