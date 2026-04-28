@@ -22,6 +22,18 @@ router.post(
   controller.generate
 );
 
+// POST /api/scripts/refine  — iterate/refine an existing script (does NOT count against generation quota)
+router.post(
+  '/refine',
+  [
+    body('hook').trim().notEmpty().withMessage('hook is required'),
+    body('body').trim().notEmpty().withMessage('body is required'),
+    body('cta').trim().notEmpty().withMessage('cta is required'),
+    body('instruction').trim().notEmpty().withMessage('Refinement instruction is required').isLength({ max: 500 }),
+  ],
+  controller.refine
+);
+
 // GET /api/scripts
 router.get('/', controller.getAll);
 

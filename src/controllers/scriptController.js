@@ -86,6 +86,33 @@ const generate = async (req, res, next) => {
   }
 };
 
+// ─── POST /api/scripts/refine ─────────────────────────────────────
+// Iterates on an existing script without consuming the generation quota.
+const refine = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const { hook, body, cta, instruction, language, audience, topic } = req.body;
+    const refined = await aiService.refineScript({ hook, body, cta, instruction, language, audience, topic });
+
+    // Re-score the new hook so the UI can show grade change
+    const hookScoreData = await aiService.scoreHook(refined.hook, language);
+
+    return res.json({
+      script: {
+        hook     : refined.hook,
+        body     : refined.body,
+        cta      : refined.cta,
+        fullScript: refined.fullScript,
+        hookScore: hookScoreData,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── GET /api/scripts ─────────────────────────────────────────────
 const getAll = async (req, res, next) => {
   try {
@@ -119,4 +146,4 @@ const getOne = async (req, res, next) => {
   }
 };
 
-module.exports = { generate, getAll, getOne };
+module.exports = { generate, refine, getAll, getOne };

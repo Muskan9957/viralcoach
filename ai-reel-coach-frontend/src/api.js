@@ -36,9 +36,10 @@ export const api = {
   openPortal:     ()      => req('POST', '/payments/portal'),
 
   // Scripts
-  generate:   (body) => req('POST', '/scripts/generate', body),
-  getScripts: ()     => req('GET',  '/scripts'),
-  getScript:  (id)   => req('GET',  `/scripts/${id}`),
+  generate:      (body) => req('POST', '/scripts/generate', body),
+  refineScript:  (body) => req('POST', '/scripts/refine', body),
+  getScripts:    ()     => req('GET',  '/scripts'),
+  getScript:     (id)   => req('GET',  `/scripts/${id}`),
 
   // Hooks
   scoreHook:    (body) => req('POST', '/hooks/score', body),

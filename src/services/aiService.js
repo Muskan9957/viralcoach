@@ -70,6 +70,60 @@ const ask = async (prompt, maxTokens = 1024, model = MODEL) => {
 };
 
 // ─────────────────────────────────────────────────────────────────
+// 0. REFINE SCRIPT (iteration on existing result)
+// ─────────────────────────────────────────────────────────────────
+const refineScript = async ({ hook, body, cta, instruction, language = 'en', audience = 'India', topic = '' }) => {
+  const langInstruction    = getLangInstruction(language)
+  const audienceInstruction = getAudienceContext(audience)
+
+  const prompt = `
+You are refining an existing viral short-form video script based on the creator's feedback.
+${langInstruction ? '\n' + langInstruction + '\n' : ''}
+${'\n' + audienceInstruction + '\n'}
+
+ORIGINAL TOPIC: ${topic}
+
+CURRENT SCRIPT:
+HOOK: ${hook}
+BODY: ${body}
+CTA: ${cta}
+
+CREATOR'S REFINEMENT INSTRUCTION:
+"${instruction}"
+
+Your job:
+- Apply the instruction PRECISELY — change only what is asked
+- Keep everything that is already strong and working
+- If the hook needs to change, make it Grade A (85+ score worthy)
+- Maintain the same language and tone unless explicitly told otherwise
+- Keep total speaking time 60-90 seconds
+
+Return ONLY the refined script in this exact format — no commentary:
+
+HOOK:
+[refined hook]
+
+BODY:
+[refined body]
+
+CTA:
+[refined cta]
+`;
+
+  const raw = await ask(prompt, 1200);
+  const hookMatch = raw.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i);
+  const bodyMatch = raw.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i);
+  const ctaMatch  = raw.match(/CTA[^:]*:\s*([\s\S]*?)$/i);
+
+  return {
+    hook      : hookMatch ? hookMatch[1].trim() : hook,
+    body      : bodyMatch ? bodyMatch[1].trim() : body,
+    cta       : ctaMatch  ? ctaMatch[1].trim()  : cta,
+    fullScript: raw,
+  };
+};
+
+// ─────────────────────────────────────────────────────────────────
 // 1. GENERATE SCRIPT
 // ─────────────────────────────────────────────────────────────────
 const generateScript = async ({ topic, niche, tone, language = 'en', audience = 'India' }) => {
@@ -623,6 +677,7 @@ const coachChat = async ({ message, history = [], userContext, language = 'en' }
 };
 
 module.exports = {
+  refineScript,
   generateScript,
   scoreHook,
   rewriteHook,

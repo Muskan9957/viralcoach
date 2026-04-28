@@ -8,6 +8,17 @@ import { usePrefs } from '../hooks/usePrefs'
 
 import { detectAndSaveRegion, getSavedRegion, saveRegion, REGIONS } from '../utils/detectRegion'
 
+const REFINE_CHIPS = [
+  { label: '🔥 Stronger hook',       instruction: 'Make the hook much more scroll-stopping with higher emotional intensity and specificity.' },
+  { label: '✂️ Make it shorter',     instruction: 'Make the entire script more concise — cut 30% of the words while keeping all the value.' },
+  { label: '😂 Add humour',          instruction: 'Add clever humour and wit throughout — make it more entertaining and fun to watch.' },
+  { label: '🎯 More specific',       instruction: 'Replace vague statements with concrete numbers, specific examples, and real details.' },
+  { label: '😱 More FOMO',          instruction: 'Amplify fear of missing out — make the viewer feel they CANNOT afford to skip this.' },
+  { label: '🇮🇳 More Indian feel',   instruction: 'Add more Indian cultural references, examples, and context relevant to Indian audiences.' },
+  { label: '💡 Better CTA',         instruction: 'Rewrite the call-to-action to be more compelling, specific, and urgent.' },
+  { label: '📖 More storytelling',  instruction: 'Reframe using personal story structure — make it feel more human and relatable.' },
+]
+
 const TONES  = ['motivational', 'educational', 'funny', 'storytelling', 'controversial', 'conversational']
 const NICHES = ['fitness', 'finance', 'food', 'travel', 'tech', 'fashion', 'lifestyle', 'education', 'comedy', 'business']
 
@@ -36,9 +47,16 @@ export default function Generate() {
       })
     }
   }, [])
-  const [loading, setLd]    = useState(false)
-  const [result, setResult] = useState(null)
-  const [copied, setCopied] = useState(false)
+  const [loading, setLd]        = useState(false)
+  const [result, setResult]     = useState(null)
+  const [copied, setCopied]     = useState(false)
+
+  // Refinement state
+  const [versions, setVersions]         = useState([])       // history of all versions
+  const [activeVer, setActiveVer]       = useState(0)        // index into versions (0 = latest)
+  const [refineInput, setRefineInput]   = useState('')
+  const [refining, setRefining]         = useState(false)
+  const refineRef = useRef(null)
 
   useEffect(() => {
     const stateTopic = location.state?.topic
@@ -70,15 +88,63 @@ export default function Generate() {
     if (!form.topic.trim()) { toast('Please enter a topic', 'error'); return }
     setLd(true)
     setResult(null)
+    setVersions([])
+    setActiveVer(0)
+    setRefineInput('')
     try {
       saveRegion(form.audience)
       const data = await api.generate({ ...form, language: lang })
       setResult(data)
+      // Seed version history with v1
+      setVersions([{ ...data.script, label: 'v1 · Original' }])
+      setActiveVer(0)
     } catch (err) {
       toast(err.message, 'error')
     } finally {
       setLd(false)
     }
+  }
+
+  const refine = async (customInstruction) => {
+    const instruction = customInstruction || refineInput.trim()
+    if (!instruction) { toast('Tell me what to change', 'error'); return }
+    if (!result?.script) return
+    setRefining(true)
+    try {
+      const current = versions[activeVer] || result.script
+      const data = await api.refineScript({
+        hook       : current.hook,
+        body       : current.body,
+        cta        : current.cta,
+        instruction,
+        language   : lang,
+        audience   : form.audience,
+        topic      : form.topic,
+      })
+      const newVer = {
+        ...data.script,
+        label: `v${versions.length + 1} · ${instruction.slice(0, 28)}${instruction.length > 28 ? '…' : ''}`,
+      }
+      const newVersions = [newVer, ...versions]
+      setVersions(newVersions)
+      setActiveVer(0)
+      setResult(prev => ({ ...prev, script: data.script }))
+      setRefineInput('')
+      setTimeout(() => refineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    } catch (err) {
+      toast(err.message, 'error')
+    } finally {
+      setRefining(false)
+    }
+  }
+
+  const switchVersion = (idx) => {
+    const ver = versions[idx]
+    setActiveVer(idx)
+    setResult(prev => ({
+      ...prev,
+      script: { ...ver, hookScore: prev.script.hookScore },
+    }))
   }
 
   const copyScript = () => {
@@ -89,7 +155,7 @@ export default function Generate() {
     toast('Copied!', 'success')
   }
 
-  const hookScore = result?.script?.hookScore
+  const hookScore = versions[activeVer]?.hookScore || result?.script?.hookScore
   const grade = hookScore ? (hookScore.score >= 90 ? 'A' : hookScore.score >= 75 ? 'B' : hookScore.score >= 60 ? 'C' : hookScore.score >= 50 ? 'D' : 'F') : null
   const color = grade ? gradeColor[grade] : '#00C9A7'
 
@@ -326,9 +392,106 @@ export default function Generate() {
             </div>
           </div>
 
+          {/* ── Script Refinement Panel ───────────────────────────── */}
+          <div ref={refineRef} className="card" style={{ border: '1px solid rgba(255,95,31,0.25)', background: 'linear-gradient(135deg, rgba(255,95,31,0.04), rgba(255,60,172,0.04))' }}>
+            {/* Version History Pills */}
+            {versions.length > 1 && (
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
+                  Version History
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {versions.map((v, i) => (
+                    <button
+                      key={i}
+                      onClick={() => switchVersion(i)}
+                      style={{
+                        padding: '5px 14px',
+                        borderRadius: 20,
+                        fontSize: '0.75rem',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 600,
+                        border: `1px solid ${i === activeVer ? 'var(--accent)' : 'var(--border)'}`,
+                        background: i === activeVer ? 'var(--accent-dim)' : 'transparent',
+                        color: i === activeVer ? 'var(--accent)' : 'var(--text-muted)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Header */}
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1rem', marginBottom: 4 }}>
+                ✦ Refine This Script
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Tell the AI what to change — or tap a quick action below.
+              </p>
+            </div>
+
+            {/* Quick Chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+              {REFINE_CHIPS.map(chip => (
+                <button
+                  key={chip.label}
+                  onClick={() => refine(chip.instruction)}
+                  disabled={refining}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 20,
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    border: '1px solid var(--border)',
+                    background: 'var(--surface2)',
+                    color: 'var(--text-muted)',
+                    cursor: refining ? 'not-allowed' : 'pointer',
+                    opacity: refining ? 0.5 : 1,
+                    transition: 'all 0.15s',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={e => { if (!refining) { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom instruction */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <textarea
+                className="textarea"
+                placeholder='Or describe your own change… e.g. "make it funnier and add a cricket reference"'
+                value={refineInput}
+                onChange={e => setRefineInput(e.target.value)}
+                rows={2}
+                maxLength={500}
+                style={{ flex: 1, resize: 'vertical', fontSize: '0.9rem' }}
+                onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) refine() }}
+              />
+              <button
+                onClick={() => refine()}
+                disabled={refining || !refineInput.trim()}
+                className="btn btn-primary"
+                style={{ alignSelf: 'flex-end', height: 44, paddingInline: 20, whiteSpace: 'nowrap', flexShrink: 0 }}
+              >
+                {refining ? <><span className="spinner" /> Refining…</> : 'Refine →'}
+              </button>
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', marginTop: 6 }}>
+              Tip: refinements don't use your generation quota · Ctrl+Enter to submit
+            </div>
+          </div>
+
           {/* Generate another button */}
           <button
-            onClick={() => { setResult(null); setForm({ topic: '', niche: primaryNiche, tone: 'motivational' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+            onClick={() => { setResult(null); setVersions([]); setActiveVer(0); setRefineInput(''); setForm({ topic: '', niche: primaryNiche, tone: 'motivational' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
             className="btn btn-ghost btn-full"
             style={{ marginBottom: 32 }}
           >
