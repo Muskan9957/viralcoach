@@ -3,6 +3,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../store'
 import { useLang } from '../i18n.jsx'
 import LanguageSelector from './LanguageSelector'
+import ThemeToggle from './ThemeToggle'
 import Logo from './Logo'
 
 /* ─── useIsMobile hook ───────────────────────────────────────────── */
@@ -304,9 +305,12 @@ export default function Layout({ children }) {
             </button>
           )}
 
-          {/* Language Selector */}
-          <div style={{ padding: '8px 0', flexShrink: 0 }}>
-            <LanguageSelector compact />
+          {/* Language Selector + Theme Toggle */}
+          <div style={{ padding: '8px 0', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <LanguageSelector compact />
+            </div>
+            <ThemeToggle size="sm" />
           </div>
 
           {/* Logout */}
@@ -339,8 +343,9 @@ export default function Layout({ children }) {
             <div style={styles.mobileLogoRow}>
               <Logo size={32} showWordmark />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <LanguageSelector compact />
+              <ThemeToggle size="sm" />
               <div
                 style={{ ...styles.mobileAvatar, overflow: 'hidden', padding: 0 }}
                 title={userName}
