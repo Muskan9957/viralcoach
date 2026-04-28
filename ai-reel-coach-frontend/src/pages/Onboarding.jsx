@@ -40,7 +40,6 @@ const PLATFORMS = [
     label: 'Instagram Reels',
     desc: 'Short, visual, trending audio',
     tag: 'Most Popular',
-    soon: true,
   },
   {
     id: 'youtube', icon: (
@@ -53,7 +52,6 @@ const PLATFORMS = [
     label: 'YouTube Shorts',
     desc: 'Discovery-first, evergreen content',
     tag: 'High CPM',
-    soon: true,
   },
   {
     id: 'both', icon: (
@@ -72,7 +70,6 @@ const PLATFORMS = [
     label: 'Both Platforms',
     desc: 'Maximize reach everywhere',
     tag: 'Best for Growth',
-    soon: true,
   },
 ]
 
@@ -261,17 +258,13 @@ export default function Onboarding() {
             {PLATFORMS.map(p => (
               <button
                 key={p.id}
-                disabled={p.soon}
-                onClick={() => !p.soon && setPlatform(p.id)}
+                onClick={() => setPlatform(p.id)}
                 className="ob-platform-card"
                 style={{
                   ...styles.platformCard,
                   background: platform === p.id ? 'rgba(255,95,31,0.08)' : 'var(--surface2)',
                   border: platform === p.id ? '1.5px solid var(--accent)' : '1.5px solid var(--border)',
                   boxShadow: platform === p.id ? '0 0 28px rgba(255,95,31,0.2)' : 'none',
-                  opacity: p.soon ? 0.4 : 1,
-                  cursor: p.soon ? 'not-allowed' : 'pointer',
-                  filter: p.soon ? 'grayscale(0.5)' : 'none',
                 }}
               >
                 <div style={styles.platformIcon}>{p.icon}</div>
@@ -279,15 +272,8 @@ export default function Onboarding() {
                   <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)', marginBottom: 3 }}>{p.label}</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{p.desc}</div>
                 </div>
-                <span className="ob-platform-tag" style={{
-                  ...styles.platformTag,
-                  ...(p.soon ? {
-                    background: 'rgba(255,255,255,0.08)',
-                    color: 'rgba(255,255,255,0.45)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                  } : {}),
-                }}>
-                  {p.soon ? 'Coming Soon' : p.tag}
+                <span className="ob-platform-tag" style={styles.platformTag}>
+                  {p.tag}
                 </span>
                 {platform === p.id && <div style={styles.checkMark}>✓</div>}
               </button>
