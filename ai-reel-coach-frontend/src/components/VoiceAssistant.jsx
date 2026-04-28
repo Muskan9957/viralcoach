@@ -187,30 +187,42 @@ export function useTextToSpeech() {
   const speak = (text) => {
     if (!('speechSynthesis' in window) || !text?.trim()) return
 
-    // Stop anything currently playing
-    cancelledRef.current = true
-    window.speechSynthesis.cancel()
-
     const langCode = LANG_CODES[lang] || 'en-IN'
     const chunks   = chunkText(text)
     if (!chunks.length) return
 
-    chunksRef.current = chunks
-    indexRef.current  = 0
+    // Prepare state before any async work
+    chunksRef.current    = chunks
+    indexRef.current     = 0
     cancelledRef.current = false
     setSpeaking(true)
 
     const startSpeaking = () => {
       if (cancelledRef.current) return
-      speakNextChunk(langCode)
+      // Ensure voices are ready (first page load — Chrome loads them async)
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.addEventListener(
+          'voiceschanged',
+          () => { if (!cancelledRef.current) speakNextChunk(langCode) },
+          { once: true }
+        )
+      } else {
+        speakNextChunk(langCode)
+      }
     }
 
-    // If voices aren't loaded yet, wait for them (happens on first page load)
-    if (window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.addEventListener('voiceschanged', startSpeaking, { once: true })
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      // Something is already playing — cancel it, wait for the queue to clear,
+      // then start. The timeout is ONLY used in this branch so desktop Chrome's
+      // user-gesture context isn't lost on first/fresh playback.
+      cancelledRef.current = true
+      window.speechSynthesis.cancel()
+      cancelledRef.current = false
+      setTimeout(startSpeaking, 80)
     } else {
-      // 100ms lets cancel() flush cleanly before we enqueue the first utterance
-      setTimeout(startSpeaking, 100)
+      // Queue is empty — call speak() synchronously so desktop Chrome's
+      // user-gesture requirement is satisfied (setTimeout breaks it on desktop).
+      startSpeaking()
     }
   }
 
