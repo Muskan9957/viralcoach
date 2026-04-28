@@ -1,50 +1,47 @@
 const express = require('express')
-const axios   = require('axios')
 const router  = express.Router()
 
-// ─── ElevenLabs TTS ───────────────────────────────────────────────
-// "Adam" — built-in premade voice, available on ALL ElevenLabs plans
-const VOICE_ID = 'pNInz6obpgDQGcFmaJgB'
+// ─── Microsoft Edge Neural TTS ────────────────────────────────────
+// Uses the same engine as Edge browser's Read Aloud — completely free,
+// no API key needed, excellent neural voice quality.
+// en-IN-NeerjaNeural: natural Indian English female voice
+const VOICE_MAP = {
+  'en-IN': 'en-IN-NeerjaNeural',
+  'hi-IN': 'hi-IN-SwaraNeural',
+  'es-ES': 'es-ES-ElviraNeural',
+  'fr-FR': 'fr-FR-DeniseNeural',
+  'pt-BR': 'pt-BR-FranciscaNeural',
+  'de-DE': 'de-DE-KatjaNeural',
+  'ar-SA': 'ar-SA-ZariyahNeural',
+  'id-ID': 'id-ID-GadisNeural',
+  'ja-JP': 'ja-JP-NanamiNeural',
+  'ko-KR': 'ko-KR-SunHiNeural',
+}
 
 router.post('/', async (req, res) => {
-  const { text } = req.body
+  const { text, lang = 'en-IN' } = req.body
   if (!text?.trim()) return res.status(400).json({ error: 'text required' })
 
-  const apiKey = process.env.ELEVENLABS_API_KEY
-  if (!apiKey) return res.status(503).json({ error: 'TTS_NOT_CONFIGURED' })
-
   try {
-    const resp = await axios.post(
-      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
-      {
-        text: text.slice(0, 2500),
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: {
-          stability:        0.50,
-          similarity_boost: 0.75,
-          style:            0.35,
-          use_speaker_boost: true,
-        },
-      },
-      {
-        headers: {
-          'xi-api-key':   apiKey,
-          'Content-Type': 'application/json',
-          'Accept':       'audio/mpeg',
-        },
-        responseType: 'arraybuffer',
-      }
-    )
+    const { MsEdgeTTS, OUTPUT_FORMAT } = require('msedge-tts')
+    const voice = VOICE_MAP[lang] || 'en-IN-NeerjaNeural'
 
+    const tts = new MsEdgeTTS()
+    await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3)
+
+    const chunks = []
+    const stream = tts.toStream(text.slice(0, 2500))
+    for await (const chunk of stream) {
+      chunks.push(chunk)
+    }
+
+    const buffer = Buffer.concat(chunks)
     res.set('Content-Type',  'audio/mpeg')
-    res.set('Cache-Control', 'public, max-age=86400')
-    res.send(Buffer.from(resp.data))
+    res.set('Cache-Control', 'public, max-age=3600')
+    res.send(buffer)
   } catch (err) {
-    const status = err.response?.status || 500
-    const msg    = err.response?.data?.toString() || err.message
-    console.error('[TTS] ElevenLabs error:', status, msg)
-    if (status === 401) return res.status(503).json({ error: 'ElevenLabs API key invalid or missing' })
-    res.status(503).json({ error: `TTS failed: ${status}` })
+    console.error('[TTS] Edge TTS error:', err.message)
+    res.status(500).json({ error: err.message })
   }
 })
 
