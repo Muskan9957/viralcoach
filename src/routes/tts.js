@@ -1,47 +1,65 @@
 const express = require('express')
+const axios   = require('axios')
 const router  = express.Router()
 
-// ─── Microsoft Edge Neural TTS ────────────────────────────────────
-// Free, no API key. Same engine as Edge browser Read Aloud.
-const VOICE_MAP = {
-  'en-IN': 'en-IN-NeerjaNeural',
-  'hi-IN': 'hi-IN-SwaraNeural',
-  'es-ES': 'es-ES-ElviraNeural',
-  'fr-FR': 'fr-FR-DeniseNeural',
-  'pt-BR': 'pt-BR-FranciscaNeural',
-  'de-DE': 'de-DE-KatjaNeural',
-  'ar-SA': 'ar-SA-ZariyahNeural',
-  'id-ID': 'id-ID-GadisNeural',
-  'ja-JP': 'ja-JP-NanamiNeural',
-  'ko-KR': 'ko-KR-SunHiNeural',
+// ─── Google Translate TTS ─────────────────────────────────────────
+// Free, no API key, proxied server-side so CORS is never an issue.
+// Splits text at sentence boundaries to stay under Google's 200-char limit.
+function splitSentences(text, maxLen = 180) {
+  const raw = text.match(/[^.!?\n]+[.!?\n]*/g) || [text]
+  const chunks = []
+  let cur = ''
+  for (const s of raw) {
+    const t = s.trim()
+    if (!t) continue
+    if (cur && (cur + ' ' + t).length > maxLen) { chunks.push(cur); cur = t.slice(0, maxLen) }
+    else cur = cur ? cur + ' ' + t : t
+  }
+  if (cur.trim()) chunks.push(cur.trim())
+  return chunks.filter(c => c.length > 0)
+}
+
+// Google Translate language codes
+const LANG_MAP = {
+  'en-IN': 'en', 'hi-IN': 'hi', 'es-ES': 'es', 'fr-FR': 'fr',
+  'pt-BR': 'pt', 'de-DE': 'de', 'ar-SA': 'ar', 'id-ID': 'id',
+  'ja-JP': 'ja', 'ko-KR': 'ko',
 }
 
 router.post('/', async (req, res) => {
   const { text, lang = 'en-IN' } = req.body
   if (!text?.trim()) return res.status(400).json({ error: 'text required' })
 
+  const tl     = LANG_MAP[lang] || 'en'
+  const chunks = splitSentences(text.slice(0, 1500))
+
   try {
-    const { MsEdgeTTS, OUTPUT_FORMAT } = require('msedge-tts')
-    const voice = VOICE_MAP[lang] || 'en-IN-NeerjaNeural'
+    const buffers = []
+    for (const chunk of chunks) {
+      const resp = await axios.get('https://translate.google.com/translate_tts', {
+        params: {
+          ie: 'UTF-8', q: chunk, tl,
+          client: 'tw-ob', ttsspeed: '1',
+        },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Referer':    'https://translate.google.com/',
+          'Accept':     'audio/mpeg, audio/*',
+        },
+        responseType: 'arraybuffer',
+        timeout: 8000,
+      })
+      buffers.push(Buffer.from(resp.data))
+    }
 
-    const tts = new MsEdgeTTS()
-    await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3)
-
-    // toStream() returns a Node Readable — collect chunks via events
-    const stream = tts.toStream(text.slice(0, 2500))
-    const buffer = await new Promise((resolve, reject) => {
-      const chunks = []
-      stream.on('data',  chunk => chunks.push(chunk))
-      stream.on('end',   ()    => resolve(Buffer.concat(chunks)))
-      stream.on('error', err   => reject(err))
-    })
-
+    const buffer = Buffer.concat(buffers)
     res.set('Content-Type',  'audio/mpeg')
     res.set('Cache-Control', 'public, max-age=3600')
     res.send(buffer)
   } catch (err) {
-    console.error('[TTS] Edge TTS error:', err.message)
-    res.status(500).json({ error: err.message })
+    const status = err.response?.status
+    console.error('[TTS] Google error:', status, err.message)
+    res.status(500).json({ error: `TTS failed ${status || ''}: ${err.message}` })
   }
 })
 
