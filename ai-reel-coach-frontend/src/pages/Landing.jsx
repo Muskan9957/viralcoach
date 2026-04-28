@@ -799,12 +799,14 @@ export default function Landing() {
         }
 
         /* ── Feature label ──────────────────────────────────────────── */
-        .ap-label-wrap { position:relative; height:20px; width:160px; z-index:2; }
+        .ap-label-wrap {
+          position:relative; height:28px; width:180px; z-index:2;
+        }
         .ap-label {
           position:absolute; inset:0;
           display:flex; align-items:center; justify-content:center;
-          font-family:var(--font-mono); font-size:0.6rem;
-          font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+          font-family:var(--font-mono); font-size:0.68rem;
+          font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
           color:var(--lc);
           opacity:0;
           animation:labelCycle 25s ease-in-out infinite;
@@ -815,25 +817,38 @@ export default function Landing() {
         .ap-label-4{ animation-delay:15s; }
         .ap-label-5{ animation-delay:20s; }
         @keyframes labelCycle {
-          0%,3%    { opacity:0; }
-          6%       { opacity:1; }
-          16%      { opacity:1; }
-          20%,100% { opacity:0; }
+          0%,3%    { opacity:0; transform:translateY(4px); }
+          6%       { opacity:1; transform:translateY(0); }
+          16%      { opacity:1; transform:translateY(0); }
+          20%,100% { opacity:0; transform:translateY(-4px); }
         }
 
         /* ── Mobile scaling ─────────────────────────────────────────── */
-        /* Scale the whole phone proportionally on small screens */
         @media (max-width: 480px) {
           .ap-phone { transform:scale(0.82); transform-origin:top center; }
           .ap-outer { gap:10px; }
-          /* compensate for the scale gap */
           .ap-dots    { margin-top:-22px; }
-          .ap-label-wrap { margin-top:-20px; }
+          .ap-label-wrap {
+            margin-top:-18px;
+            height:32px; width:200px;
+          }
+          .ap-label {
+            font-size:0.75rem;
+            letter-spacing:0.1em;
+            /* subtle pill so text pops on any bg */
+            background: rgba(7,9,28,0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:99px;
+            padding:0 14px;
+          }
         }
         @media (max-width: 360px) {
           .ap-phone { transform:scale(0.72); transform-origin:top center; }
           .ap-dots    { margin-top:-42px; }
-          .ap-label-wrap { margin-top:-40px; }
+          .ap-label-wrap { margin-top:-38px; width:190px; }
+          .ap-label { font-size:0.72rem; }
         }
 
         /* ══════════════════════════════════════════════════════
@@ -935,7 +950,7 @@ export default function Landing() {
 
         /* ── Share chip ─────────────────────────────────────── */
         .vb-share {
-          right: 2px; top: 370px;
+          right: 4px; top: 370px;
           display: flex; align-items: center; gap: 5px;
           background: rgba(8,10,30,0.84);
           backdrop-filter: blur(14px);
@@ -943,7 +958,6 @@ export default function Landing() {
           border: 1px solid rgba(0,212,255,0.28);
           border-radius: 99px; padding: 6px 13px;
           font-size: 0.68rem;
-          transform: rotate(-4deg);
           box-shadow: 0 5px 22px rgba(0,0,0,0.45), 0 0 16px rgba(0,212,255,0.14);
           animation: vbDrift 5.5s ease-in-out 1.2s infinite;
         }
@@ -989,10 +1003,10 @@ export default function Landing() {
           0%,100% { transform: translateY(0); }
           50%     { transform: translateY(-6px); }
         }
-        /* drift: gentle sway with tilt */
+        /* drift: clean float, no tilt */
         @keyframes vbDrift {
-          0%,100% { transform: rotate(-4deg) translateY(0); }
-          50%     { transform: rotate(-1deg) translateY(-7px); }
+          0%,100% { transform: translateY(0); }
+          50%     { transform: translateY(-8px); }
         }
         @keyframes vbHeartbeat {
           0%,60%,100% { transform: rotate(10deg) scale(1); }
