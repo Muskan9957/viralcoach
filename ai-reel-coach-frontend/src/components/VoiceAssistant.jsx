@@ -117,9 +117,10 @@ export function useTextToSpeech() {
     setSpeaking(true)
 
     try {
-      // Try Google Neural TTS backend — best quality, consistent on all devices
+      // Try ElevenLabs Neural TTS via backend — best quality, consistent on all devices
       await playBackend(text, langCode)
-    } catch {
+    } catch (err) {
+      console.warn('[TTS] Backend failed, falling back to Web Speech:', err?.message)
       // Backend not configured or offline — fall back to Web Speech API
       const chunks = chunkText(text)
       if (!chunks.length) { setSpeaking(false); return }

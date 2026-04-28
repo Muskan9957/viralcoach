@@ -3,20 +3,10 @@ const router  = express.Router()
 const auth    = require('../middleware/auth')
 
 // ─── ElevenLabs TTS ───────────────────────────────────────────────
-// Free tier: 10,000 chars/month  |  elevenlabs.io → Profile → API key
-// Add to .env:  ELEVENLABS_API_KEY=sk_...
-//
-// Voice IDs used (from ElevenLabs public voice library):
-//   en-IN  →  "Grandma Aparna"  (warm Indian English female)
-//   hi-IN  →  "Meera"           (natural Hindi/Indian female)
-//   default → "Rachel"          (clear, neutral English)
-//
-// You can swap any voice ID from: https://elevenlabs.io/voice-library
-const VOICE_IDS = {
-  'en-IN': 'cgSgspJ2msm6clMCkdW9',   // Grandma Aparna — Indian English
-  'hi-IN': 'cgSgspJ2msm6clMCkdW9',   // same voice handles Hindi well
-}
-const DEFAULT_VOICE = '21m00Tcm4TlvDq8ikWAM'   // Rachel — neutral fallback
+// These are ElevenLabs' built-in premade voices — available on ALL plans.
+// "Adam" has a warm, clear tone that works well for Indian English content.
+// Swap VOICE_ID below with any ID from elevenlabs.io/voice-library
+const VOICE_ID = 'pNInz6obpgDQGcFmaJgB'   // Adam — deep, clear, works on all plans
 
 router.post('/', auth, async (req, res) => {
   const { text, lang = 'en-IN' } = req.body
@@ -25,11 +15,9 @@ router.post('/', auth, async (req, res) => {
   const apiKey = process.env.ELEVENLABS_API_KEY
   if (!apiKey) return res.status(503).json({ error: 'TTS_NOT_CONFIGURED' })
 
-  const voiceId = VOICE_IDS[lang] || DEFAULT_VOICE
-
   try {
     const resp = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
       {
         method: 'POST',
         headers: {
