@@ -29,7 +29,9 @@ const LANG_CODES = {
 // Blocklist: old Windows SAPI robots (David, Mark, George …)
 let cachedVoice = {}
 
-const ROBOTIC_BLOCKLIST  = /\b(david|mark|george|richard|james)\b/i
+// Only block the absolute worst (very old SAPI5 voices) — don't block
+// common voices like Mark/Zira which are the only option on many Windows PCs
+const ROBOTIC_BLOCKLIST  = /\b(hazel|george|daniel)\b/i
 // Indian voice names shipped by Microsoft (Edge) and Google
 const INDIAN_VOICE_NAMES = /neerja|aarav|swara|heera|aditi|raveena|priya|kalpana|hemant|samantha.*in/i
 
@@ -148,11 +150,20 @@ export function useTextToSpeech() {
     const voice   = getBestVoice(langCode)
     const utt     = new SpeechSynthesisUtterance(text)
 
-    utt.lang   = langCode
-    utt.rate   = 1.05   // slightly above default — crisp, natural pace
-    utt.pitch  = 1.0    // default pitch is the most natural
+    if (voice) {
+      utt.voice = voice
+      // Always use the voice's own lang — forcing e.g. 'en-IN' when the
+      // selected voice is 'en-US' causes Chrome/Edge to silently drop speech
+      utt.lang  = voice.lang
+    } else {
+      // No matching voice found — let the browser pick its default
+      // Use a safe fallback (en-US is universally available) rather than
+      // en-IN which may not exist on this machine
+      utt.lang  = langCode.startsWith('hi') ? 'hi-IN' : 'en-US'
+    }
+    utt.rate   = 1.05
+    utt.pitch  = 1.0
     utt.volume = 1
-    if (voice) utt.voice = voice
 
     utt.onend = () => {
       if (!cancelledRef.current) {
@@ -183,19 +194,24 @@ export function useTextToSpeech() {
 
     chunksRef.current = chunks
     indexRef.current  = 0
-    cancelledRef.current = false
-    setSpeaking(true)
 
-    // Chrome loads voices asynchronously — wait if needed
+    const doSpeak = () => {
+      if (cancelledRef.current) return
+      // Chrome desktop can get stuck in a paused/speaking state after cancel().
+      // resume() clears that before we enqueue new utterances.
+      try { window.speechSynthesis.resume() } catch {}
+      setSpeaking(true)
+      speakNextChunk(langCode)
+    }
+
+    cancelledRef.current = false
+
+    // Chrome loads voices asynchronously on first call — wait if needed
     if (window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.addEventListener(
-        'voiceschanged',
-        () => speakNextChunk(langCode),
-        { once: true }
-      )
+      window.speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true })
     } else {
-      // Small delay ensures cancel() has fully cleared before we start
-      setTimeout(() => speakNextChunk(langCode), 80)
+      // 160ms gives cancel() time to fully flush on all desktop browsers
+      setTimeout(doSpeak, 160)
     }
   }
 
