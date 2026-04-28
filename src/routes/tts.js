@@ -2,9 +2,7 @@ const express = require('express')
 const router  = express.Router()
 
 // ─── Microsoft Edge Neural TTS ────────────────────────────────────
-// Uses the same engine as Edge browser's Read Aloud — completely free,
-// no API key needed, excellent neural voice quality.
-// en-IN-NeerjaNeural: natural Indian English female voice
+// Free, no API key. Same engine as Edge browser Read Aloud.
 const VOICE_MAP = {
   'en-IN': 'en-IN-NeerjaNeural',
   'hi-IN': 'hi-IN-SwaraNeural',
@@ -29,13 +27,15 @@ router.post('/', async (req, res) => {
     const tts = new MsEdgeTTS()
     await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3)
 
-    const chunks = []
+    // toStream() returns a Node Readable — collect chunks via events
     const stream = tts.toStream(text.slice(0, 2500))
-    for await (const chunk of stream) {
-      chunks.push(chunk)
-    }
+    const buffer = await new Promise((resolve, reject) => {
+      const chunks = []
+      stream.on('data',  chunk => chunks.push(chunk))
+      stream.on('end',   ()    => resolve(Buffer.concat(chunks)))
+      stream.on('error', err   => reject(err))
+    })
 
-    const buffer = Buffer.concat(chunks)
     res.set('Content-Type',  'audio/mpeg')
     res.set('Cache-Control', 'public, max-age=3600')
     res.send(buffer)
