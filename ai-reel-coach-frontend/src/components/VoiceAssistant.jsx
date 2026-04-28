@@ -173,9 +173,12 @@ export function useTextToSpeech() {
     }
 
     utt.onerror = (e) => {
-      // 'interrupted' fires when we cancel intentionally — ignore it
       if (e.error === 'interrupted' || e.error === 'canceled') return
-      setSpeaking(false)
+      // Skip the failed chunk and try the next one rather than stopping
+      if (!cancelledRef.current) {
+        indexRef.current++
+        speakNextChunk(langCode)
+      }
     }
 
     window.speechSynthesis.speak(utt)
@@ -184,7 +187,7 @@ export function useTextToSpeech() {
   const speak = (text) => {
     if (!('speechSynthesis' in window) || !text?.trim()) return
 
-    // Cancel any ongoing speech
+    // Stop anything currently playing
     cancelledRef.current = true
     window.speechSynthesis.cancel()
 
@@ -194,24 +197,20 @@ export function useTextToSpeech() {
 
     chunksRef.current = chunks
     indexRef.current  = 0
+    cancelledRef.current = false
+    setSpeaking(true)
 
-    const doSpeak = () => {
+    const startSpeaking = () => {
       if (cancelledRef.current) return
-      // Chrome desktop can get stuck in a paused/speaking state after cancel().
-      // resume() clears that before we enqueue new utterances.
-      try { window.speechSynthesis.resume() } catch {}
-      setSpeaking(true)
       speakNextChunk(langCode)
     }
 
-    cancelledRef.current = false
-
-    // Chrome loads voices asynchronously on first call — wait if needed
+    // If voices aren't loaded yet, wait for them (happens on first page load)
     if (window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true })
+      window.speechSynthesis.addEventListener('voiceschanged', startSpeaking, { once: true })
     } else {
-      // 160ms gives cancel() time to fully flush on all desktop browsers
-      setTimeout(doSpeak, 160)
+      // 100ms lets cancel() flush cleanly before we enqueue the first utterance
+      setTimeout(startSpeaking, 100)
     }
   }
 
