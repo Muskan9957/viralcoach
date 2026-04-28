@@ -1,56 +1,49 @@
 const express = require('express')
+const axios   = require('axios')
 const router  = express.Router()
 const auth    = require('../middleware/auth')
 
 // ─── ElevenLabs TTS ───────────────────────────────────────────────
-// These are ElevenLabs' built-in premade voices — available on ALL plans.
-// "Adam" has a warm, clear tone that works well for Indian English content.
-// Swap VOICE_ID below with any ID from elevenlabs.io/voice-library
-const VOICE_ID = 'pNInz6obpgDQGcFmaJgB'   // Adam — deep, clear, works on all plans
+// "Adam" — built-in premade voice, available on ALL ElevenLabs plans
+const VOICE_ID = 'pNInz6obpgDQGcFmaJgB'
 
 router.post('/', auth, async (req, res) => {
-  const { text, lang = 'en-IN' } = req.body
+  const { text } = req.body
   if (!text?.trim()) return res.status(400).json({ error: 'text required' })
 
   const apiKey = process.env.ELEVENLABS_API_KEY
   if (!apiKey) return res.status(503).json({ error: 'TTS_NOT_CONFIGURED' })
 
   try {
-    const resp = await fetch(
+    const resp = await axios.post(
       `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
       {
-        method: 'POST',
+        text: text.slice(0, 2500),
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability:        0.50,
+          similarity_boost: 0.75,
+          style:            0.35,
+          use_speaker_boost: true,
+        },
+      },
+      {
         headers: {
           'xi-api-key':   apiKey,
           'Content-Type': 'application/json',
           'Accept':       'audio/mpeg',
         },
-        body: JSON.stringify({
-          text: text.slice(0, 2500),
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability:        0.50,
-            similarity_boost: 0.75,
-            style:            0.35,
-            use_speaker_boost: true,
-          },
-        }),
+        responseType: 'arraybuffer',
       }
     )
 
-    if (!resp.ok) {
-      const err = await resp.text()
-      console.error('[TTS] ElevenLabs error:', err)
-      return res.status(resp.status).json({ error: 'TTS request failed' })
-    }
-
-    const buffer = Buffer.from(await resp.arrayBuffer())
     res.set('Content-Type',  'audio/mpeg')
     res.set('Cache-Control', 'public, max-age=86400')
-    res.send(buffer)
+    res.send(Buffer.from(resp.data))
   } catch (err) {
-    console.error('[TTS]', err.message)
-    res.status(500).json({ error: err.message })
+    const msg = err.response?.data?.toString() || err.message
+    console.error('[TTS] ElevenLabs error:', msg)
+    res.status(err.response?.status || 500).json({ error: 'TTS request failed' })
   }
 })
 
