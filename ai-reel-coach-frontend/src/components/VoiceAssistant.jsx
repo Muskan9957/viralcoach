@@ -16,93 +16,10 @@ const LANG_CODES = {
   hi:       'hi-IN',
 }
 
-// ─── Pick the best available voice ────────────────────────────────
-// Priority ladder (most natural / most Indian-accented first):
-//  1. Microsoft Neerja / Aarav / Swara Online (Natural)  ← best Indian neural voices on Edge
-//  2. Any Microsoft *Online (Natural)* en-IN / hi-IN voice
-//  3. Any "Online (Natural)" voice (any vendor)
-//  4. Any "Online" network voice
-//  5. Google voices (WaveNet — good on Chrome)
-//  6. Any remaining Microsoft voice
-//  7. Known Indian-named / warm female voices
-//  8. First matching voice as fallback
-// Blocklist: old Windows SAPI robots (David, Mark, George …)
-let cachedVoice = {}
 
-// Only block the absolute worst (very old SAPI5 voices) — don't block
-// common voices like Mark/Zira which are the only option on many Windows PCs
-const ROBOTIC_BLOCKLIST  = /\b(hazel|george|daniel)\b/i
-// Indian voice names shipped by Microsoft (Edge) and Google
-const INDIAN_VOICE_NAMES = /neerja|aarav|swara|heera|aditi|raveena|priya|kalpana|hemant|samantha.*in/i
-
-function getBestVoice(langCode) {
-  if (cachedVoice[langCode]) return cachedVoice[langCode]
-
-  const voices = window.speechSynthesis.getVoices()
-  if (!voices.length) return null
-
-  // Cast a wide net: exact match OR same primary language tag
-  const matching = voices.filter(v =>
-    (v.lang === langCode || v.lang.startsWith(langCode.split('-')[0]))
-    && !ROBOTIC_BLOCKLIST.test(v.name)
-  )
-  if (!matching.length) return null
-
-  // 1. Named Indian neural voices (Neerja, Aarav, Swara…) — Online preferred
-  const indianOnline = matching.find(v =>
-    INDIAN_VOICE_NAMES.test(v.name) && /online/i.test(v.name)
-  )
-  if (indianOnline) { cachedVoice[langCode] = indianOnline; return indianOnline }
-
-  // 2. Any named Indian voice (local fallback if offline)
-  const indianAny = matching.find(v => INDIAN_VOICE_NAMES.test(v.name))
-  if (indianAny) { cachedVoice[langCode] = indianAny; return indianAny }
-
-  // 3. Microsoft Neural / Natural online voices (e.g. Aria, Jenny — still great)
-  const msNatural = matching.find(v =>
-    v.name.includes('Microsoft') && /natural|neural/i.test(v.name) && /online/i.test(v.name)
-  )
-  if (msNatural) { cachedVoice[langCode] = msNatural; return msNatural }
-
-  // 4. Any "Online (Natural)" voice
-  const anyNatural = matching.find(v => /online.*natural|natural.*online/i.test(v.name))
-  if (anyNatural) { cachedVoice[langCode] = anyNatural; return anyNatural }
-
-  // 5. Any "Online" network voice
-  const online = matching.find(v => /online/i.test(v.name))
-  if (online) { cachedVoice[langCode] = online; return online }
-
-  // 6. Google WaveNet voices (Chrome)
-  const google = matching.find(v => v.name.includes('Google'))
-  if (google) { cachedVoice[langCode] = google; return google }
-
-  // 7. Any remaining Microsoft voice
-  const microsoft = matching.find(v => v.name.includes('Microsoft'))
-  if (microsoft) { cachedVoice[langCode] = microsoft; return microsoft }
-
-  // 8. Warm female names as last resort
-  const female = matching.find(v =>
-    /female|zira|aria|jenny|sonia/i.test(v.name)
-  )
-  if (female) { cachedVoice[langCode] = female; return female }
-
-  cachedVoice[langCode] = matching[0]
-  return matching[0]
-}
-
-// Reset cache when new voices load
-if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-  window.speechSynthesis.getVoices()
-  window.speechSynthesis.addEventListener('voiceschanged', () => {
-    cachedVoice = {}
-  })
-}
-
-// ─── Split text into small chunks Chrome can handle reliably ───────
-// Chrome's speechSynthesis breaks on long strings (>~200 chars).
-// We split at sentence boundaries and keep chunks short.
-function chunkText(text) {
-  // Split on sentence-ending punctuation including Hindi दण्ड ।
+// ─── Split text into sentence-sized chunks ────────────────────────
+// Google TTS handles up to ~190 chars per request reliably.
+function chunkText(text, maxLen = 190) {
   const sentences = text
     .replace(/([.!?।\n]+)\s*/g, '$1|||')
     .split('|||')
@@ -111,14 +28,13 @@ function chunkText(text) {
 
   const chunks = []
   for (const sentence of sentences) {
-    if (sentence.length <= 220) {
+    if (sentence.length <= maxLen) {
       chunks.push(sentence)
     } else {
-      // Further split long sentences on commas / semicolons
       const parts = sentence.split(/[,;]\s*/)
       let current = ''
       for (const part of parts) {
-        if (current && (current + ', ' + part).length > 220) {
+        if (current && (current + ', ' + part).length > maxLen) {
           chunks.push(current.trim())
           current = part
         } else {
@@ -131,104 +47,75 @@ function chunkText(text) {
   return chunks.filter(c => c.length > 0)
 }
 
-// ─── Text to Speech — chunked queue approach ─────────────────────
-// Fixes Chrome's ~15s cutoff and lag by speaking one sentence at a time.
-export function useTextToSpeech() {
-  const { lang }       = useLang()
-  const [speaking, setSpeaking] = useState(false)
-  const cancelledRef   = useRef(false)
-  const chunksRef      = useRef([])
-  const indexRef       = useRef(0)
+// ─── Google Neural TTS ────────────────────────────────────────────
+// Uses Google Translate's TTS endpoint — same neural engine as Google
+// Assistant. Sounds like a real person, supports en-IN Indian accent.
+// Audio elements bypass CORS so no backend proxy needed.
+function googleTTSUrl(text, langCode) {
+  return (
+    'https://translate.google.com/translate_tts' +
+    '?ie=UTF-8' +
+    `&q=${encodeURIComponent(text)}` +
+    `&tl=${langCode}` +
+    '&client=tw-ob'
+  )
+}
 
-  const speakNextChunk = (langCode) => {
-    if (cancelledRef.current || indexRef.current >= chunksRef.current.length) {
+export function useTextToSpeech() {
+  const { lang }         = useLang()
+  const [speaking, setSpeaking] = useState(false)
+  const cancelledRef     = useRef(false)
+  const audioRef         = useRef(null)
+
+  const stopCurrent = () => {
+    cancelledRef.current = true
+    if (audioRef.current) {
+      audioRef.current.onended = null
+      audioRef.current.onerror = null
+      audioRef.current.pause()
+      audioRef.current.src = ''
+      audioRef.current     = null
+    }
+  }
+
+  const playChunks = (chunks, langCode, index) => {
+    if (cancelledRef.current || index >= chunks.length) {
       setSpeaking(false)
       return
     }
 
-    const text    = chunksRef.current[indexRef.current]
-    const voice   = getBestVoice(langCode)
-    const utt     = new SpeechSynthesisUtterance(text)
+    const audio = new Audio(googleTTSUrl(chunks[index], langCode))
+    audioRef.current = audio
 
-    if (voice) {
-      utt.voice = voice
-      // Always use the voice's own lang — forcing e.g. 'en-IN' when the
-      // selected voice is 'en-US' causes Chrome/Edge to silently drop speech
-      utt.lang  = voice.lang
-    } else {
-      // No matching voice found — let the browser pick its default
-      // Use a safe fallback (en-US is universally available) rather than
-      // en-IN which may not exist on this machine
-      utt.lang  = langCode.startsWith('hi') ? 'hi-IN' : 'en-US'
+    audio.onended = () => {
+      if (!cancelledRef.current) playChunks(chunks, langCode, index + 1)
     }
-    utt.rate   = 1.05
-    utt.pitch  = 1.0
-    utt.volume = 1
-
-    utt.onend = () => {
-      if (!cancelledRef.current) {
-        indexRef.current++
-        speakNextChunk(langCode)
-      }
+    // If a chunk fails (network / quota), skip it and continue
+    audio.onerror = () => {
+      if (!cancelledRef.current) playChunks(chunks, langCode, index + 1)
     }
 
-    utt.onerror = (e) => {
-      if (e.error === 'interrupted' || e.error === 'canceled') return
-      // Skip the failed chunk and try the next one rather than stopping
-      if (!cancelledRef.current) {
-        indexRef.current++
-        speakNextChunk(langCode)
-      }
-    }
-
-    window.speechSynthesis.speak(utt)
+    audio.play().catch(() => {
+      if (!cancelledRef.current) playChunks(chunks, langCode, index + 1)
+    })
   }
 
   const speak = (text) => {
-    if (!('speechSynthesis' in window) || !text?.trim()) return
+    if (!text?.trim()) return
+
+    stopCurrent()
+    cancelledRef.current = false
 
     const langCode = LANG_CODES[lang] || 'en-IN'
     const chunks   = chunkText(text)
     if (!chunks.length) return
 
-    // Prepare state before any async work
-    chunksRef.current    = chunks
-    indexRef.current     = 0
-    cancelledRef.current = false
     setSpeaking(true)
-
-    const startSpeaking = () => {
-      if (cancelledRef.current) return
-      // Ensure voices are ready (first page load — Chrome loads them async)
-      if (window.speechSynthesis.getVoices().length === 0) {
-        window.speechSynthesis.addEventListener(
-          'voiceschanged',
-          () => { if (!cancelledRef.current) speakNextChunk(langCode) },
-          { once: true }
-        )
-      } else {
-        speakNextChunk(langCode)
-      }
-    }
-
-    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-      // Something is already playing — cancel it, wait for the queue to clear,
-      // then start. The timeout is ONLY used in this branch so desktop Chrome's
-      // user-gesture context isn't lost on first/fresh playback.
-      cancelledRef.current = true
-      window.speechSynthesis.cancel()
-      cancelledRef.current = false
-      setTimeout(startSpeaking, 80)
-    } else {
-      // Queue is empty — call speak() synchronously so desktop Chrome's
-      // user-gesture requirement is satisfied (setTimeout breaks it on desktop).
-      startSpeaking()
-    }
+    playChunks(chunks, langCode, 0)
   }
 
   const stopSpeaking = () => {
-    cancelledRef.current = true
-    window.speechSynthesis.cancel()
+    stopCurrent()
     setSpeaking(false)
   }
 
