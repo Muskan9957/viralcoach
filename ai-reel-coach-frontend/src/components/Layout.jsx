@@ -142,18 +142,18 @@ const ReelLogoIcon = () => (
 
 /* ─── Nav config with sections ───────────────────────────────────── */
 const NAV_CONFIG = [
-  { section: 'Studio' },
+  { section: 'Studio',   sectionClass: 'nav-section-studio'   },
   { to: '/dashboard',   icon: IconDashboard,   labelKey: 'nav_dashboard'   },
   { to: '/generate',    icon: IconGenerate,    labelKey: 'nav_generate'    },
   { to: '/scripts',     icon: IconScripts,     labelKey: 'nav_scripts'     },
   { to: '/score',       icon: IconScore,       labelKey: 'nav_score'       },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'       },
-  { section: 'Content' },
+  { section: 'Content',  sectionClass: 'nav-section-content'  },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'    },
   { to: '/crosspost',   icon: RemixIcon,       labelKey: 'nav_remix'       },
   { to: '/hooks',       icon: HookIcon,        labelKey: 'nav_hooks'       },
   { to: '/templates',   icon: TemplateIcon,    labelKey: 'nav_templates'   },
-  { section: 'Insights' },
+  { section: 'Insights', sectionClass: 'nav-section-insights' },
   { to: '/trending',    icon: TrendIcon,       labelKey: 'nav_trending'    },
   { to: '/performance', icon: IconPerformance, labelKey: 'nav_performance' },
   { to: '/calendar',    icon: CalendarIcon,    labelKey: 'nav_calendar'    },
@@ -200,7 +200,7 @@ export default function Layout({ children }) {
             {NAV_CONFIG.map((item, idx) => {
               if (item.section) {
                 return (
-                  <div key={`section-${idx}`} className="nav-section-label">
+                  <div key={`section-${idx}`} className={`nav-section-label ${item.sectionClass}`}>
                     {item.section}
                   </div>
                 )
