@@ -31,7 +31,7 @@ export default function Generate() {
     topic:    '',
     niche:    primaryNiche,
     tone:     'motivational',
-    audience: targetAudience,
+    audience: targetAudience || 'India',
   })
   const [loading, setLd]    = useState(false)
   const [result, setResult] = useState(null)
@@ -143,7 +143,7 @@ export default function Generate() {
           </div>
 
           {/* Niche + Tone + Audience in a row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
             <div className="field">
               <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Niche</label>
               <select className="select" value={form.niche} onChange={set('niche')}>
