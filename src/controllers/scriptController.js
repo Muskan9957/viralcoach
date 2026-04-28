@@ -21,8 +21,8 @@ const generate = async (req, res, next) => {
     }
 
     // 2. Generate script via AI
-    const { topic, niche, tone, language } = req.body;
-    const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language });
+    const { topic, niche, tone, language, audience } = req.body;
+    const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language, audience });
 
     // 3. Auto-score the hook (same language for consistency)
     const hookScoreData = await aiService.scoreHook(hook, language);

@@ -6,9 +6,10 @@ export function usePrefs() {
   let raw = {}
   try { raw = JSON.parse(localStorage.getItem('vs_prefs') || '{}') } catch {}
 
-  const niches  = Array.isArray(raw.niches)  ? raw.niches  : []
-  const goals   = Array.isArray(raw.goals)   ? raw.goals   : []
-  const platform = raw.platform || null
+  const niches        = Array.isArray(raw.niches)  ? raw.niches  : []
+  const goals         = Array.isArray(raw.goals)   ? raw.goals   : []
+  const platform      = raw.platform || null
+  const targetAudience = raw.targetAudience || localStorage.getItem('arc_audience') || 'India'
 
   // First niche, capitalised — useful as a default dropdown value
   const primaryNiche = niches[0] || ''
@@ -26,5 +27,5 @@ export function usePrefs() {
 
   const aiContext = [nicheContext, goalContext, platformContext].filter(Boolean).join(' ')
 
-  return { niches, goals, platform, primaryNiche, aiContext }
+  return { niches, goals, platform, primaryNiche, aiContext, targetAudience }
 }

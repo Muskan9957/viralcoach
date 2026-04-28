@@ -8,6 +8,14 @@ import { usePrefs } from '../hooks/usePrefs'
 
 const TONES = ['motivational', 'educational', 'funny', 'storytelling', 'controversial', 'conversational']
 const NICHES = ['fitness', 'finance', 'food', 'travel', 'tech', 'fashion', 'lifestyle', 'education', 'comedy', 'business']
+const AUDIENCES = [
+  { value: 'India',          label: '🇮🇳 India'          },
+  { value: 'Global',         label: '🌐 Global'          },
+  { value: 'US',             label: '🇺🇸 United States'  },
+  { value: 'UK',             label: '🇬🇧 United Kingdom' },
+  { value: 'Middle East',    label: '🇦🇪 Middle East'    },
+  { value: 'Southeast Asia', label: '🌏 Southeast Asia'  },
+]
 
 const gradeColor = { A: '#00C9A7', B: '#00C9A7', C: '#FFD60A', D: '#FF9F43', F: '#FF6B6B' }
 const gradeLabel = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
@@ -17,9 +25,14 @@ export default function Generate() {
   const { t, lang } = useLang()
   const location   = useLocation()
   const resultRef  = useRef(null)
-  const { primaryNiche } = usePrefs()
+  const { primaryNiche, targetAudience } = usePrefs()
 
-  const [form, setForm]     = useState({ topic: '', niche: primaryNiche, tone: 'motivational' })
+  const [form, setForm]     = useState({
+    topic:    '',
+    niche:    primaryNiche,
+    tone:     'motivational',
+    audience: targetAudience,
+  })
   const [loading, setLd]    = useState(false)
   const [result, setResult] = useState(null)
   const [copied, setCopied] = useState(false)
@@ -55,6 +68,7 @@ export default function Generate() {
     setLd(true)
     setResult(null)
     try {
+      localStorage.setItem('arc_audience', form.audience)
       const data = await api.generate({ ...form, language: lang })
       setResult(data)
     } catch (err) {
@@ -128,8 +142,8 @@ export default function Generate() {
             </div>
           </div>
 
-          {/* Niche + Tone in a row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {/* Niche + Tone + Audience in a row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
             <div className="field">
               <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Niche</label>
               <select className="select" value={form.niche} onChange={set('niche')}>
@@ -141,6 +155,14 @@ export default function Generate() {
               <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Tone</label>
               <select className="select" value={form.tone} onChange={set('tone')}>
                 {TONES.map(tone => <option key={tone} value={tone}>{tone.charAt(0).toUpperCase() + tone.slice(1)}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Target Audience
+              </label>
+              <select className="select" value={form.audience} onChange={set('audience')}>
+                {AUDIENCES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
               </select>
             </div>
           </div>

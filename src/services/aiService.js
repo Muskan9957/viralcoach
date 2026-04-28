@@ -18,6 +18,46 @@ const LANG_INSTRUCTIONS = {
 
 const getLangInstruction = (language) => LANG_INSTRUCTIONS[language] || ''
 
+// ─── Audience / geography context ────────────────────────────────
+const AUDIENCE_CONTEXTS = {
+  India: `TARGET AUDIENCE: India 🇮🇳
+- Use Indian currency (₹, lakhs, crores) — NEVER use $ or USD
+- Reference Indian cities and scenarios (Mumbai, Delhi, Bangalore, tier-2 cities)
+- Use Indian cultural anchors: cricket, Bollywood, chai, festivals (Diwali, Holi), UPI, Zomato/Swiggy, Instagram Reels culture
+- Relatable Indian pain points: job pressure, family expectations, real estate prices, competitive exams (CAT/UPSC/JEE)
+- Indian aspirations: financial freedom, starting a business, going viral, cracking a dream job
+- Indian social proof: "10 lakh views", "5 lakh followers", "₹50,000/month"
+- Speak to both metro and tier-2 audiences — keep it grounded and real`,
+
+  'US': `TARGET AUDIENCE: United States 🇺🇸
+- Use US currency ($) and American cultural references
+- Reference US scenarios: side hustle culture, 9-5 grind, student loans, credit scores, Amazon/Netflix
+- American pain points: inflation, healthcare costs, work-life balance, hustle culture
+- Social proof in US numbers: "$10K/month", "1M views", "100K followers"`,
+
+  'UK': `TARGET AUDIENCE: United Kingdom 🇬🇧
+- Use British currency (£) and UK cultural references
+- Reference UK scenarios: cost of living crisis, NHS, commuting in London, British humour
+- British tone: slightly understated, dry wit works well`,
+
+  'Middle East': `TARGET AUDIENCE: Middle East 🇦🇪
+- Use local currency references (AED, SAR, KWD) or keep amounts in USD
+- Reference regional culture: Ramadan content, luxury lifestyle, family values, business culture in Dubai/Riyadh
+- Arabic/English bilingual content performs well — keep it aspirational`,
+
+  'Southeast Asia': `TARGET AUDIENCE: Southeast Asia 🌏
+- Reference countries like Indonesia, Philippines, Malaysia, Thailand, Vietnam
+- Use relatable local scenarios, hustle culture, growing middle class aspirations
+- Keep currency references flexible (IDR, PHP, MYR) or use USD`,
+
+  'Global': `TARGET AUDIENCE: Global 🌐
+- Use universal examples that resonate across all cultures
+- Avoid region-specific currency, celebrities, or cultural references
+- Keep examples generic, aspirational, and universally understood`,
+}
+
+const getAudienceContext = (audience) => AUDIENCE_CONTEXTS[audience] || AUDIENCE_CONTEXTS['Global']
+
 // ─── Helper — client created per-call so it always picks up the env var ─
 const ask = async (prompt, maxTokens = 1024, model = MODEL) => {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -32,11 +72,13 @@ const ask = async (prompt, maxTokens = 1024, model = MODEL) => {
 // ─────────────────────────────────────────────────────────────────
 // 1. GENERATE SCRIPT
 // ─────────────────────────────────────────────────────────────────
-const generateScript = async ({ topic, niche, tone, language = 'en' }) => {
-  const langInstruction = getLangInstruction(language)
+const generateScript = async ({ topic, niche, tone, language = 'en', audience = 'India' }) => {
+  const langInstruction    = getLangInstruction(language)
+  const audienceInstruction = getAudienceContext(audience)
   const prompt = `
 You are an expert viral content strategist who writes Grade A hooks that score 85+ on Instagram Reels and YouTube Shorts.
 ${langInstruction ? '\n' + langInstruction + '\n' : ''}
+${'\n' + audienceInstruction + '\n'}
 Generate a high-performing short-form video script for the following:
 - Topic : ${topic}
 - Niche  : ${niche || 'general'}
