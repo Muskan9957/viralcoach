@@ -305,12 +305,9 @@ export default function Layout({ children }) {
             </button>
           )}
 
-          {/* Language Selector + Theme Toggle */}
-          <div style={{ padding: '8px 0', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ flex: 1 }}>
-              <LanguageSelector compact />
-            </div>
-            <ThemeToggle size="sm" />
+          {/* Language Selector */}
+          <div style={{ padding: '8px 0', flexShrink: 0 }}>
+            <LanguageSelector compact />
           </div>
 
           {/* Logout */}
@@ -332,6 +329,13 @@ export default function Layout({ children }) {
             {t('sign_out')}
           </button>
         </aside>
+      )}
+
+      {/* ── Theme toggle — fixed top-right corner (desktop only) ── */}
+      {!isMobile && (
+        <div style={{ position: 'fixed', top: 18, right: 22, zIndex: 200 }}>
+          <ThemeToggle size="sm" />
+        </div>
       )}
 
       {/* ── Main content area ───────────────────────────────────── */}
