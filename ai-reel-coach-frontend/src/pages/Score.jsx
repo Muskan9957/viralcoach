@@ -9,16 +9,16 @@ const gradeColor  = { A: '#00C9A7', B: '#88F0D0', C: '#FFD60A', D: '#FF9F43', F:
 const gradeLabel  = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
 
 const SCORE_LANGS = [
-  { value: 'en', flag: '🇬🇧' },
-  { value: 'hi', flag: '🇮🇳' },
-  { value: 'es', flag: '🇪🇸' },
-  { value: 'fr', flag: '🇫🇷' },
-  { value: 'pt', flag: '🇧🇷' },
-  { value: 'de', flag: '🇩🇪' },
-  { value: 'ar', flag: '🇦🇪' },
-  { value: 'id', flag: '🇮🇩' },
-  { value: 'ja', flag: '🇯🇵' },
-  { value: 'ko', flag: '🇰🇷' },
+  { value: 'en', label: 'English' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'de', label: 'German' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'id', label: 'Bahasa' },
+  { value: 'ja', label: 'Japanese' },
+  { value: 'ko', label: 'Korean' },
 ]
 
 function BigScoreRing({ score }) {
@@ -138,23 +138,11 @@ export default function Score() {
                     value={hookLang}
                     onChange={e => { setHookLang(e.target.value); localStorage.setItem('arc_script_lang', e.target.value) }}
                     title="Language for mic & scoring"
-                    style={{
-                      width: 40,
-                      height: 32,
-                      borderRadius: 8,
-                      border: '1px solid var(--border)',
-                      background: 'var(--surface2)',
-                      color: 'var(--text)',
-                      fontSize: '0.82rem',
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                      appearance: 'none',
-                      WebkitAppearance: 'none',
-                      paddingInline: 0,
-                    }}
+                    className="select"
+                    style={{ width: 110, fontSize: '0.82rem', height: 36, padding: '0 8px' }}
                   >
                     {SCORE_LANGS.map(l => (
-                      <option key={l.value} value={l.value}>{l.flag}</option>
+                      <option key={l.value} value={l.value}>{l.label}</option>
                     ))}
                   </select>
                   <MicButton

@@ -23,16 +23,16 @@ const TONES  = ['motivational', 'educational', 'funny', 'storytelling', 'controv
 const NICHES = ['fitness', 'finance', 'food', 'travel', 'tech', 'fashion', 'lifestyle', 'education', 'comedy', 'business']
 
 const SCRIPT_LANGS = [
-  { value: 'en', label: '🇬🇧 English' },
-  { value: 'hi', label: '🇮🇳 Hindi' },
-  { value: 'es', label: '🇪🇸 Spanish' },
-  { value: 'fr', label: '🇫🇷 French' },
-  { value: 'pt', label: '🇧🇷 Portuguese' },
-  { value: 'de', label: '🇩🇪 German' },
-  { value: 'ar', label: '🇦🇪 Arabic' },
-  { value: 'id', label: '🇮🇩 Bahasa' },
-  { value: 'ja', label: '🇯🇵 Japanese' },
-  { value: 'ko', label: '🇰🇷 Korean' },
+  { value: 'en', label: 'English' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'pt', label: 'Portuguese' },
+  { value: 'de', label: 'German' },
+  { value: 'ar', label: 'Arabic' },
+  { value: 'id', label: 'Bahasa' },
+  { value: 'ja', label: 'Japanese' },
+  { value: 'ko', label: 'Korean' },
 ]
 
 const SCRIPT_LANG_KEY = 'arc_script_lang'
