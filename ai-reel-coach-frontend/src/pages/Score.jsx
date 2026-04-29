@@ -9,16 +9,16 @@ const gradeColor  = { A: '#00C9A7', B: '#88F0D0', C: '#FFD60A', D: '#FF9F43', F:
 const gradeLabel  = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
 
 const SCORE_LANGS = [
-  { value: 'en', flag: '🇬🇧', label: 'EN' },
-  { value: 'hi', flag: '🇮🇳', label: 'हिं' },
-  { value: 'es', flag: '🇪🇸', label: 'ES' },
-  { value: 'fr', flag: '🇫🇷', label: 'FR' },
-  { value: 'pt', flag: '🇧🇷', label: 'PT' },
-  { value: 'de', flag: '🇩🇪', label: 'DE' },
-  { value: 'ar', flag: '🇦🇪', label: 'AR' },
-  { value: 'id', flag: '🇮🇩', label: 'ID' },
-  { value: 'ja', flag: '🇯🇵', label: 'JA' },
-  { value: 'ko', flag: '🇰🇷', label: 'KO' },
+  { value: 'en', flag: '🇬🇧' },
+  { value: 'hi', flag: '🇮🇳' },
+  { value: 'es', flag: '🇪🇸' },
+  { value: 'fr', flag: '🇫🇷' },
+  { value: 'pt', flag: '🇧🇷' },
+  { value: 'de', flag: '🇩🇪' },
+  { value: 'ar', flag: '🇦🇪' },
+  { value: 'id', flag: '🇮🇩' },
+  { value: 'ja', flag: '🇯🇵' },
+  { value: 'ko', flag: '🇰🇷' },
 ]
 
 function BigScoreRing({ score }) {
@@ -120,32 +120,7 @@ export default function Score() {
                 </span>
               </div>
 
-              {/* Language pill toggle — controls mic recognition + AI scoring language */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-                {SCORE_LANGS.map(l => (
-                  <button
-                    key={l.value}
-                    type="button"
-                    onClick={() => { setHookLang(l.value); localStorage.setItem('arc_script_lang', l.value) }}
-                    style={{
-                      padding: '4px 11px',
-                      borderRadius: 20,
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      fontFamily: 'var(--font-mono)',
-                      border: `1px solid ${hookLang === l.value ? 'var(--accent)' : 'var(--border)'}`,
-                      background: hookLang === l.value ? 'var(--accent-dim)' : 'var(--surface2)',
-                      color: hookLang === l.value ? 'var(--accent)' : 'var(--text-muted)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    {l.flag} {l.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Textarea + mic */}
+              {/* Textarea + language picker + mic grouped together */}
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <textarea
                   className="textarea"
@@ -157,15 +132,37 @@ export default function Score() {
                   maxLength={1000}
                   style={{ flex: 1, resize: 'vertical' }}
                 />
-                <MicButton
-                  onResult={(text) => setHook(text.slice(0, 1000))}
-                  lang={hookLang}
-                  style={{ marginTop: 2 }}
-                />
+                {/* Language + mic as a single unit */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
+                  <select
+                    value={hookLang}
+                    onChange={e => { setHookLang(e.target.value); localStorage.setItem('arc_script_lang', e.target.value) }}
+                    title="Language for mic & scoring"
+                    style={{
+                      width: 40,
+                      height: 32,
+                      borderRadius: 8,
+                      border: '1px solid var(--border)',
+                      background: 'var(--surface2)',
+                      color: 'var(--text)',
+                      fontSize: '0.82rem',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      appearance: 'none',
+                      WebkitAppearance: 'none',
+                      paddingInline: 0,
+                    }}
+                  >
+                    {SCORE_LANGS.map(l => (
+                      <option key={l.value} value={l.value}>{l.flag}</option>
+                    ))}
+                  </select>
+                  <MicButton
+                    onResult={(text) => setHook(text.slice(0, 1000))}
+                    lang={hookLang}
+                  />
+                </div>
               </div>
-              <p style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginTop: 6, fontFamily: 'var(--font-mono)' }}>
-                Select language above before speaking 🎙
-              </p>
             </div>
 
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
