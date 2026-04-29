@@ -222,11 +222,24 @@ export default function Generate() {
                 maxLength={1000}
                 style={{ flex: 1, resize: 'vertical', fontSize: '1rem' }}
               />
-              <MicButton
-                onResult={text => setForm(f => ({ ...f, topic: text }))}
-                lang={form.scriptLang}
-                style={{ marginTop: 4, flexShrink: 0 }}
-              />
+              {/* Language + mic grouped — language controls what the mic listens in */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 4 }}>
+                <select
+                  value={form.scriptLang}
+                  onChange={set('scriptLang')}
+                  title="Script language"
+                  className="select"
+                  style={{ width: 110, fontSize: '0.82rem', height: 36, padding: '0 8px' }}
+                >
+                  {SCRIPT_LANGS.map(l => (
+                    <option key={l.value} value={l.value}>{l.label}</option>
+                  ))}
+                </select>
+                <MicButton
+                  onResult={text => setForm(f => ({ ...f, topic: text }))}
+                  lang={form.scriptLang}
+                />
+              </div>
             </div>
           </div>
 
@@ -247,28 +260,20 @@ export default function Generate() {
             </div>
           </div>
 
-          {/* Row 2 — Target Region + Script Language */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <div className="field">
-              <label style={{ ...fieldLabelStyle, display: 'flex', alignItems: 'center', gap: 6 }}>
-                Target Region
-                {form.audience && (
-                  <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'var(--accent)', background: 'var(--accent-dim)', padding: '1px 6px', borderRadius: 99, textTransform: 'none', letterSpacing: 0, fontWeight: 500 }}>
-                    📍 auto
-                  </span>
-                )}
-              </label>
-              <select className="select" value={form.audience} onChange={set('audience')}>
-                <option value="">— Select region —</option>
-                {REGIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </select>
-            </div>
-            <div className="field">
-              <label style={fieldLabelStyle}>Script Language</label>
-              <select className="select" value={form.scriptLang} onChange={set('scriptLang')}>
-                {SCRIPT_LANGS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-              </select>
-            </div>
+          {/* Row 2 — Target Region (full width) */}
+          <div className="field">
+            <label style={{ ...fieldLabelStyle, display: 'flex', alignItems: 'center', gap: 6 }}>
+              Target Region
+              {form.audience && (
+                <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'var(--accent)', background: 'var(--accent-dim)', padding: '1px 6px', borderRadius: 99, textTransform: 'none', letterSpacing: 0, fontWeight: 500 }}>
+                  📍 auto
+                </span>
+              )}
+            </label>
+            <select className="select" value={form.audience} onChange={set('audience')}>
+              <option value="">— Select region —</option>
+              {REGIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+            </select>
           </div>
 
           <button
