@@ -229,26 +229,30 @@ export default function Generate() {
             </div>
           </div>
 
-          {/* Niche + Tone + Region + Script Language */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(148px, 1fr))', gap: 16 }}>
+          {/* Row 1 — Niche + Tone */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div className="field">
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Niche</label>
+              <label style={fieldLabelStyle}>Niche</label>
               <select className="select" value={form.niche} onChange={set('niche')}>
                 <option value="">General</option>
                 {NICHES.map(n => <option key={n} value={n}>{n.charAt(0).toUpperCase() + n.slice(1)}</option>)}
               </select>
             </div>
             <div className="field">
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Tone</label>
+              <label style={fieldLabelStyle}>Tone</label>
               <select className="select" value={form.tone} onChange={set('tone')}>
                 {TONES.map(tone => <option key={tone} value={tone}>{tone.charAt(0).toUpperCase() + tone.slice(1)}</option>)}
               </select>
             </div>
+          </div>
+
+          {/* Row 2 — Target Region + Script Language */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             <div className="field">
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <label style={{ ...fieldLabelStyle, display: 'flex', alignItems: 'center', gap: 6 }}>
                 Target Region
                 {form.audience && (
-                  <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'var(--accent)', background: 'var(--accent-dim)', padding: '1px 7px', borderRadius: 99, textTransform: 'none', letterSpacing: 0, fontWeight: 500 }}>
+                  <span style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color: 'var(--accent)', background: 'var(--accent-dim)', padding: '1px 6px', borderRadius: 99, textTransform: 'none', letterSpacing: 0, fontWeight: 500 }}>
                     📍 auto
                   </span>
                 )}
@@ -259,9 +263,7 @@ export default function Generate() {
               </select>
             </div>
             <div className="field">
-              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Script Language
-              </label>
+              <label style={fieldLabelStyle}>Script Language</label>
               <select className="select" value={form.scriptLang} onChange={set('scriptLang')}>
                 {SCRIPT_LANGS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
               </select>
@@ -527,6 +529,14 @@ export default function Generate() {
       )}
     </div>
   )
+}
+
+const fieldLabelStyle = {
+  fontSize: '0.8rem',
+  fontWeight: 600,
+  color: 'var(--text-muted)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
 }
 
 const sectionStyle = (accentColor) => ({
