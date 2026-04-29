@@ -22,6 +22,22 @@ const REFINE_CHIPS = [
 const TONES  = ['motivational', 'educational', 'funny', 'storytelling', 'controversial', 'conversational']
 const NICHES = ['fitness', 'finance', 'food', 'travel', 'tech', 'fashion', 'lifestyle', 'education', 'comedy', 'business']
 
+const SCRIPT_LANGS = [
+  { value: 'en', label: '🇬🇧 English' },
+  { value: 'hi', label: '🇮🇳 Hindi' },
+  { value: 'es', label: '🇪🇸 Spanish' },
+  { value: 'fr', label: '🇫🇷 French' },
+  { value: 'pt', label: '🇧🇷 Portuguese' },
+  { value: 'de', label: '🇩🇪 German' },
+  { value: 'ar', label: '🇦🇪 Arabic' },
+  { value: 'id', label: '🇮🇩 Bahasa' },
+  { value: 'ja', label: '🇯🇵 Japanese' },
+  { value: 'ko', label: '🇰🇷 Korean' },
+]
+
+const SCRIPT_LANG_KEY = 'arc_script_lang'
+const getSavedScriptLang = () => localStorage.getItem(SCRIPT_LANG_KEY) || 'en'
+
 const gradeColor = { A: '#00C9A7', B: '#00C9A7', C: '#FFD60A', D: '#FF9F43', F: '#FF6B6B' }
 const gradeLabel = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
 
@@ -33,10 +49,11 @@ export default function Generate() {
   const { primaryNiche } = usePrefs()
 
   const [form, setForm] = useState({
-    topic:    '',
-    niche:    primaryNiche,
-    tone:     'motivational',
-    audience: getSavedRegion(),   // blank until detected or set by user
+    topic:      '',
+    niche:      primaryNiche,
+    tone:       'motivational',
+    audience:   getSavedRegion(),     // blank until detected or set by user
+    scriptLang: getSavedScriptLang(), // script language — independent of app UI language
   })
 
   // Auto-detect region on first visit (runs once, only if nothing saved)
@@ -93,7 +110,8 @@ export default function Generate() {
     setRefineInput('')
     try {
       saveRegion(form.audience)
-      const data = await api.generate({ ...form, language: lang })
+      localStorage.setItem(SCRIPT_LANG_KEY, form.scriptLang)
+      const data = await api.generate({ ...form, language: form.scriptLang })
       setResult(data)
       // Seed version history with v1
       setVersions([{ ...data.script, label: 'v1 · Original' }])
@@ -117,7 +135,7 @@ export default function Generate() {
         body       : current.body,
         cta        : current.cta,
         instruction,
-        language   : lang,
+        language   : form.scriptLang,
         audience   : form.audience,
         topic      : form.topic,
       })
@@ -211,8 +229,8 @@ export default function Generate() {
             </div>
           </div>
 
-          {/* Niche + Tone + Audience in a row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
+          {/* Niche + Tone + Region + Script Language */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(148px, 1fr))', gap: 16 }}>
             <div className="field">
               <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Niche</label>
               <select className="select" value={form.niche} onChange={set('niche')}>
@@ -238,6 +256,14 @@ export default function Generate() {
               <select className="select" value={form.audience} onChange={set('audience')}>
                 <option value="">— Select region —</option>
                 {REGIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Script Language
+              </label>
+              <select className="select" value={form.scriptLang} onChange={set('scriptLang')}>
+                {SCRIPT_LANGS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
               </select>
             </div>
           </div>
@@ -364,13 +390,13 @@ export default function Generate() {
 
             {/* Hook */}
             <div style={sectionStyle('#00C8FF')}>
-              <div style={labelStyle}>🎣 {t('generate_hook').toUpperCase()} — {lang === 'en' ? 'First 3 seconds' : lang === 'hi' ? 'पहले 3 सेकंड' : 'First 3 seconds'}</div>
+              <div style={labelStyle}>🎣 {t('generate_hook').toUpperCase()} — {form.scriptLang === 'hi' ? 'पहले 3 सेकंड' : 'First 3 seconds'}</div>
               <p style={scriptTextStyle}>{result.script.hook}</p>
             </div>
 
             {/* Body */}
             <div style={sectionStyle('#00C9A7')}>
-              <div style={labelStyle}>📖 {t('generate_body').toUpperCase()} — {lang === 'en' ? 'Main value' : lang === 'hi' ? 'मुख्य मूल्य' : 'Main value'}</div>
+              <div style={labelStyle}>📖 {t('generate_body').toUpperCase()} — {form.scriptLang === 'hi' ? 'मुख्य मूल्य' : 'Main value'}</div>
               <p style={{ ...scriptTextStyle, whiteSpace: 'pre-line' }}>{result.script.body}</p>
             </div>
 
@@ -491,7 +517,7 @@ export default function Generate() {
 
           {/* Generate another button */}
           <button
-            onClick={() => { setResult(null); setVersions([]); setActiveVer(0); setRefineInput(''); setForm({ topic: '', niche: primaryNiche, tone: 'motivational' }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+            onClick={() => { setResult(null); setVersions([]); setActiveVer(0); setRefineInput(''); setForm({ topic: '', niche: primaryNiche, tone: 'motivational', audience: getSavedRegion(), scriptLang: getSavedScriptLang() }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
             className="btn btn-ghost btn-full"
             style={{ marginBottom: 32 }}
           >
