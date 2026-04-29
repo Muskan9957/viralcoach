@@ -152,8 +152,8 @@ export function useTextToSpeech() {
 // Stop button submits immediately.
 const SILENCE_MS = 2500
 
-export function useSpeechToText(onResult) {
-  const { lang } = useLang()
+export function useSpeechToText(onResult, langOverride) {
+  const { lang: globalLang } = useLang()
   const [listening, setListening]     = useState(false)
   const [interimText, setInterimText] = useState('')
   const recognitionRef  = useRef(null)
@@ -272,8 +272,9 @@ export function useSpeechToText(onResult) {
     try { recognitionRef.current?.abort() } catch {}
     clearSilenceTimer()
 
+    const activeLang   = langOverride || globalLang
     SR_ref.current     = SR
-    langRef.current    = LANG_CODES[lang] || 'en-IN'
+    langRef.current    = LANG_CODES[activeLang] || 'en-IN'
     finalRef.current   = ''
     stoppedRef.current = false
     flushedRef.current = false
@@ -288,9 +289,11 @@ export function useSpeechToText(onResult) {
 }
 
 // ─── Mic Button ───────────────────────────────────────────────────
-export function MicButton({ onResult, style = {} }) {
+// lang prop: optional BCP-47 short code ('hi', 'en', 'es' …)
+// If provided it overrides the global app UI language for speech recognition.
+export function MicButton({ onResult, lang: langProp, style = {} }) {
   const { t } = useLang()
-  const { listening, interimText, startListening, stopListening } = useSpeechToText(onResult)
+  const { listening, interimText, startListening, stopListening } = useSpeechToText(onResult, langProp)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>

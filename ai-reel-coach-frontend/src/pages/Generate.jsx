@@ -224,6 +224,7 @@ export default function Generate() {
               />
               <MicButton
                 onResult={text => setForm(f => ({ ...f, topic: text }))}
+                lang={form.scriptLang}
                 style={{ marginTop: 4, flexShrink: 0 }}
               />
             </div>

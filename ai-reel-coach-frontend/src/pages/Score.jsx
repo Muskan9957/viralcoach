@@ -8,6 +8,19 @@ import { MicButton, SpeakButton } from '../components/VoiceAssistant'
 const gradeColor  = { A: '#00C9A7', B: '#88F0D0', C: '#FFD60A', D: '#FF9F43', F: '#FF6B6B' }
 const gradeLabel  = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
 
+const SCORE_LANGS = [
+  { value: 'en', flag: '🇬🇧', label: 'EN' },
+  { value: 'hi', flag: '🇮🇳', label: 'हिं' },
+  { value: 'es', flag: '🇪🇸', label: 'ES' },
+  { value: 'fr', flag: '🇫🇷', label: 'FR' },
+  { value: 'pt', flag: '🇧🇷', label: 'PT' },
+  { value: 'de', flag: '🇩🇪', label: 'DE' },
+  { value: 'ar', flag: '🇦🇪', label: 'AR' },
+  { value: 'id', flag: '🇮🇩', label: 'ID' },
+  { value: 'ja', flag: '🇯🇵', label: 'JA' },
+  { value: 'ko', flag: '🇰🇷', label: 'KO' },
+]
+
 function BigScoreRing({ score }) {
   const r    = 68
   const circ = 2 * Math.PI * r
@@ -45,6 +58,7 @@ export default function Score() {
   const location = useLocation()
 
   const [hook, setHook]         = useState('')
+  const [hookLang, setHookLang] = useState(() => localStorage.getItem('arc_script_lang') || 'en')
   const [loading, setLd]        = useState(false)
   const [result, setResult]     = useState(null)
   const [accepted, setAccepted] = useState(false)
@@ -63,7 +77,7 @@ export default function Score() {
     if (!hook.trim()) { toast('Please enter a hook', 'error'); return }
     setLd(true); setResult(null); setAccepted(false)
     try {
-      const data = await api.scoreHook({ hookText: hook, language: lang })
+      const data = await api.scoreHook({ hookText: hook, language: hookLang })
       setResult(data.hookScore)
       toast('Hook scored!', 'success')
     } catch (err) {
@@ -93,7 +107,8 @@ export default function Score() {
           <h2 style={styles.cardTitle}>{t('score_label')}</h2>
           <form onSubmit={scoreHook} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div className="field">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+              {/* Label row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <label style={{ marginBottom: 0 }}>{t('score_hook_text')}</label>
                 <span style={{
                   fontSize: '0.72rem',
@@ -104,7 +119,33 @@ export default function Score() {
                   {hook.length}/1000
                 </span>
               </div>
-              {/* Textarea with MicButton inline */}
+
+              {/* Language pill toggle — controls mic recognition + AI scoring language */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                {SCORE_LANGS.map(l => (
+                  <button
+                    key={l.value}
+                    type="button"
+                    onClick={() => { setHookLang(l.value); localStorage.setItem('arc_script_lang', l.value) }}
+                    style={{
+                      padding: '4px 11px',
+                      borderRadius: 20,
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      fontFamily: 'var(--font-mono)',
+                      border: `1px solid ${hookLang === l.value ? 'var(--accent)' : 'var(--border)'}`,
+                      background: hookLang === l.value ? 'var(--accent-dim)' : 'var(--surface2)',
+                      color: hookLang === l.value ? 'var(--accent)' : 'var(--text-muted)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {l.flag} {l.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Textarea + mic */}
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <textarea
                   className="textarea"
@@ -118,9 +159,13 @@ export default function Score() {
                 />
                 <MicButton
                   onResult={(text) => setHook(text.slice(0, 1000))}
+                  lang={hookLang}
                   style={{ marginTop: 2 }}
                 />
               </div>
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-faint)', marginTop: 6, fontFamily: 'var(--font-mono)' }}>
+                Select language above before speaking 🎙
+              </p>
             </div>
 
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
