@@ -6,6 +6,11 @@ const LIMITS = {
   PRO    : Infinity,
 };
 
+// Accounts with unlimited generations (for internal testing)
+const TEST_EMAILS = new Set([
+  'muskanmun123@gmail.com',
+]);
+
 /**
  * Checks if a user can make an AI generation.
  * Resets their counter if the calendar month has rolled over.
@@ -14,8 +19,13 @@ const LIMITS = {
 const checkGenerationLimit = async (userId) => {
   const user = await prisma.user.findUnique({
     where : { id: userId },
-    select: { plan: true, generationsUsed: true, generationsReset: true },
+    select: { email: true, plan: true, generationsUsed: true, generationsReset: true },
   });
+
+  // Test accounts get unlimited generations
+  if (user && TEST_EMAILS.has(user.email)) {
+    return { allowed: true, used: user.generationsUsed, limit: Infinity };
+  }
 
   if (!user) throw new Error('User not found');
 
