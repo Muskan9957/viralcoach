@@ -76,17 +76,17 @@ export default function Score() {
     }
   }, [location.state])
 
-  const scoreHook = async e => {
-    e.preventDefault()
-    if (!hook.trim()) { toast('Please enter a hook', 'error'); return }
+  const scoreHook = async (e, overrideHook) => {
+    if (e?.preventDefault) e.preventDefault()
+    const hookToScore = overrideHook || hook
+    if (!hookToScore.trim()) { toast('Please enter a hook', 'error'); return }
     setLd(true); setResult(null); setAccepted(false); setAlts([])
     try {
-      const data = await api.scoreHook({ hookText: hook, language: hookLang })
+      const data = await api.scoreHook({ hookText: hookToScore, language: hookLang })
       setResult(data.hookScore)
-      // Auto-fetch alternatives if score is below 80
       if (data.hookScore.score < 80) {
         setAltsLd(true)
-        api.hookAlternatives({ hookText: hook, score: data.hookScore.score, language: hookLang })
+        api.hookAlternatives({ hookText: hookToScore, score: data.hookScore.score, language: hookLang })
           .then(r => setAlts(r.alternatives || []))
           .catch(() => {})
           .finally(() => setAltsLd(false))
@@ -96,6 +96,12 @@ export default function Score() {
     } finally {
       setLd(false)
     }
+  }
+
+  const useAlternative = (altHook) => {
+    setHook(altHook)
+    scoreHook(null, altHook)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const statusColor = s =>
@@ -208,8 +214,9 @@ export default function Score() {
           )}
 
           {result && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {/* Big score */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+              {/* Score + reasons */}
               <div className="card" style={styles.scoreCard}>
                 <BigScoreRing score={result.score} />
                 <div style={{ flex: 1 }}>
@@ -218,11 +225,8 @@ export default function Score() {
                       {result.score}<span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/100</span>
                     </span>
                     <span style={{
-                      fontSize: '0.8rem',
-                      fontFamily: 'var(--font-mono)',
-                      fontWeight: '600',
-                      padding: '4px 12px',
-                      borderRadius: '99px',
+                      fontSize: '0.8rem', fontFamily: 'var(--font-mono)', fontWeight: 600,
+                      padding: '4px 12px', borderRadius: 99,
                       background: `${statusColor(result.status)}22`,
                       color: statusColor(result.status),
                       border: `1px solid ${statusColor(result.status)}44`,
@@ -230,72 +234,56 @@ export default function Score() {
                       {result.status}
                     </span>
                   </div>
-
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
                     {t('score_reasons_label')}
                   </div>
                   <div className="reasons">
                     {result.reasons?.map((r, i) => (
-                      <div key={i} className="reason-item">
-                        <div className="reason-dot" />
-                        {r}
-                      </div>
+                      <div key={i} className="reason-item"><div className="reason-dot" />{r}</div>
                     ))}
                   </div>
-
-                  {/* TTS button */}
-                  <div style={{ marginTop: 16 }}>
-                    <SpeakButton text={ttsText} />
-                  </div>
+                  <div style={{ marginTop: 16 }}><SpeakButton text={ttsText} /></div>
                 </div>
               </div>
 
-              {/* Scored hook display */}
-              <div className="card card-sm">
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                  {t('score_scored_hook')}
-                </div>
-                <div style={{ fontSize: '1rem', lineHeight: 1.6, color: 'var(--text)', borderLeft: '3px solid var(--accent)', paddingLeft: '14px' }}>
-                  "{hook}"
-                </div>
-              </div>
-
-              {/* Alternatives — auto-shown when score < 80 */}
+              {/* ── Alternatives — right here, can't miss them ── */}
               {result.score < 80 && (
-                <div className="card" style={{ padding: '20px 20px 16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                    <span style={{ fontSize: '1rem' }}>⚡</span>
+                <div className="card" style={{
+                  border: '1px solid rgba(255,160,0,0.25)',
+                  background: 'linear-gradient(135deg, rgba(255,160,0,0.04), rgba(255,95,31,0.04))',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: altsLoading && alternatives.length === 0 ? 8 : 16 }}>
+                    <span style={{ fontSize: '1.1rem' }}>⚡</span>
                     <span style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.95rem' }}>
-                      Stronger alternatives
+                      Here are 3 stronger versions
                     </span>
                     {altsLoading && <span className="spinner" style={{ width: 14, height: 14, marginLeft: 4 }} />}
                   </div>
 
                   {altsLoading && alternatives.length === 0 && (
-                    <p style={{ fontSize: '0.84rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-                      Generating 3 improved versions…
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginBottom: 0 }}>
+                      Writing better hooks for you…
                     </p>
                   )}
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {alternatives.map((alt, i) => (
                       <div key={i} style={{
                         padding: '14px 16px', borderRadius: 10,
-                        background: 'var(--surface2)', border: '1px solid var(--border)',
-                        display: 'flex', flexDirection: 'column', gap: 8,
+                        background: 'var(--surface)', border: '1px solid var(--border)',
                       }}>
-                        <p style={{ fontSize: '0.92rem', color: 'var(--text)', lineHeight: 1.55, margin: 0, fontWeight: 500 }}>
+                        <p style={{ fontSize: '0.93rem', color: 'var(--text)', lineHeight: 1.55, margin: '0 0 6px', fontWeight: 500 }}>
                           "{alt.hook}"
                         </p>
-                        <p style={{ fontSize: '0.76rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', fontStyle: 'italic', margin: 0 }}>
+                        <p style={{ fontSize: '0.74rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', fontStyle: 'italic', margin: '0 0 12px' }}>
                           {alt.reason}
                         </p>
                         <button
-                          className="btn btn-ghost btn-sm"
-                          onClick={() => { setHook(alt.hook); setResult(null); setAlts([]) }}
-                          style={{ alignSelf: 'flex-start', fontSize: '0.78rem' }}
+                          className="btn btn-primary btn-sm"
+                          onClick={() => useAlternative(alt.hook)}
+                          style={{ fontSize: '0.8rem', fontWeight: 700 }}
                         >
-                          Use this hook →
+                          Use & rescore →
                         </button>
                       </div>
                     ))}
@@ -308,11 +296,20 @@ export default function Score() {
                   <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--teal)', marginBottom: 6 }}>
                     {t('score_ready_title')}
                   </div>
-                  <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)' }}>
-                    {t('score_ready_body')}
-                  </p>
+                  <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)' }}>{t('score_ready_body')}</p>
                 </div>
               )}
+
+              {/* Scored hook — now at the bottom, less prominent */}
+              <div className="card card-sm">
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+                  {t('score_scored_hook')}
+                </div>
+                <div style={{ fontSize: '0.92rem', lineHeight: 1.6, color: 'var(--text-muted)', borderLeft: '3px solid var(--border)', paddingLeft: 14 }}>
+                  "{hook}"
+                </div>
+              </div>
+
             </div>
           )}
         </div>
