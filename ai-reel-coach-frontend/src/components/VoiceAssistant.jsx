@@ -147,10 +147,12 @@ export function useTextToSpeech() {
 }
 
 // ─── Speech to Text ───────────────────────────────────────────────
-// Uses continuous:true so Chrome never hard-cuts mid-sentence.
-// Auto-submits after SILENCE_MS of no new words.
-// Stop button submits immediately.
-const SILENCE_MS = 2500
+// Desktop: continuous:true so Chrome never hard-cuts mid-sentence.
+// Mobile:  continuous:false — mobile browsers don't support continuous
+//          reliably; each utterance auto-submits on silence.
+const isMobile  = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+const SILENCE_MS        = 2500   // desktop — wait longer before auto-submit
+const SILENCE_MS_MOBILE = 1500   // mobile  — submit faster after speech ends
 
 export function useSpeechToText(onResult, langOverride) {
   const { lang: globalLang } = useLang()
@@ -188,7 +190,8 @@ export function useSpeechToText(onResult, langOverride) {
 
   const armSilenceTimer = () => {
     clearSilenceTimer()
-    silenceTimer.current = setTimeout(flush, SILENCE_MS)
+    const ms = isMobile() ? SILENCE_MS_MOBILE : SILENCE_MS
+    silenceTimer.current = setTimeout(flush, ms)
   }
 
   const startSession = () => {
@@ -196,11 +199,12 @@ export function useSpeechToText(onResult, langOverride) {
     // Reset per-session index so each new recognition instance starts clean
     lastFinalIdxRef.current = -1
 
+    const mobile = isMobile()
     const recognition           = new SR_ref.current()
     recognition.lang            = langRef.current
     recognition.interimResults  = true
     recognition.maxAlternatives = 1
-    recognition.continuous      = true   // holds the mic open; Chrome never cuts mid-sentence
+    recognition.continuous      = !mobile  // mobile browsers don't support continuous reliably
 
     recognition.onresult = (e) => {
       let interim = '', newFinal = ''
@@ -235,10 +239,14 @@ export function useSpeechToText(onResult, langOverride) {
     }
 
     recognition.onend = () => {
-      // Only fires if Chrome times out (~60s) or we called stop()
       if (stoppedRef.current) { flush(); return }
-      // Chrome timed out — restart transparently, silence timer still running
-      setTimeout(startSession, 80)
+      if (mobile) {
+        // On mobile, onend fires after each utterance — flush immediately
+        flush()
+      } else {
+        // Desktop: Chrome timed out (~60s) — restart, silence timer still running
+        setTimeout(startSession, 80)
+      }
     }
 
     recognition.onerror = (e) => {
@@ -259,14 +267,22 @@ export function useSpeechToText(onResult, langOverride) {
 
   const startListening = async () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SR) { alert('Speech recognition requires Chrome or Edge browser.'); return }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      stream.getTracks().forEach(t => t.stop())
-    } catch {
-      alert('Microphone access denied. Please allow mic in browser settings.')
+    if (!SR) {
+      alert('Speech recognition is not supported in this browser. Try Chrome on Android or Safari on iOS 15+.')
       return
+    }
+
+    // Desktop only: pre-check mic permission via getUserMedia.
+    // On mobile this is skipped — the SpeechRecognition API handles
+    // its own permission prompt and getUserMedia can interfere.
+    if (!isMobile()) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        stream.getTracks().forEach(t => t.stop())
+      } catch {
+        alert('Microphone access denied. Please allow mic in browser settings.')
+        return
+      }
     }
 
     try { recognitionRef.current?.abort() } catch {}
@@ -291,43 +307,35 @@ export function useSpeechToText(onResult, langOverride) {
 // ─── Mic Button ───────────────────────────────────────────────────
 // lang prop: optional BCP-47 short code ('hi', 'en', 'es' …)
 // If provided it overrides the global app UI language for speech recognition.
-export function MicButton({ onResult, lang: langProp, style = {} }) {
+// interimEl: optional ref to a container where interim text is injected
+//            instead of floating below the button (fixes mobile overflow).
+export function MicButton({ onResult, lang: langProp, style = {}, interimTarget }) {
   const { t } = useLang()
   const { listening, interimText, startListening, stopListening } = useSpeechToText(onResult, langProp)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-      <button
-        type="button"
-        onClick={listening ? stopListening : startListening}
-        title={listening ? t('voice_listening') : t('voice_speak')}
-        style={{
-          width: 40, height: 40, borderRadius: '50%',
-          border: listening ? '2px solid var(--accent)' : '1px solid var(--border)',
-          background: listening ? 'var(--accent-dim)' : 'var(--surface2)',
-          color: listening ? 'var(--accent)' : 'var(--text-muted)',
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16,
-          animation: listening ? 'pulseGlow 1s ease infinite' : 'none',
-          transition: 'all 0.2s',
-          ...style,
-        }}
-      >
-        {listening ? '⏹' : '🎙'}
-      </button>
-      {listening && (
-        <span style={{
-          fontSize: '0.62rem',
-          color: interimText ? 'var(--text-muted)' : 'var(--accent)',
-          fontFamily: 'var(--font-mono)',
-          maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap', textAlign: 'center',
-        }}>
-          {interimText || t('voice_listening')}
-        </span>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={listening ? stopListening : startListening}
+      title={listening
+        ? (interimText || t('voice_listening'))
+        : t('voice_speak')}
+      style={{
+        width: 40, height: 40, borderRadius: '50%',
+        border: listening ? '2px solid var(--accent)' : '1px solid var(--border)',
+        background: listening ? 'var(--accent-dim)' : 'var(--surface2)',
+        color: listening ? 'var(--accent)' : 'var(--text-muted)',
+        cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 16,
+        flexShrink: 0,
+        animation: listening ? 'pulseGlow 1s ease infinite' : 'none',
+        transition: 'all 0.2s',
+        ...style,
+      }}
+    >
+      {listening ? '⏹' : '🎙'}
+    </button>
   )
 }
 

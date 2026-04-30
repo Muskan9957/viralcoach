@@ -228,7 +228,26 @@ export default function Generate() {
                 {form.topic.length}/1000
               </span>
             </div>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            {/* Language row — sits above textarea on all screen sizes */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <select
+                value={form.scriptLang}
+                onChange={set('scriptLang')}
+                title="Script language"
+                className="select"
+                style={{ width: 130, fontSize: '0.82rem', height: 34 }}
+              >
+                {SCRIPT_LANGS.map(l => (
+                  <option key={l.value} value={l.value}>{l.label}</option>
+                ))}
+              </select>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
+                language · tap 🎙 to speak
+              </span>
+            </div>
+
+            {/* Textarea + mic side by side — mic stays small, textarea gets full width */}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
               <textarea
                 className="textarea"
                 placeholder="e.g. How I grew from 0 to 10k followers in 90 days"
@@ -237,26 +256,13 @@ export default function Generate() {
                 rows={3}
                 required
                 maxLength={1000}
-                style={{ flex: 1, resize: 'vertical', fontSize: '1rem' }}
+                style={{ flex: 1, minWidth: 0, resize: 'vertical', fontSize: '1rem' }}
               />
-              {/* Language + mic grouped — language controls what the mic listens in */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 4 }}>
-                <select
-                  value={form.scriptLang}
-                  onChange={set('scriptLang')}
-                  title="Script language"
-                  className="select"
-                  style={{ width: 110, fontSize: '0.82rem', height: 36, padding: '0 8px' }}
-                >
-                  {SCRIPT_LANGS.map(l => (
-                    <option key={l.value} value={l.value}>{l.label}</option>
-                  ))}
-                </select>
-                <MicButton
-                  onResult={text => setForm(f => ({ ...f, topic: text }))}
-                  lang={form.scriptLang}
-                />
-              </div>
+              <MicButton
+                onResult={text => setForm(f => ({ ...f, topic: text }))}
+                lang={form.scriptLang}
+                style={{ marginTop: 4 }}
+              />
             </div>
           </div>
 
