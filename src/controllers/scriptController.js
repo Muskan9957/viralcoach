@@ -28,8 +28,8 @@ const generate = async (req, res, next) => {
     const voiceProfile = userRow?.creatorStyle ? JSON.parse(userRow.creatorStyle) : null;
 
     // 3. Generate script via AI (voice profile injected into prompt when present)
-    const { topic, niche, tone, language, audience } = req.body;
-    const { hook, body, cta, fullScript, idealDuration } = await aiService.generateScript({ topic, niche, tone, language, audience, voiceProfile });
+    const { topic, niche, tone, language, audience, duration } = req.body;
+    const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language, audience, voiceProfile, duration });
 
     // 4. Score hook + generate visual/music directions in parallel
     const [hookScoreData, visualMusic] = await Promise.all([
@@ -81,7 +81,6 @@ const generate = async (req, res, next) => {
         body,
         cta,
         fullScript,
-        idealDuration  : idealDuration || null,
         voiceUsed      : voiceProfile ? voiceProfile.summary : null,
         hookScore      : hookScoreData,
         visual         : visualMusic?.visual || null,
@@ -109,8 +108,8 @@ const retake = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { topic, niche, tone, language, audience } = req.body;
-    const { hook, body, cta, fullScript, idealDuration } = await aiService.generateScript({ topic, niche, tone, language, audience });
+    const { topic, niche, tone, language, audience, duration } = req.body;
+    const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language, audience, duration });
     const [hookScoreData, visualMusic] = await Promise.all([
       aiService.scoreHook(hook, language),
       aiService.generateVisualMusic({ topic, niche, hook, audience }),
@@ -119,7 +118,6 @@ const retake = async (req, res, next) => {
     return res.json({
       script: {
         hook, body, cta, fullScript,
-        idealDuration: idealDuration || null,
         hookScore    : hookScoreData,
         visual       : visualMusic?.visual || null,
         music        : visualMusic?.music  || null,

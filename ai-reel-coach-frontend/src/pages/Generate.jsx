@@ -19,6 +19,16 @@ const REFINE_CHIPS = [
   { label: '📖 More storytelling',  instruction: 'Reframe using personal story structure — make it feel more human and relatable.' },
 ]
 
+const DURATIONS = [
+  { value: '',    label: 'Any length' },
+  { value: '5s',  label: '5 sec' },
+  { value: '15s', label: '15 sec' },
+  { value: '30s', label: '30 sec' },
+  { value: '60s', label: '60 sec' },
+  { value: '90s', label: '90 sec' },
+  { value: '3min',label: '3 min' },
+]
+
 const TONES  = ['motivational', 'educational', 'funny', 'storytelling', 'controversial', 'conversational']
 const NICHES = ['fitness', 'finance', 'food', 'travel', 'tech', 'fashion', 'lifestyle', 'education', 'comedy', 'business']
 
@@ -52,6 +62,7 @@ export default function Generate() {
     topic:      '',
     niche:      primaryNiche,
     tone:       'motivational',
+    duration:   '',
     audience:   getSavedRegion(),     // blank until detected or set by user
     scriptLang: getSavedScriptLang(), // script language — independent of app UI language
   })
@@ -282,8 +293,8 @@ export default function Generate() {
             </div>
           </div>
 
-          {/* Row 1 — Niche + Tone */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {/* Row 1 — Niche + Tone + Duration */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
             <div className="field">
               <label style={fieldLabelStyle}>Niche</label>
               <select className="select" value={form.niche} onChange={set('niche')}>
@@ -295,6 +306,12 @@ export default function Generate() {
               <label style={fieldLabelStyle}>Tone</label>
               <select className="select" value={form.tone} onChange={set('tone')}>
                 {TONES.map(tone => <option key={tone} value={tone}>{tone.charAt(0).toUpperCase() + tone.slice(1)}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label style={fieldLabelStyle}>Duration</label>
+              <select className="select" value={form.duration} onChange={set('duration')}>
+                {DURATIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
               </select>
             </div>
           </div>
@@ -471,7 +488,7 @@ export default function Generate() {
 
           {/* Script Card */}
           <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: result.script?.idealDuration ? 16 : 24, gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
               <div>
                 <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.15rem', marginBottom: 4 }}>
                   {t('generate_your_script')}
@@ -488,8 +505,8 @@ export default function Generate() {
               </div>
             </div>
 
-            {/* AI-suggested ideal duration — shown only when the AI returns it */}
-            {result.script?.idealDuration && (
+            {/* duration banner removed — user picks duration in form */}
+            {false && (
               <div style={{
                 display: 'flex', alignItems: 'flex-start', gap: 12,
                 padding: '12px 16px', borderRadius: 10, marginBottom: 20,

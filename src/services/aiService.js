@@ -172,7 +172,7 @@ CTA:
 // ─────────────────────────────────────────────────────────────────
 // 1. GENERATE SCRIPT
 // ─────────────────────────────────────────────────────────────────
-const generateScript = async ({ topic, niche, tone, language = 'en', audience = 'India', voiceProfile = null }) => {
+const generateScript = async ({ topic, niche, tone, language = 'en', audience = 'India', voiceProfile = null, duration = '' }) => {
   const langInstruction    = getLangInstruction(language)
   const audienceInstruction = getAudienceContext(audience)
 
@@ -181,6 +181,10 @@ const generateScript = async ({ topic, niche, tone, language = 'en', audience = 
     ? `\nCREATOR VOICE (match this style precisely — this is a premium personalisation):
 ${voiceProfile.promptInstruction}
 Ignore generic "best practice" advice above if it conflicts with the creator's established voice. Their authenticity > textbook hooks.\n`
+    : ''
+
+  const durationInstruction = duration
+    ? `- Target Duration: ${duration} — write EXACTLY enough content for this length. Not more, not less.`
     : ''
 
   const prompt = `
@@ -196,6 +200,7 @@ Generate a high-performing short-form video script for the following:
 - Topic : ${topic}
 - Niche  : ${niche || 'general'}
 - Tone   : ${tone  || 'engaging and conversational'}
+${durationInstruction}
 
 The script must follow this exact structure:
 
@@ -229,9 +234,6 @@ BODY (the main value — deliver on the hook's promise):
 CTA (call to action — last 5 seconds):
 [One clear action: follow, comment, save, or share. Make it feel natural, not forced.]
 
-IDEAL_DURATION:
-[Based on this specific topic and tone, state the ideal reel length as a time range (e.g. "30–45 seconds") followed by a dash and ONE sentence explaining why this topic works best at that length. Consider: does it need storytelling build-up? Is it a quick tip that loses momentum if stretched? Is it emotional content that needs breathing room? Be opinionated and specific to this topic.]
-
 ---
 Rules:
 - Write like you are talking to a friend, not presenting to a boardroom
@@ -243,18 +245,16 @@ Script:
 
   const raw = await ask(prompt, 1400);
 
-  // Parse the four sections from the response
-  const hookMatch     = raw.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i);
-  const bodyMatch     = raw.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i);
-  const ctaMatch      = raw.match(/CTA[^:]*:\s*([\s\S]*?)(?=IDEAL_DURATION|$)/i);
-  const durationMatch = raw.match(/IDEAL_DURATION[^:]*:\s*([\s\S]*?)$/i);
+  // Parse the three sections from the response
+  const hookMatch = raw.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i);
+  const bodyMatch = raw.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i);
+  const ctaMatch  = raw.match(/CTA[^:]*:\s*([\s\S]*?)$/i);
 
   return {
-    hook         : hookMatch     ? hookMatch[1].trim()     : '',
-    body         : bodyMatch     ? bodyMatch[1].trim()     : '',
-    cta          : ctaMatch      ? ctaMatch[1].trim()      : '',
-    idealDuration: durationMatch ? durationMatch[1].trim() : null,
-    fullScript   : raw,
+    hook      : hookMatch ? hookMatch[1].trim() : '',
+    body      : bodyMatch ? bodyMatch[1].trim() : '',
+    cta       : ctaMatch  ? ctaMatch[1].trim()  : '',
+    fullScript: raw,
   };
 };
 
