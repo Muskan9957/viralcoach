@@ -27,6 +27,7 @@ import Demo from './pages/Demo'
 import Scripts from './pages/Scripts'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
+import MyVoice from './pages/MyVoice'
 
 function Protected({ children }) {
   const { user, loading } = useAuth()
@@ -93,6 +94,7 @@ export default function App() {
                 <Route path="/coach"        element={<Protected><Coach /></Protected>} />
                 <Route path="/hooks"        element={<Protected><HookLibrary /></Protected>} />
                 <Route path="/profile"      element={<Protected><Profile /></Protected>} />
+                <Route path="/my-voice"     element={<Protected><MyVoice /></Protected>} />
                 <Route path="*"             element={<Navigate to="/" replace />} />
               </Routes>
             </ToastProvider>

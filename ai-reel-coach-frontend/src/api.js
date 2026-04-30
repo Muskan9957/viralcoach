@@ -94,6 +94,11 @@ export const api = {
   generateAvatar:  (style)    => req('POST',  '/user/generate-avatar', { style }),
   saveAvatar:      (url)      => req('PATCH', '/user/avatar', { url }),
 
+  // Creator Voice (premium personalisation)
+  getVoiceProfile:    ()          => req('GET',    '/user/voice'),
+  analyzeVoice:       (samples)   => req('POST',   '/user/voice', { samples }),
+  deleteVoiceProfile: ()          => req('DELETE',  '/user/voice'),
+
   // TTS — returns audio/mpeg blob (Google Neural2 Indian voice)
   tts: (text, lang) => {
     const token = getToken()

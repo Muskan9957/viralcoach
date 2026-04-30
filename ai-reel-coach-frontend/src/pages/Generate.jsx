@@ -68,6 +68,14 @@ export default function Generate() {
   const [result, setResult]     = useState(null)
   const [copied, setCopied]     = useState(false)
   const [micInterim, setMicInterim] = useState('')  // live speech preview inside textarea
+  const [voiceProfile, setVoiceProfile] = useState(null)  // creator voice fingerprint
+
+  // Load voice profile on mount — shows indicator when active
+  useEffect(() => {
+    api.getVoiceProfile()
+      .then(data => { if (data.profile) setVoiceProfile(data.profile) })
+      .catch(() => {})
+  }, [])
 
   // Refinement / re-roll state
   const [versions, setVersions]       = useState([])
@@ -306,6 +314,29 @@ export default function Generate() {
               {REGIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
+
+          {/* Voice profile active indicator */}
+          {voiceProfile && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '9px 14px', borderRadius: 10,
+              background: 'linear-gradient(135deg, rgba(0,200,255,0.07), rgba(160,110,255,0.07))',
+              border: '1px solid rgba(0,200,255,0.2)',
+            }}>
+              <span style={{ fontSize: '1rem', flexShrink: 0 }}>🎙</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#00C8FF' }}>
+                  ✦ Writing in your style
+                </span>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {voiceProfile.summary}
+                </p>
+              </div>
+              <a href="/my-voice" style={{ fontSize: '0.72rem', color: 'var(--text-faint)', textDecoration: 'none', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
+                edit →
+              </a>
+            </div>
+          )}
 
           {/* Button area — transforms once a result exists */}
           {!result ? (

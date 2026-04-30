@@ -11,6 +11,7 @@ export const translations = {
     nav_captions: 'Captions',
     nav_remix: 'Crosspost',
     nav_coach: 'AI Coach',
+    nav_my_voice: 'My Voice',
     nav_hooks: 'Hook Library',
 
     // ── Landing page ────────────────────────────────────────────
@@ -325,6 +326,7 @@ export const translations = {
     nav_captions: 'कैप्शन',
     nav_remix: 'क्रॉसपोस्ट',
     nav_coach: 'AI कोच',
+    nav_my_voice: 'मेरी आवाज़',
 
     // ── Landing page ────────────────────────────────────────────
     landing_signin: 'साइन इन',

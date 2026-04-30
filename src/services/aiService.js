@@ -74,6 +74,44 @@ const ask = async (prompt, maxTokens = 1024, model = MODEL) => {
 };
 
 // ─────────────────────────────────────────────────────────────────
+// 0a. ANALYZE CREATOR STYLE  (premium voice fingerprinting)
+// ─────────────────────────────────────────────────────────────────
+const analyzeCreatorStyle = async (samples) => {
+  const combinedSamples = samples
+    .map((s, i) => `--- Sample ${i + 1} ---\n${s.trim()}`)
+    .join('\n\n')
+
+  const prompt = `
+You are a professional voice and style analyst for short-form video creators.
+Analyze the writing samples below and extract a detailed "voice fingerprint" for this creator.
+
+SAMPLES:
+${combinedSamples}
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "summary": "One punchy sentence (max 25 words) capturing the essence of this creator's voice — their style, energy, and what makes them unique",
+  "energy": "One of: High-energy & urgent | Calm & conversational | Motivational & inspiring | Educational & precise | Playful & humorous | Dramatic & storytelling",
+  "sentenceStyle": "Describe their sentence length and rhythm in one sentence (e.g. 'Short punchy lines, usually 6-9 words, with frequent pauses for effect')",
+  "vocabulary": "Describe their vocabulary level and style in one sentence",
+  "humor": "Describe their humor style or write 'None — serious tone' if not present",
+  "structure": "Their typical content structure in one sentence (e.g. 'Opens with personal failure → shares the lesson → gives actionable tip → soft CTA')",
+  "signature": "Any signature phrases, patterns, or verbal habits they repeat (or 'None detected')",
+  "promptInstruction": "A 3-4 sentence instruction paragraph written in second person ('You write like...') that would help an AI mimic this exact voice. Be very specific — mention vocabulary choices, sentence patterns, energy, structure, and any unique quirks. This is injected directly into the script generation prompt."
+}
+`
+
+  const raw = await ask(prompt, 800, MODEL_FAST)
+  try {
+    const match = raw.match(/\{[\s\S]*\}/)
+    if (!match) throw new Error('No JSON')
+    return JSON.parse(match[0])
+  } catch {
+    return null
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
 // 0. REFINE SCRIPT (iteration on existing result)
 // ─────────────────────────────────────────────────────────────────
 const refineScript = async ({ hook, body, cta, instruction, language = 'en', audience = 'India', topic = '' }) => {
@@ -134,9 +172,17 @@ CTA:
 // ─────────────────────────────────────────────────────────────────
 // 1. GENERATE SCRIPT
 // ─────────────────────────────────────────────────────────────────
-const generateScript = async ({ topic, niche, tone, language = 'en', audience = 'India' }) => {
+const generateScript = async ({ topic, niche, tone, language = 'en', audience = 'India', voiceProfile = null }) => {
   const langInstruction    = getLangInstruction(language)
   const audienceInstruction = getAudienceContext(audience)
+
+  // Build the voice-match instruction block (only for premium users with a saved profile)
+  const voiceBlock = voiceProfile?.promptInstruction
+    ? `\nCREATOR VOICE (match this style precisely — this is a premium personalisation):
+${voiceProfile.promptInstruction}
+Ignore generic "best practice" advice above if it conflicts with the creator's established voice. Their authenticity > textbook hooks.\n`
+    : ''
+
   const prompt = `
 You are an expert viral content strategist who writes Grade A hooks that score 85+ on Instagram Reels and YouTube Shorts.
 
@@ -145,7 +191,7 @@ ${langInstruction}
 
 AUDIENCE CONTEXT (cultural references only — does NOT change the language):
 ${audienceInstruction}
-
+${voiceBlock}
 Generate a high-performing short-form video script for the following:
 - Topic : ${topic}
 - Niche  : ${niche || 'general'}
@@ -759,6 +805,7 @@ const coachChat = async ({ message, history = [], userContext, language = 'en' }
 };
 
 module.exports = {
+  analyzeCreatorStyle,
   refineScript,
   generateScript,
   generateVisualMusic,

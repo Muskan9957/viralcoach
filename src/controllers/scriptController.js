@@ -20,17 +20,24 @@ const generate = async (req, res, next) => {
       });
     }
 
-    // 2. Generate script via AI
-    const { topic, niche, tone, language, audience } = req.body;
-    const { hook, body, cta, fullScript, idealDuration } = await aiService.generateScript({ topic, niche, tone, language, audience });
+    // 2. Load voice profile (premium users only — null for FREE)
+    const userRow = await prisma.user.findUnique({
+      where : { id: req.user.id },
+      select: { creatorStyle: true },
+    });
+    const voiceProfile = userRow?.creatorStyle ? JSON.parse(userRow.creatorStyle) : null;
 
-    // 3. Score hook + generate visual/music directions in parallel
+    // 3. Generate script via AI (voice profile injected into prompt when present)
+    const { topic, niche, tone, language, audience } = req.body;
+    const { hook, body, cta, fullScript, idealDuration } = await aiService.generateScript({ topic, niche, tone, language, audience, voiceProfile });
+
+    // 4. Score hook + generate visual/music directions in parallel
     const [hookScoreData, visualMusic] = await Promise.all([
       aiService.scoreHook(hook, language),
       aiService.generateVisualMusic({ topic, niche, hook, audience }),
     ]);
 
-    // 4. Save script to database
+    // 5. Save script to database
     const script = await prisma.script.create({
       data: {
         userId: req.user.id,
@@ -68,16 +75,17 @@ const generate = async (req, res, next) => {
     const response = {
       message: 'Script generated successfully!',
       script : {
-        id           : script.id,
+        id             : script.id,
         topic,
         hook,
         body,
         cta,
         fullScript,
-        idealDuration: idealDuration || null,
-        hookScore    : hookScoreData,
-        visual       : visualMusic?.visual || null,
-        music        : visualMusic?.music  || null,
+        idealDuration  : idealDuration || null,
+        voiceUsed      : voiceProfile ? voiceProfile.summary : null,
+        hookScore      : hookScoreData,
+        visual         : visualMusic?.visual || null,
+        music          : visualMusic?.music  || null,
       },
       usage: { used: used + 1, limit },
     };

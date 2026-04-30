@@ -113,6 +113,15 @@ const HookIcon = ({ size = 22 }) => (
   </svg>
 )
 
+const VoiceIcon = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+    <line x1="12" y1="19" x2="12" y2="23"/>
+    <line x1="8" y1="23" x2="16" y2="23"/>
+  </svg>
+)
+
 const IconLogout = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -148,6 +157,7 @@ const NAV_CONFIG = [
   { to: '/scripts',     icon: IconScripts,     labelKey: 'nav_scripts'     },
   { to: '/score',       icon: IconScore,       labelKey: 'nav_score'       },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'       },
+  { to: '/my-voice',    icon: VoiceIcon,       labelKey: 'nav_my_voice',   premium: true },
   { section: 'Content',  sectionClass: 'nav-section-content'  },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'    },
   { to: '/crosspost',   icon: RemixIcon,       labelKey: 'nav_remix'       },
@@ -205,7 +215,7 @@ export default function Layout({ children }) {
                   </div>
                 )
               }
-              const { to, icon: Icon, labelKey } = item
+              const { to, icon: Icon, labelKey, premium } = item
               return (
                 <NavLink
                   key={to}
@@ -224,9 +234,18 @@ export default function Layout({ children }) {
                       }}>
                         <Icon size={18} />
                       </span>
-                      <span style={{ color: isActive ? 'var(--text)' : 'var(--text-muted)' }}>
+                      <span style={{ color: isActive ? 'var(--text)' : 'var(--text-muted)', flex: 1 }}>
                         {t(labelKey)}
                       </span>
+                      {premium && (
+                        <span style={{
+                          fontSize: '0.6rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                          padding: '2px 6px', borderRadius: 99, lineHeight: 1,
+                          background: 'linear-gradient(135deg, rgba(0,200,255,0.18), rgba(160,110,255,0.18))',
+                          border: '1px solid rgba(0,200,255,0.25)',
+                          color: '#00C8FF', letterSpacing: '0.05em',
+                        }}>✦</span>
+                      )}
                     </>
                   )}
                 </NavLink>
