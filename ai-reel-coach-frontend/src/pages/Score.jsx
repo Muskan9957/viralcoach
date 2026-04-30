@@ -5,7 +5,7 @@ import { useToast } from '../components/Toast'
 import { useLang } from '../i18n.jsx'
 import { MicButton, SpeakButton } from '../components/VoiceAssistant'
 
-const gradeColor  = { A: '#00C9A7', B: '#88F0D0', C: '#FFD60A', D: '#FF9F43', F: '#FF6B6B' }
+const gradeColor  = { A: '#00C9A7', B: '#88F0D0', C: '#FF9F43', D: '#FF6B47', F: '#FF6B6B' }
 const gradeLabel  = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
 
 const SCORE_LANGS = [
@@ -90,7 +90,7 @@ export default function Score() {
 
   const statusColor = s =>
     s === 'Post Ready' ? '#00C9A7' :
-    s === 'Needs Improvement' ? '#FFD60A' : '#FF6B6B'
+    s === 'Needs Improvement' ? '#FF9F43' : '#FF6B6B'
 
   // TTS text for the result
   const ttsText = result
@@ -128,10 +128,10 @@ export default function Score() {
                   placeholder={'e.g. "I was broke at 25. Here\'s what changed everything."'}
                   value={hook}
                   onChange={e => setHook(e.target.value)}
-                  rows={3}
+                  rows={5}
                   required
                   maxLength={1000}
-                  style={{ flex: 1, resize: 'vertical' }}
+                  style={{ flex: 1, resize: 'vertical', fontSize: '0.95rem', lineHeight: 1.6 }}
                 />
                 {/* Language + mic as a single unit */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
@@ -271,8 +271,8 @@ export default function Score() {
 const styles = {
   layout: {
     display: 'grid',
-    gridTemplateColumns: '340px 1fr',
-    gap: 24,
+    gridTemplateColumns: 'minmax(380px, 440px) 1fr',
+    gap: 28,
     alignItems: 'flex-start',
   },
   cardTitle: {
