@@ -187,6 +187,8 @@ export function useSpeechToText(onResult, langOverride, onInterim) {
     setInterimText('')
     const text = finalRef.current.trim()
     finalRef.current = ''
+    // Always clear the interim preview so the parent input is never left locked
+    if (onInterimRef.current) onInterimRef.current('')
     if (text) onResultRef.current(text)
   }
 

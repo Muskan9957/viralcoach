@@ -148,7 +148,10 @@ export default function Score() {
                   className="textarea"
                   placeholder={'e.g. "I was broke at 25. Here\'s what changed everything."'}
                   value={micInterim || hook}
-                  onChange={e => { if (!micInterim) setHook(e.target.value.slice(0, 1000)) }}
+                  onChange={e => {
+                    setMicInterim('')
+                    setHook(e.target.value.slice(0, 1000))
+                  }}
                   rows={5}
                   required
                   maxLength={1000}
@@ -156,11 +159,11 @@ export default function Score() {
                     flex: 1, minWidth: 0, resize: 'vertical', fontSize: '0.95rem', lineHeight: 1.6,
                     opacity: micInterim ? 0.75 : 1,
                     fontStyle: micInterim ? 'italic' : 'normal',
-                    transition: 'opacity 0.15s',
+                    transition: 'opacity 0.15s, font-style 0s',
                   }}
                 />
                 <MicButton
-                  onResult={text => { setMicInterim(''); setHook(text.slice(0, 1000)) }}
+                  onResult={text => setHook(text.slice(0, 1000))}
                   onInterim={text => setMicInterim(text.slice(0, 1000))}
                   lang={hookLang}
                   style={{ marginTop: 4 }}

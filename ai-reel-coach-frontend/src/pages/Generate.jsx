@@ -253,7 +253,11 @@ export default function Generate() {
                 className="textarea"
                 placeholder="e.g. How I grew from 0 to 10k followers in 90 days"
                 value={micInterim || form.topic}
-                onChange={e => { if (!micInterim) set('topic')(e) }}
+                onChange={e => {
+                  // Typing always clears interim + updates form — never blocked
+                  setMicInterim('')
+                  setForm(f => ({ ...f, topic: e.target.value }))
+                }}
                 rows={3}
                 required
                 maxLength={1000}
@@ -261,14 +265,11 @@ export default function Generate() {
                   flex: 1, minWidth: 0, resize: 'vertical', fontSize: '1rem',
                   opacity: micInterim ? 0.75 : 1,
                   fontStyle: micInterim ? 'italic' : 'normal',
-                  transition: 'opacity 0.15s',
+                  transition: 'opacity 0.15s, font-style 0s',
                 }}
               />
               <MicButton
-                onResult={text => {
-                  setMicInterim('')
-                  setForm(f => ({ ...f, topic: text.slice(0, 1000) }))
-                }}
+                onResult={text => setForm(f => ({ ...f, topic: text.slice(0, 1000) }))}
                 onInterim={text => setMicInterim(text.slice(0, 1000))}
                 lang={form.scriptLang}
                 style={{ marginTop: 4 }}
