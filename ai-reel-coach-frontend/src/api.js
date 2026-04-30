@@ -37,6 +37,7 @@ export const api = {
 
   // Scripts
   generate:      (body) => req('POST', '/scripts/generate', body),
+  retakeScript:  (body) => req('POST', '/scripts/retake', body),
   refineScript:  (body) => req('POST', '/scripts/refine', body),
   getScripts:    ()     => req('GET',  '/scripts'),
   getScript:     (id)   => req('GET',  `/scripts/${id}`),

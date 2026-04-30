@@ -22,6 +22,18 @@ router.post(
   controller.generate
 );
 
+// POST /api/scripts/retake  — fresh script on same topic, free (max 5 per topic, tracked client-side)
+router.post(
+  '/retake',
+  aiLimiter,
+  [
+    body('topic').trim().notEmpty().withMessage('Topic is required.').isLength({ max: 1000 }),
+    body('niche').optional().trim().isLength({ max: 100 }),
+    body('tone').optional().trim().isIn(['educational', 'funny', 'motivational', 'storytelling', 'controversial', 'conversational']),
+  ],
+  controller.retake
+);
+
 // POST /api/scripts/refine  — iterate/refine an existing script (does NOT count against generation quota)
 router.post(
   '/refine',

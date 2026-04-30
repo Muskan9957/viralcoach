@@ -69,10 +69,12 @@ export default function Generate() {
   const [copied, setCopied]     = useState(false)
 
   // Refinement / re-roll state
-  const [versions, setVersions]   = useState([])
-  const [activeVer, setActiveVer] = useState(0)
-  const [refining, setRefining]   = useState(false)
-  const [rerolling, setRerolling] = useState(false)
+  const [versions, setVersions]       = useState([])
+  const [activeVer, setActiveVer]     = useState(0)
+  const [refining, setRefining]       = useState(false)
+  const [rerolling, setRerolling]     = useState(false)
+  const [rerollCount, setRerollCount] = useState(0)   // free retakes used (max 5 per topic)
+  const MAX_RETAKES = 5
   const refineRef = useRef(null)
 
   useEffect(() => {
@@ -107,6 +109,7 @@ export default function Generate() {
     setResult(null)
     setVersions([])
     setActiveVer(0)
+    setRerollCount(0)
     try {
       saveRegion(form.audience)
       localStorage.setItem(SCRIPT_LANG_KEY, form.scriptLang)
@@ -122,18 +125,22 @@ export default function Generate() {
     }
   }
 
-  // Re-roll — fresh script on the same topic, added to version history
+  // Re-roll — fresh script on same topic, FREE, capped at MAX_RETAKES per topic
   const reroll = async () => {
     if (!form.topic.trim()) return
+    if (rerollCount >= MAX_RETAKES) {
+      toast(`You've used all ${MAX_RETAKES} free retakes for this topic. Start a new topic to continue.`, 'error')
+      return
+    }
     setRerolling(true)
     try {
-      const data = await api.generate({ ...form, language: form.scriptLang })
+      const data = await api.retakeScript({ ...form, language: form.scriptLang })
       const n = versions.length + 1
       const newVer = { ...data.script, label: `Take ${n}` }
-      const newVersions = [newVer, ...versions]
-      setVersions(newVersions)
+      setVersions(prev => [newVer, ...prev])
       setActiveVer(0)
-      setResult(prev => ({ ...prev, script: data.script, usage: data.usage }))
+      setResult(prev => ({ ...prev, script: data.script }))
+      setRerollCount(c => c + 1)
       setTimeout(() => refineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch (err) {
       toast(err.message, 'error')
@@ -443,16 +450,18 @@ export default function Generate() {
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={reroll}
-                disabled={rerolling || refining}
+                disabled={rerolling || refining || rerollCount >= MAX_RETAKES}
                 className="btn btn-primary"
-                style={{ flex: 1, height: 48, fontSize: '0.95rem', fontWeight: 700, gap: 8 }}
+                style={{ flex: 1, height: 48, fontSize: '0.95rem', fontWeight: 700, gap: 8, opacity: rerollCount >= MAX_RETAKES ? 0.5 : 1 }}
               >
                 {rerolling
                   ? <><span className="spinner" /> Generating…</>
-                  : <>↺ Try another take</>}
+                  : rerollCount >= MAX_RETAKES
+                    ? `↺ No retakes left`
+                    : <>↺ Try another take <span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.7 }}>({MAX_RETAKES - rerollCount} left)</span></>}
               </button>
               <button
-                onClick={() => { setResult(null); setVersions([]); setActiveVer(0); setForm({ topic: '', niche: primaryNiche, tone: 'motivational', audience: getSavedRegion(), scriptLang: getSavedScriptLang() }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                onClick={() => { setResult(null); setVersions([]); setActiveVer(0); setRerollCount(0); setForm({ topic: '', niche: primaryNiche, tone: 'motivational', audience: getSavedRegion(), scriptLang: getSavedScriptLang() }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                 className="btn btn-ghost"
                 style={{ height: 48, paddingInline: 20, fontSize: '0.9rem' }}
               >

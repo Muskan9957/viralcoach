@@ -86,6 +86,27 @@ const generate = async (req, res, next) => {
   }
 };
 
+// ─── POST /api/scripts/retake ─────────────────────────────────────
+// Fresh script on the same topic — does NOT consume the monthly quota.
+// The 5-per-topic cap is enforced on the client; this endpoint just
+// generates and scores without touching generationsUsed.
+const retake = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const { topic, niche, tone, language, audience } = req.body;
+    const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language, audience });
+    const hookScoreData = await aiService.scoreHook(hook, language);
+
+    return res.json({
+      script: { hook, body, cta, fullScript, hookScore: hookScoreData },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── POST /api/scripts/refine ─────────────────────────────────────
 // Iterates on an existing script without consuming the generation quota.
 const refine = async (req, res, next) => {
@@ -146,4 +167,4 @@ const getOne = async (req, res, next) => {
   }
 };
 
-module.exports = { generate, refine, getAll, getOne };
+module.exports = { generate, retake, refine, getAll, getOne };
