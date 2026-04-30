@@ -293,16 +293,45 @@ export default function Generate() {
             </select>
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary btn-full"
-            disabled={loading}
-            style={{ height: 52, fontSize: '1rem', fontWeight: 700, letterSpacing: '0.02em' }}
-          >
-            {loading
-              ? <><span className="spinner" /> {t('generate_writing')}</>
-              : `✦ ${t('generate_btn')}`}
-          </button>
+          {/* Button area — transforms once a result exists */}
+          {!result ? (
+            <button
+              type="submit"
+              className="btn btn-primary btn-full"
+              disabled={loading}
+              style={{ height: 52, fontSize: '1rem', fontWeight: 700, letterSpacing: '0.02em' }}
+            >
+              {loading
+                ? <><span className="spinner" /> {t('generate_writing')}</>
+                : `✦ ${t('generate_btn')}`}
+            </button>
+          ) : (
+            <div style={{ display: 'flex', gap: 10 }}>
+              {/* Primary: try another take on current settings */}
+              <button
+                type="button"
+                onClick={reroll}
+                disabled={rerolling || refining || rerollCount >= MAX_RETAKES}
+                className="btn btn-primary"
+                style={{ flex: 1, height: 52, fontSize: '0.95rem', fontWeight: 700 }}
+              >
+                {rerolling
+                  ? <><span className="spinner" /> Generating…</>
+                  : rerollCount >= MAX_RETAKES
+                    ? '↺ No retakes left'
+                    : <>↺ Try another take <span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.65 }}>({MAX_RETAKES - rerollCount} left)</span></>}
+              </button>
+              {/* Secondary: clear and start a new topic */}
+              <button
+                type="button"
+                onClick={() => { setResult(null); setVersions([]); setActiveVer(0); setRerollCount(0); setForm({ topic: '', niche: primaryNiche, tone: 'motivational', audience: getSavedRegion(), scriptLang: getSavedScriptLang() }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                className="btn btn-ghost"
+                style={{ height: 52, paddingInline: 20, fontSize: '0.9rem', whiteSpace: 'nowrap' }}
+              >
+                New topic
+              </button>
+            </div>
+          )}
         </form>
       </div>
 
@@ -562,40 +591,17 @@ export default function Generate() {
             </div>
           )}
 
-          {/* ── Actions bar ──────────────────────────────────────── */}
-          <div ref={refineRef} style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 40 }}>
-
-            {/* Row 1 — Re-roll + Start fresh */}
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                onClick={reroll}
-                disabled={rerolling || refining || rerollCount >= MAX_RETAKES}
-                className="btn btn-primary"
-                style={{ flex: 1, height: 48, fontSize: '0.95rem', fontWeight: 700, gap: 8, opacity: rerollCount >= MAX_RETAKES ? 0.5 : 1 }}
-              >
-                {rerolling
-                  ? <><span className="spinner" /> Generating…</>
-                  : rerollCount >= MAX_RETAKES
-                    ? `↺ No retakes left`
-                    : <>↺ Try another take <span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.7 }}>({MAX_RETAKES - rerollCount} left)</span></>}
-              </button>
-              <button
-                onClick={() => { setResult(null); setVersions([]); setActiveVer(0); setRerollCount(0); setForm({ topic: '', niche: primaryNiche, tone: 'motivational', audience: getSavedRegion(), scriptLang: getSavedScriptLang() }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-                className="btn btn-ghost"
-                style={{ height: 48, paddingInline: 20, fontSize: '0.9rem' }}
-              >
-                New topic
-              </button>
-            </div>
+          {/* ── Tweak chips + version history ────────────────────── */}
+          <div ref={refineRef} style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 40 }}>
 
             {/* Divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>or tweak this one</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>tweak this take</span>
               <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             </div>
 
-            {/* Row 2 — Refine chips */}
+            {/* Refine chips */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {REFINE_CHIPS.map(chip => (
                 <button
