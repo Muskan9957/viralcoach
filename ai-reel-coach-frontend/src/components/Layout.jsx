@@ -104,15 +104,6 @@ const CoachIcon = ({ size = 22 }) => (
   </svg>
 )
 
-const HookIcon = ({ size = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"/>
-    <path d="M12 17v2"/>
-    <path d="M8 21h8"/>
-    <path d="M9 14.5C6.5 15.5 4 18 4 21"/>
-  </svg>
-)
-
 const VoiceIcon = ({ size = 22 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
@@ -161,7 +152,6 @@ const NAV_CONFIG = [
   { section: 'Content',  sectionClass: 'nav-section-content'  },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'    },
   { to: '/crosspost',   icon: RemixIcon,       labelKey: 'nav_remix'       },
-  { to: '/hooks',       icon: HookIcon,        labelKey: 'nav_hooks'       },
   { to: '/templates',   icon: TemplateIcon,    labelKey: 'nav_templates'   },
   { section: 'Insights', sectionClass: 'nav-section-insights' },
   { to: '/trending',    icon: TrendIcon,       labelKey: 'nav_trending'    },
@@ -175,7 +165,6 @@ const MOBILE_NAV_CONFIG = [
   { to: '/generate',    icon: IconGenerate,    labelKey: 'nav_generate'  },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'     },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'  },
-  { to: '/hooks',       icon: HookIcon,        labelKey: 'nav_hooks'     },
 ]
 
 const planColors = { FREE: '#4A5C8A', STARTER: '#00C9A7', PRO: '#00C8FF' }

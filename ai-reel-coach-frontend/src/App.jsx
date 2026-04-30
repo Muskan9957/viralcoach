@@ -17,7 +17,6 @@ import Templates from './pages/Templates'
 import Captions from './pages/Captions'
 import Crosspost from './pages/Crosspost'
 import Coach from './pages/Coach'
-import HookLibrary from './pages/HookLibrary'
 import Onboarding from './pages/Onboarding'
 import Profile from './pages/Profile'
 import Pricing from './pages/Pricing'
@@ -92,7 +91,6 @@ export default function App() {
                 <Route path="/multiply"     element={<Navigate to="/crosspost" replace />} />
                 <Route path="/remix"        element={<Navigate to="/crosspost" replace />} />
                 <Route path="/coach"        element={<Protected><Coach /></Protected>} />
-                <Route path="/hooks"        element={<Protected><HookLibrary /></Protected>} />
                 <Route path="/profile"      element={<Protected><Profile /></Protected>} />
                 <Route path="/my-voice"     element={<Protected><MyVoice /></Protected>} />
                 <Route path="*"             element={<Navigate to="/" replace />} />
