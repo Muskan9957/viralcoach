@@ -41,6 +41,27 @@ const getSavedScriptLang = () => localStorage.getItem(SCRIPT_LANG_KEY) || 'en'
 const gradeColor = { A: '#00C9A7', B: '#00C9A7', C: '#FFD60A', D: '#FF9F43', F: '#FF6B6B' }
 const gradeLabel = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
 
+// Estimate reel duration from word count.
+// Reel-style delivery ≈ 140 wpm (faster than normal speech, slower than auctioneer).
+function calcDuration(text) {
+  if (!text?.trim()) return null
+  const words   = text.trim().split(/\s+/).length
+  const totalSec = Math.round((words / 140) * 60)
+  const mins  = Math.floor(totalSec / 60)
+  const secs  = totalSec % 60
+  const label = mins > 0
+    ? (secs > 0 ? `${mins}m ${secs}s` : `${mins}m`)
+    : `${totalSec}s`
+  // Suggest a reel format based on length
+  const format =
+    totalSec <= 15  ? 'Quick hit'      :
+    totalSec <= 30  ? '30-sec reel'    :
+    totalSec <= 60  ? '60-sec reel'    :
+    totalSec <= 90  ? '90-sec reel'    :
+                      'Long-form short'
+  return { label, format, totalSec }
+}
+
 export default function Generate() {
   const toast      = useToast()
   const { t, lang } = useLang()
@@ -445,9 +466,42 @@ export default function Generate() {
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
               <div>
-                <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.15rem', marginBottom: 4 }}>
-                  {t('generate_your_script')}
-                </h2>
+                {/* Title + duration badge on the same row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+                  <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.15rem', margin: 0 }}>
+                    {t('generate_your_script')}
+                  </h2>
+                  {(() => {
+                    const dur = calcDuration(result.script?.fullScript)
+                    if (!dur) return null
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {/* Duration pill */}
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                          padding: '3px 10px', borderRadius: 99,
+                          fontSize: '0.75rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                          background: 'rgba(0,200,255,0.12)',
+                          border: '1px solid rgba(0,200,255,0.25)',
+                          color: '#00C8FF',
+                          letterSpacing: '0.02em',
+                        }}>
+                          ⏱ ~{dur.label}
+                        </span>
+                        {/* Format label */}
+                        <span style={{
+                          padding: '3px 10px', borderRadius: 99,
+                          fontSize: '0.72rem', fontFamily: 'var(--font-mono)', fontWeight: 600,
+                          background: 'var(--surface2)',
+                          border: '1px solid var(--border)',
+                          color: 'var(--text-faint)',
+                        }}>
+                          {dur.format}
+                        </span>
+                      </div>
+                    )
+                  })()}
+                </div>
                 <p style={{ color: 'var(--text-faint)', fontSize: '0.78rem', fontFamily: 'var(--font-mono)' }}>
                   {form.topic}
                 </p>
