@@ -68,11 +68,11 @@ export default function Generate() {
   const [result, setResult]     = useState(null)
   const [copied, setCopied]     = useState(false)
 
-  // Refinement state
-  const [versions, setVersions]         = useState([])       // history of all versions
-  const [activeVer, setActiveVer]       = useState(0)        // index into versions (0 = latest)
-  const [refineInput, setRefineInput]   = useState('')
-  const [refining, setRefining]         = useState(false)
+  // Refinement / re-roll state
+  const [versions, setVersions]   = useState([])
+  const [activeVer, setActiveVer] = useState(0)
+  const [refining, setRefining]   = useState(false)
+  const [rerolling, setRerolling] = useState(false)
   const refineRef = useRef(null)
 
   useEffect(() => {
@@ -107,7 +107,6 @@ export default function Generate() {
     setResult(null)
     setVersions([])
     setActiveVer(0)
-    setRefineInput('')
     try {
       saveRegion(form.audience)
       localStorage.setItem(SCRIPT_LANG_KEY, form.scriptLang)
@@ -123,10 +122,29 @@ export default function Generate() {
     }
   }
 
-  const refine = async (customInstruction) => {
-    const instruction = customInstruction || refineInput.trim()
-    if (!instruction) { toast('Tell me what to change', 'error'); return }
-    if (!result?.script) return
+  // Re-roll — fresh script on the same topic, added to version history
+  const reroll = async () => {
+    if (!form.topic.trim()) return
+    setRerolling(true)
+    try {
+      const data = await api.generate({ ...form, language: form.scriptLang })
+      const n = versions.length + 1
+      const newVer = { ...data.script, label: `Take ${n}` }
+      const newVersions = [newVer, ...versions]
+      setVersions(newVersions)
+      setActiveVer(0)
+      setResult(prev => ({ ...prev, script: data.script, usage: data.usage }))
+      setTimeout(() => refineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    } catch (err) {
+      toast(err.message, 'error')
+    } finally {
+      setRerolling(false)
+    }
+  }
+
+  // Refine — targeted chip tweak, no quota cost
+  const refine = async (instruction) => {
+    if (!instruction || !result?.script) return
     setRefining(true)
     try {
       const current = versions[activeVer] || result.script
@@ -139,15 +157,11 @@ export default function Generate() {
         audience   : form.audience,
         topic      : form.topic,
       })
-      const newVer = {
-        ...data.script,
-        label: `v${versions.length + 1} · ${instruction.slice(0, 28)}${instruction.length > 28 ? '…' : ''}`,
-      }
-      const newVersions = [newVer, ...versions]
-      setVersions(newVersions)
+      const chipLabel = instruction.length > 30 ? instruction.slice(0, 30) + '…' : instruction
+      const newVer = { ...data.script, label: `Take ${versions.length + 1} · ${chipLabel}` }
+      setVersions(prev => [newVer, ...prev])
       setActiveVer(0)
       setResult(prev => ({ ...prev, script: data.script }))
-      setRefineInput('')
       setTimeout(() => refineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
     } catch (err) {
       toast(err.message, 'error')
@@ -157,12 +171,8 @@ export default function Generate() {
   }
 
   const switchVersion = (idx) => {
-    const ver = versions[idx]
     setActiveVer(idx)
-    setResult(prev => ({
-      ...prev,
-      script: { ...ver, hookScore: prev.script.hookScore },
-    }))
+    setResult(prev => ({ ...prev, script: versions[idx] }))
   }
 
   const copyScript = () => {
@@ -173,7 +183,7 @@ export default function Generate() {
     toast('Copied!', 'success')
   }
 
-  const hookScore = versions[activeVer]?.hookScore || result?.script?.hookScore
+  const hookScore = result?.script?.hookScore
   const grade = hookScore ? (hookScore.score >= 90 ? 'A' : hookScore.score >= 75 ? 'B' : hookScore.score >= 60 ? 'C' : hookScore.score >= 50 ? 'D' : 'F') : null
   const color = grade ? gradeColor[grade] : '#00C9A7'
 
@@ -426,18 +436,81 @@ export default function Generate() {
             </div>
           </div>
 
-          {/* ── Script Refinement Panel ───────────────────────────── */}
-          <div ref={refineRef} className="card" style={{ border: '1px solid rgba(255,95,31,0.25)', background: 'linear-gradient(135deg, rgba(255,95,31,0.04), rgba(255,60,172,0.04))' }}>
-            {/* Version History Pills */}
+          {/* ── Actions bar ──────────────────────────────────────── */}
+          <div ref={refineRef} style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 40 }}>
+
+            {/* Row 1 — Re-roll + Start fresh */}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={reroll}
+                disabled={rerolling || refining}
+                className="btn btn-primary"
+                style={{ flex: 1, height: 48, fontSize: '0.95rem', fontWeight: 700, gap: 8 }}
+              >
+                {rerolling
+                  ? <><span className="spinner" /> Generating…</>
+                  : <>↺ Try another take</>}
+              </button>
+              <button
+                onClick={() => { setResult(null); setVersions([]); setActiveVer(0); setForm({ topic: '', niche: primaryNiche, tone: 'motivational', audience: getSavedRegion(), scriptLang: getSavedScriptLang() }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+                className="btn btn-ghost"
+                style={{ height: 48, paddingInline: 20, fontSize: '0.9rem' }}
+              >
+                New topic
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>or tweak this one</span>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            </div>
+
+            {/* Row 2 — Refine chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {REFINE_CHIPS.map(chip => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={() => refine(chip.instruction)}
+                  disabled={refining || rerolling}
+                  style={{
+                    padding: '7px 15px',
+                    borderRadius: 20,
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    border: '1px solid var(--border)',
+                    background: 'var(--surface2)',
+                    color: 'var(--text-muted)',
+                    cursor: (refining || rerolling) ? 'not-allowed' : 'pointer',
+                    opacity: (refining || rerolling) ? 0.45 : 1,
+                    transition: 'border-color 0.15s, color 0.15s',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={e => { if (!refining && !rerolling) { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                >
+                  {refining ? <><span className="spinner" style={{ width: 10, height: 10 }} /></> : null}
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginTop: -8 }}>
+              Tweaks don't use your generation quota
+            </div>
+
+            {/* Row 3 — Version history (only when multiple takes exist) */}
             {versions.length > 1 && (
-              <div style={{ marginBottom: 18 }}>
-                <div style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
-                  Version History
+              <div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+                  Your takes
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {versions.map((v, i) => (
                     <button
                       key={i}
+                      type="button"
                       onClick={() => switchVersion(i)}
                       style={{
                         padding: '5px 14px',
@@ -458,79 +531,7 @@ export default function Generate() {
                 </div>
               </div>
             )}
-
-            {/* Header */}
-            <div style={{ marginBottom: 16 }}>
-              <h3 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1rem', marginBottom: 4 }}>
-                ✦ Refine This Script
-              </h3>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                Tell the AI what to change — or tap a quick action below.
-              </p>
-            </div>
-
-            {/* Quick Chips */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-              {REFINE_CHIPS.map(chip => (
-                <button
-                  key={chip.label}
-                  onClick={() => refine(chip.instruction)}
-                  disabled={refining}
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: 20,
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    border: '1px solid var(--border)',
-                    background: 'var(--surface2)',
-                    color: 'var(--text-muted)',
-                    cursor: refining ? 'not-allowed' : 'pointer',
-                    opacity: refining ? 0.5 : 1,
-                    transition: 'all 0.15s',
-                    whiteSpace: 'nowrap',
-                  }}
-                  onMouseEnter={e => { if (!refining) { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' } }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
-                >
-                  {chip.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Custom instruction */}
-            <div style={{ display: 'flex', gap: 10 }}>
-              <textarea
-                className="textarea"
-                placeholder='Or describe your own change… e.g. "make it funnier and add a cricket reference"'
-                value={refineInput}
-                onChange={e => setRefineInput(e.target.value)}
-                rows={2}
-                maxLength={500}
-                style={{ flex: 1, resize: 'vertical', fontSize: '0.9rem' }}
-                onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) refine() }}
-              />
-              <button
-                onClick={() => refine()}
-                disabled={refining || !refineInput.trim()}
-                className="btn btn-primary"
-                style={{ alignSelf: 'flex-end', height: 44, paddingInline: 20, whiteSpace: 'nowrap', flexShrink: 0 }}
-              >
-                {refining ? <><span className="spinner" /> Refining…</> : 'Refine →'}
-              </button>
-            </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', marginTop: 6 }}>
-              Tip: refinements don't use your generation quota · Ctrl+Enter to submit
-            </div>
           </div>
-
-          {/* Generate another button */}
-          <button
-            onClick={() => { setResult(null); setVersions([]); setActiveVer(0); setRefineInput(''); setForm({ topic: '', niche: primaryNiche, tone: 'motivational', audience: getSavedRegion(), scriptLang: getSavedScriptLang() }); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-            className="btn btn-ghost btn-full"
-            style={{ marginBottom: 32 }}
-          >
-            {t('generate_another')}
-          </button>
         </div>
       )}
     </div>
