@@ -31,11 +31,17 @@ const generate = async (req, res, next) => {
     const { topic, niche, tone, language, audience, duration } = req.body;
     const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language, audience, voiceProfile, duration });
 
-    // 4. Score hook + generate visual/music directions in parallel
-    const [hookScoreData, visualMusic] = await Promise.all([
+    // 4. Viral edit + score hook + generate visual/music — all in parallel
+    const [edited, hookScoreData, visualMusic] = await Promise.all([
+      aiService.viralEdit({ hook, body, cta }, { language }),
       aiService.scoreHook(hook, language),
       aiService.generateVisualMusic({ topic, niche, hook, audience }),
     ]);
+
+    // Use the viral-edited versions for everything downstream
+    const finalHook = edited.hook || hook;
+    const finalBody = edited.body || body;
+    const finalCta  = edited.cta  || cta;
 
     // 5. Save script to database
     const script = await prisma.script.create({
@@ -44,9 +50,9 @@ const generate = async (req, res, next) => {
         topic,
         niche : niche || null,
         tone  : tone  || null,
-        hook,
-        body,
-        cta,
+        hook  : finalHook,
+        body  : finalBody,
+        cta   : finalCta,
         fullScript,
         hookScore: hookScoreData.score,
       },
@@ -77,10 +83,11 @@ const generate = async (req, res, next) => {
       script : {
         id             : script.id,
         topic,
-        hook,
-        body,
-        cta,
+        hook           : finalHook,
+        body           : finalBody,
+        cta            : finalCta,
         fullScript,
+        viralEditNote  : edited.changes || null,
         voiceUsed      : voiceProfile ? voiceProfile.summary : null,
         hookScore      : hookScoreData,
         visual         : visualMusic?.visual || null,

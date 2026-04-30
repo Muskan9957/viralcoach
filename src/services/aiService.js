@@ -804,8 +804,57 @@ const coachChat = async ({ message, history = [], userContext, language = 'en' }
   return { reply: response.content[0].text.trim() };
 };
 
+// ─────────────────────────────────────────────────────────────────
+// VIRAL EDITOR — second-pass punch-up on the first draft
+// Runs in parallel with hook scoring; costs ~$0.001 extra per script
+// ─────────────────────────────────────────────────────────────────
+const viralEdit = async (script, { language = 'en' } = {}) => {
+  const langInstruction = getLangInstruction(language)
+
+  const prompt = `You are a ruthless viral content editor for short-form video. A writer just drafted this script. Your ONLY job: make it land harder without changing the core message or making it longer.
+
+LANGUAGE RULE (non-negotiable):
+${langInstruction}
+
+Original:
+HOOK: ${script.hook}
+BODY: ${script.body}
+CTA: ${script.cta}
+
+Attack each section:
+- HOOK: If a person mid-scroll would keep scrolling past this, rewrite it completely. Maximum specificity. Maximum emotional punch. No soft openers.
+- BODY: Cut every word that doesn't pull its weight. Shorter sentences. Replace vague claims with concrete details.
+- CTA: Must feel like the natural next move, not a sales pitch.
+
+Return ONLY this — no commentary, no preamble:
+HOOK: [punched-up hook]
+BODY: [tightened body]
+CTA: [sharpened CTA]
+CHANGES: [one sentence — the single biggest improvement you made and why]`
+
+  try {
+    const raw = await ask(prompt, 900, MODEL_FAST)
+
+    const hookMatch    = raw.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i)
+    const bodyMatch    = raw.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i)
+    const ctaMatch     = raw.match(/CTA[^:]*:\s*([\s\S]*?)(?=CHANGES|$)/i)
+    const changesMatch = raw.match(/CHANGES[^:]*:\s*([\s\S]*?)$/i)
+
+    return {
+      hook   : hookMatch    ? hookMatch[1].trim()    : script.hook,
+      body   : bodyMatch    ? bodyMatch[1].trim()    : script.body,
+      cta    : ctaMatch     ? ctaMatch[1].trim()     : script.cta,
+      changes: changesMatch ? changesMatch[1].trim() : null,
+    }
+  } catch {
+    // If the edit fails for any reason, silently fall back to original
+    return { ...script, changes: null }
+  }
+}
+
 module.exports = {
   analyzeCreatorStyle,
+  viralEdit,
   refineScript,
   generateScript,
   generateVisualMusic,

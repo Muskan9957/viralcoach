@@ -489,10 +489,23 @@ export default function Generate() {
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
               <div>
-                <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.15rem', marginBottom: 4 }}>
-                  {t('generate_your_script')}
-                </h2>
-                <p style={{ color: 'var(--text-faint)', fontSize: '0.78rem', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                  <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.15rem', margin: 0 }}>
+                    {t('generate_your_script')}
+                  </h2>
+                  <span style={{
+                    fontSize: '0.65rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                    padding: '2px 8px', borderRadius: 99, letterSpacing: '0.06em',
+                    background: 'linear-gradient(135deg, rgba(255,180,0,0.15), rgba(255,95,31,0.15))',
+                    border: '1px solid rgba(255,160,0,0.3)', color: '#FFB800',
+                  }}>⚡ Viral edited</span>
+                </div>
+                {result.script?.viralEditNote && (
+                  <p style={{ color: 'var(--text-faint)', fontSize: '0.75rem', fontFamily: 'var(--font-mono)', margin: '2px 0 0', fontStyle: 'italic' }}>
+                    {result.script.viralEditNote}
+                  </p>
+                )}
+                <p style={{ color: 'var(--text-faint)', fontSize: '0.78rem', fontFamily: 'var(--font-mono)', marginTop: 4 }}>
                   {form.topic}
                 </p>
               </div>
