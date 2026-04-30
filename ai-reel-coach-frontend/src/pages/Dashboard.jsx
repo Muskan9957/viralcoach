@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../store'
 import { api } from '../api'
 import { useLang } from '../i18n.jsx'
@@ -362,7 +362,9 @@ function ActionCard({ to, icon, label, color }) {
 export default function Dashboard() {
   const { user }          = useAuth()
   const { t, lang }       = useLang()
+  const navigate          = useNavigate()
   const { niches, goals, platform } = usePrefs()
+  const [quickTopic, setQuickTopic] = useState('')
   const [scripts, setSc]  = useState([])
   const [logs, setLogs]   = useState([])
   const [badges, setBadges] = useState([])
@@ -522,23 +524,38 @@ export default function Dashboard() {
       )}
 
       {/* ─── Quick actions ──────────────────────────────────────── */}
-      <div style={{ marginBottom: 24 }}>
+      {/* ─── Quick Generate ──────────────────────────────────────── */}
+      <div style={{ marginBottom: 28 }}>
         <h2 style={{
           fontFamily: 'var(--font-head)', fontSize: '0.74rem', fontWeight: 700,
           color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em',
           marginBottom: 10,
-        }}>Jump back in</h2>
-        <div style={{
-          display: 'grid', gap: 10,
-          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-        }}>
-          <ActionCard to="/generate"    icon="✦"  label={t('dash_action_generate')} color={C.cyan} />
-          <ActionCard to="/score"       icon="◎"  label={t('dash_action_score')}    color={C.pink} />
-          <ActionCard to="/coach"       icon="🤖" label={t('dash_action_coach')}    color={C.violet} />
-          <ActionCard to="/trending"    icon="📈" label={t('dash_action_trending')} color={C.lime} />
-          <ActionCard to="/performance" icon="◈"  label={t('dash_action_analyze')}  color={C.amber} />
-          <ActionCard to="/calendar"    icon="📅" label={t('dash_action_calendar')} color={C.coral} />
-        </div>
+        }}>Quick Generate</h2>
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            if (!quickTopic.trim()) return
+            localStorage.setItem('arc_prefill_topic', quickTopic.trim())
+            navigate('/generate')
+          }}
+          style={{ display: 'flex', gap: 10 }}
+        >
+          <input
+            className="input"
+            placeholder="What's your reel idea? e.g. How I got 10k followers in 30 days"
+            value={quickTopic}
+            onChange={e => setQuickTopic(e.target.value)}
+            style={{ flex: 1, fontSize: '0.95rem', height: 48 }}
+          />
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={!quickTopic.trim()}
+            style={{ height: 48, paddingInline: 22, fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            ✦ Generate
+          </button>
+        </form>
       </div>
 
       <WeeklyReport />
