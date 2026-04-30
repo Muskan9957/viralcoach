@@ -66,6 +66,7 @@ export default function Score() {
   const [micInterim, setMicInterim] = useState('')
   const [alternatives, setAlts]     = useState([])
   const [altsLoading, setAltsLd]    = useState(false)
+  const [selectedAlt, setSelectedAlt] = useState(null) // index of currently scored alternative
 
   // Pre-fill hook from Templates page
   useEffect(() => {
@@ -76,15 +77,17 @@ export default function Score() {
     }
   }, [location.state])
 
-  const scoreHook = async (e, overrideHook) => {
+  const scoreHook = async (e, overrideHook, keepAlts = false) => {
     if (e?.preventDefault) e.preventDefault()
     const hookToScore = overrideHook || hook
     if (!hookToScore.trim()) { toast('Please enter a hook', 'error'); return }
-    setLd(true); setResult(null); setAccepted(false); setAlts([])
+    setLd(true); setResult(null); setAccepted(false)
+    if (!keepAlts) { setAlts([]); setSelectedAlt(null) }
     try {
       const data = await api.scoreHook({ hookText: hookToScore, language: hookLang })
       setResult(data.hookScore)
-      if (data.hookScore.score < 80) {
+      // Only fetch fresh alternatives on a new hook submission, not when cycling through alts
+      if (!keepAlts && data.hookScore.score < 80) {
         setAltsLd(true)
         api.hookAlternatives({ hookText: hookToScore, score: data.hookScore.score, language: hookLang })
           .then(r => setAlts(r.alternatives || []))
@@ -98,10 +101,10 @@ export default function Score() {
     }
   }
 
-  const useAlternative = (altHook) => {
+  const useAlternative = (altHook, idx) => {
     setHook(altHook)
-    scoreHook(null, altHook)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setSelectedAlt(idx)
+    scoreHook(null, altHook, true) // keepAlts = true — don't wipe the list
   }
 
   const statusColor = s =>
@@ -267,26 +270,39 @@ export default function Score() {
                   )}
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {alternatives.map((alt, i) => (
-                      <div key={i} style={{
-                        padding: '14px 16px', borderRadius: 10,
-                        background: 'var(--surface)', border: '1px solid var(--border)',
-                      }}>
-                        <p style={{ fontSize: '0.93rem', color: 'var(--text)', lineHeight: 1.55, margin: '0 0 6px', fontWeight: 500 }}>
-                          "{alt.hook}"
-                        </p>
-                        <p style={{ fontSize: '0.74rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', fontStyle: 'italic', margin: '0 0 12px' }}>
-                          {alt.reason}
-                        </p>
-                        <button
-                          className="btn btn-primary btn-sm"
-                          onClick={() => useAlternative(alt.hook)}
-                          style={{ fontSize: '0.8rem', fontWeight: 700 }}
-                        >
-                          Use & rescore →
-                        </button>
-                      </div>
-                    ))}
+                    {alternatives.map((alt, i) => {
+                      const isSelected = selectedAlt === i
+                      return (
+                        <div key={i} style={{
+                          padding: '14px 16px', borderRadius: 10,
+                          background: isSelected ? 'rgba(0,200,255,0.07)' : 'var(--surface)',
+                          border: isSelected ? '1px solid rgba(0,200,255,0.35)' : '1px solid var(--border)',
+                          transition: 'all 0.15s ease',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+                            <p style={{ fontSize: '0.93rem', color: 'var(--text)', lineHeight: 1.55, margin: 0, fontWeight: 500, flex: 1 }}>
+                              "{alt.hook}"
+                            </p>
+                            {isSelected && (
+                              <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(0,200,255,0.15)', color: '#00C8FF', border: '1px solid rgba(0,200,255,0.3)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                                {loading ? 'scoring…' : '✓ active'}
+                              </span>
+                            )}
+                          </div>
+                          <p style={{ fontSize: '0.74rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', fontStyle: 'italic', margin: '0 0 12px' }}>
+                            {alt.reason}
+                          </p>
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => useAlternative(alt.hook, i)}
+                            disabled={isSelected && loading}
+                            style={{ fontSize: '0.8rem', fontWeight: 700 }}
+                          >
+                            {isSelected && loading ? <><span className="spinner" /> Scoring…</> : 'Score this →'}
+                          </button>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
