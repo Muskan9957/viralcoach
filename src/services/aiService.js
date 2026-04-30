@@ -4,8 +4,12 @@ const MODEL       = 'claude-sonnet-4-6';           // Quality model for creative
 const MODEL_FAST  = 'claude-haiku-4-5-20251001';   // Fast model for scoring/rewriting
 
 // ─── Language instruction helper ─────────────────────────────────
+// NOTE: 'en' has an EXPLICIT instruction so the AI never drifts into
+// Hinglish / code-switching when the audience context is India or
+// another non-English region. Language and region are fully independent.
 const LANG_INSTRUCTIONS = {
-  hi:       'IMPORTANT: Write ALL content entirely in Hindi (Devanagari script). Every word must be in Hindi only.',
+  en:       'IMPORTANT: Write ALL content entirely in English. Every single word must be in English only — no Hindi, no transliteration, no code-switching, no regional words. Cultural references (cricket, Bollywood, ₹) are fine, but the language of every sentence must be pure English.',
+  hi:       'IMPORTANT: Write ALL content entirely in Hindi (Devanagari script). Every word must be in Hindi only — no English words or Hinglish mixing.',
   es:       'IMPORTANT: Write ALL content entirely in Spanish. Every word must be in Spanish only.',
   fr:       'IMPORTANT: Write ALL content entirely in French. Every word must be in French only.',
   pt:       'IMPORTANT: Write ALL content entirely in Portuguese (Brazilian). Every word must be in Portuguese only.',
@@ -16,7 +20,7 @@ const LANG_INSTRUCTIONS = {
   ko:       'IMPORTANT: Write ALL content entirely in Korean. Every word must be in Korean only.',
 }
 
-const getLangInstruction = (language) => LANG_INSTRUCTIONS[language] || ''
+const getLangInstruction = (language) => LANG_INSTRUCTIONS[language] || LANG_INSTRUCTIONS['en']
 
 // ─── Audience / geography context ────────────────────────────────
 const AUDIENCE_CONTEXTS = {
@@ -78,8 +82,12 @@ const refineScript = async ({ hook, body, cta, instruction, language = 'en', aud
 
   const prompt = `
 You are refining an existing viral short-form video script based on the creator's feedback.
-${langInstruction ? '\n' + langInstruction + '\n' : ''}
-${'\n' + audienceInstruction + '\n'}
+
+LANGUAGE RULE (non-negotiable):
+${langInstruction}
+
+AUDIENCE CONTEXT (cultural references only — does NOT change the language):
+${audienceInstruction}
 
 ORIGINAL TOPIC: ${topic}
 
@@ -131,8 +139,13 @@ const generateScript = async ({ topic, niche, tone, language = 'en', audience = 
   const audienceInstruction = getAudienceContext(audience)
   const prompt = `
 You are an expert viral content strategist who writes Grade A hooks that score 85+ on Instagram Reels and YouTube Shorts.
-${langInstruction ? '\n' + langInstruction + '\n' : ''}
-${'\n' + audienceInstruction + '\n'}
+
+LANGUAGE RULE (non-negotiable):
+${langInstruction}
+
+AUDIENCE CONTEXT (cultural references only — does NOT change the language):
+${audienceInstruction}
+
 Generate a high-performing short-form video script for the following:
 - Topic : ${topic}
 - Niche  : ${niche || 'general'}
