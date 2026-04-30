@@ -209,7 +209,72 @@ Script:
 };
 
 // ─────────────────────────────────────────────────────────────────
-// 2. SCORE A HOOK
+// 2. GENERATE VISUAL DIRECTION + MUSIC VIBE
+// ─────────────────────────────────────────────────────────────────
+const generateVisualMusic = async ({ topic, niche, hook, audience = 'India' }) => {
+  const audienceInstruction = getAudienceContext(audience)
+
+  const prompt = `
+You are a professional short-form video director helping a creator produce a viral Instagram Reel or YouTube Short.
+
+${'\n' + audienceInstruction + '\n'}
+
+SCRIPT DETAILS:
+- Topic  : ${topic}
+- Niche  : ${niche || 'general'}
+- Hook   : "${hook}"
+
+Give the creator a practical production guide for shooting this reel.
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "visual": {
+    "background": "One specific background/setting description (e.g. 'Clean white wall with a ring light' or 'Busy café with blurred background')",
+    "style": "Shooting style in 5-8 words (e.g. 'Talking head with bold text overlays')",
+    "broll": [
+      "Specific B-roll shot idea 1",
+      "Specific B-roll shot idea 2",
+      "Specific B-roll shot idea 3"
+    ],
+    "colorMood": "2-3 words describing the visual vibe (e.g. 'Dark, cinematic, bold' or 'Bright, clean, energetic')",
+    "textOverlay": "Suggestion for on-screen text or caption style"
+  },
+  "music": {
+    "genre": "Music genre (e.g. 'Lo-fi hip-hop' or 'Upbeat corporate')",
+    "mood": "Mood in 3-4 words",
+    "bpm": "Recommended BPM range (e.g. '110-125')",
+    "searchQuery": "Exact search term to find this track on a free music site (e.g. 'motivational corporate upbeat no copyright')",
+    "tip": "One practical tip about music timing or volume for this specific reel"
+  }
+}
+`
+  try {
+    const raw = await ask(prompt, 600, MODEL_FAST)
+    const match = raw.match(/\{[\s\S]*\}/)
+    if (!match) throw new Error('No JSON')
+    return JSON.parse(match[0])
+  } catch {
+    return {
+      visual: {
+        background : 'Clean, well-lit background — solid wall or minimal setup',
+        style      : 'Talking head with text overlays',
+        broll      : ['Close-up of hands demonstrating the concept', 'Screen recording or relevant product shot', 'Reaction shot or results reveal'],
+        colorMood  : 'Clean, bright, professional',
+        textOverlay: 'Bold key phrases on screen in sync with speech',
+      },
+      music: {
+        genre      : 'Upbeat background',
+        mood       : 'Energetic and motivating',
+        bpm        : '110-130',
+        searchQuery: 'upbeat motivational background music no copyright',
+        tip        : 'Keep music at 10-15% volume — voice must be clearly audible',
+      },
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// 3. SCORE A HOOK
 // ─────────────────────────────────────────────────────────────────
 const scoreHook = async (hookText, language = 'en') => {
   const langInstruction = getLangInstruction(language)
@@ -692,6 +757,7 @@ const coachChat = async ({ message, history = [], userContext, language = 'en' }
 module.exports = {
   refineScript,
   generateScript,
+  generateVisualMusic,
   scoreHook,
   rewriteHook,
   analyzePerformance,

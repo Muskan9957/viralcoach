@@ -444,6 +444,124 @@ export default function Generate() {
             </div>
           </div>
 
+          {/* ── Visual Direction ─────────────────────────────────── */}
+          {result.script?.visual && (
+            <div className="card" style={{ borderLeft: '3px solid #A78BFA' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <span style={{ fontSize: '1.1rem' }}>🎬</span>
+                <h3 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1rem', margin: 0 }}>Visual Direction</h3>
+                <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', background: 'var(--surface2)', padding: '2px 8px', borderRadius: 99 }}>shoot guide</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {/* Background */}
+                <div>
+                  <div style={visualLabelStyle}>📍 Background</div>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text)', margin: 0, lineHeight: 1.6 }}>{result.script.visual.background}</p>
+                </div>
+                {/* Style */}
+                <div>
+                  <div style={visualLabelStyle}>🎥 Shooting Style</div>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text)', margin: 0 }}>{result.script.visual.style}</p>
+                </div>
+                {/* B-roll */}
+                {result.script.visual.broll?.length > 0 && (
+                  <div>
+                    <div style={visualLabelStyle}>🎞 B-Roll Ideas</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+                      {result.script.visual.broll.map((shot, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                          <span style={{ color: '#A78BFA', fontWeight: 700, flexShrink: 0, fontFamily: 'var(--font-mono)', fontSize: '0.75rem', marginTop: 2 }}>{i + 1}.</span>
+                          <span style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{shot}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Color + Text overlay in a row */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <div style={visualLabelStyle}>🎨 Colour Mood</div>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>{result.script.visual.colorMood}</p>
+                  </div>
+                  <div>
+                    <div style={visualLabelStyle}>✍️ Text Overlay</div>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: 0 }}>{result.script.visual.textOverlay}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Music Vibe ───────────────────────────────────────── */}
+          {result.script?.music && (
+            <div className="card" style={{ borderLeft: '3px solid #34D399' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <span style={{ fontSize: '1.1rem' }}>🎵</span>
+                <h3 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1rem', margin: 0 }}>Music Vibe</h3>
+                <span style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', background: 'var(--surface2)', padding: '2px 8px', borderRadius: 99 }}>background score</span>
+              </div>
+              {/* Genre / Mood / BPM chips */}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+                {[
+                  { icon: '🎸', label: result.script.music.genre },
+                  { icon: '💫', label: result.script.music.mood },
+                  { icon: '⚡', label: `${result.script.music.bpm} BPM` },
+                ].map(chip => (
+                  <span key={chip.label} style={{
+                    padding: '5px 12px', borderRadius: 20,
+                    fontSize: '0.8rem', fontWeight: 600,
+                    background: 'var(--surface2)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-muted)',
+                  }}>
+                    {chip.icon} {chip.label}
+                  </span>
+                ))}
+              </div>
+              {/* Search tip */}
+              <div style={{ marginBottom: 14 }}>
+                <div style={visualLabelStyle}>🔍 Search for</div>
+                <p style={{ fontSize: '0.875rem', color: 'var(--text)', margin: '4px 0 0', fontStyle: 'italic', background: 'var(--surface2)', padding: '8px 12px', borderRadius: 8 }}>
+                  "{result.script.music.searchQuery}"
+                </p>
+              </div>
+              {/* Tip */}
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14 }}>
+                💡 {result.script.music.tip}
+              </div>
+              {/* Free music source links */}
+              <div>
+                <div style={visualLabelStyle}>🆓 Free Music Sources</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                  {[
+                    { name: 'Pixabay Music', url: 'https://pixabay.com/music/' },
+                    { name: 'Mixkit', url: 'https://mixkit.co/free-stock-music/' },
+                    { name: 'Uppbeat', url: 'https://uppbeat.io/' },
+                    { name: 'YouTube Audio Library', url: 'https://studio.youtube.com/channel/audio' },
+                  ].map(src => (
+                    <a
+                      key={src.name}
+                      href={src.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        padding: '5px 12px', borderRadius: 20,
+                        fontSize: '0.78rem', fontWeight: 600,
+                        background: 'rgba(52,211,153,0.1)',
+                        border: '1px solid rgba(52,211,153,0.3)',
+                        color: '#34D399',
+                        textDecoration: 'none',
+                        transition: 'background 0.15s',
+                      }}
+                    >
+                      {src.name} ↗
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── Actions bar ──────────────────────────────────────── */}
           <div ref={refineRef} style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 40 }}>
 
@@ -546,6 +664,16 @@ export default function Generate() {
       )}
     </div>
   )
+}
+
+const visualLabelStyle = {
+  fontSize: '0.68rem',
+  fontFamily: 'var(--font-mono)',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.1em',
+  color: 'var(--text-faint)',
+  marginBottom: 4,
 }
 
 const fieldLabelStyle = {

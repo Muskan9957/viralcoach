@@ -24,8 +24,11 @@ const generate = async (req, res, next) => {
     const { topic, niche, tone, language, audience } = req.body;
     const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language, audience });
 
-    // 3. Auto-score the hook (same language for consistency)
-    const hookScoreData = await aiService.scoreHook(hook, language);
+    // 3. Score hook + generate visual/music directions in parallel
+    const [hookScoreData, visualMusic] = await Promise.all([
+      aiService.scoreHook(hook, language),
+      aiService.generateVisualMusic({ topic, niche, hook, audience }),
+    ]);
 
     // 4. Save script to database
     const script = await prisma.script.create({
@@ -72,6 +75,8 @@ const generate = async (req, res, next) => {
         cta,
         fullScript,
         hookScore : hookScoreData,
+        visual    : visualMusic?.visual || null,
+        music     : visualMusic?.music  || null,
       },
       usage: { used: used + 1, limit },
     };
@@ -97,10 +102,18 @@ const retake = async (req, res, next) => {
 
     const { topic, niche, tone, language, audience } = req.body;
     const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language, audience });
-    const hookScoreData = await aiService.scoreHook(hook, language);
+    const [hookScoreData, visualMusic] = await Promise.all([
+      aiService.scoreHook(hook, language),
+      aiService.generateVisualMusic({ topic, niche, hook, audience }),
+    ]);
 
     return res.json({
-      script: { hook, body, cta, fullScript, hookScore: hookScoreData },
+      script: {
+        hook, body, cta, fullScript,
+        hookScore : hookScoreData,
+        visual    : visualMusic?.visual || null,
+        music     : visualMusic?.music  || null,
+      },
     });
   } catch (err) {
     next(err);
