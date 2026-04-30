@@ -83,6 +83,8 @@ export const api = {
   coachChat: (body) => req('POST', '/coach/chat', body),
   getCoachHistory: () => req('GET', '/coach/history'),
 
+  hookAlternatives: (body) => req('POST', '/hooks/alternatives', body),
+
   // Hook Library
   getHookLibrary: (params) => req('GET', `/hooks/library?category=${params.category || 'all'}&type=${params.type || 'all'}&search=${encodeURIComponent(params.search || '')}`),
 

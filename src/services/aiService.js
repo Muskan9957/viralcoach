@@ -259,6 +259,43 @@ Script:
 };
 
 // ─────────────────────────────────────────────────────────────────
+// HOOK ALTERNATIVES — 3 improved rewrites for a weak hook
+// Used by the Score page; no scriptId required
+// ─────────────────────────────────────────────────────────────────
+const generateHookAlternatives = async (hookText, score, language = 'en') => {
+  const langInstruction = getLangInstruction(language)
+
+  const prompt = `You are a viral hook specialist. A creator wrote this hook that scored ${score}/100 — it needs improvement.
+
+LANGUAGE RULE (non-negotiable):
+${langInstruction}
+
+Original hook: "${hookText}"
+
+Write 3 completely different, improved versions. Each must score 85+/100 by:
+- Opening with maximum tension, specificity, or a bold claim
+- Creating an irresistible curiosity gap
+- Being instantly clear in under 2 seconds
+- Using concrete numbers or facts where possible
+
+Return ONLY valid JSON — no markdown, no code blocks:
+[
+  { "hook": "rewritten hook 1", "reason": "one sentence on why this is stronger" },
+  { "hook": "rewritten hook 2", "reason": "one sentence on why this is stronger" },
+  { "hook": "rewritten hook 3", "reason": "one sentence on why this is stronger" }
+]`
+
+  try {
+    const raw = await ask(prompt, 600, MODEL_FAST)
+    const cleaned = raw.replace(/```json|```/g, '').trim()
+    const parsed = JSON.parse(cleaned)
+    return Array.isArray(parsed) ? parsed.slice(0, 3) : []
+  } catch {
+    return []
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
 // 2. GENERATE VISUAL DIRECTION + MUSIC VIBE
 // ─────────────────────────────────────────────────────────────────
 const generateVisualMusic = async ({ topic, niche, hook, audience = 'India' }) => {
@@ -855,6 +892,7 @@ CHANGES: [one sentence — the single biggest improvement you made and why]`
 module.exports = {
   analyzeCreatorStyle,
   viralEdit,
+  generateHookAlternatives,
   refineScript,
   generateScript,
   generateVisualMusic,

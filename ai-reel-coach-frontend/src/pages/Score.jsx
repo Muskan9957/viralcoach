@@ -58,12 +58,14 @@ export default function Score() {
   const { t, lang } = useLang()
   const location = useLocation()
 
-  const [hook, setHook]         = useState('')
-  const [hookLang, setHookLang] = useState(() => localStorage.getItem('arc_script_lang') || 'en')
-  const [loading, setLd]        = useState(false)
-  const [result, setResult]     = useState(null)
-  const [accepted, setAccepted] = useState(false)
-  const [micInterim, setMicInterim] = useState('')  // live speech preview
+  const [hook, setHook]             = useState('')
+  const [hookLang, setHookLang]     = useState(() => localStorage.getItem('arc_script_lang') || 'en')
+  const [loading, setLd]            = useState(false)
+  const [result, setResult]         = useState(null)
+  const [accepted, setAccepted]     = useState(false)
+  const [micInterim, setMicInterim] = useState('')
+  const [alternatives, setAlts]     = useState([])
+  const [altsLoading, setAltsLd]    = useState(false)
 
   // Pre-fill hook from Templates page
   useEffect(() => {
@@ -77,11 +79,18 @@ export default function Score() {
   const scoreHook = async e => {
     e.preventDefault()
     if (!hook.trim()) { toast('Please enter a hook', 'error'); return }
-    setLd(true); setResult(null); setAccepted(false)
+    setLd(true); setResult(null); setAccepted(false); setAlts([])
     try {
       const data = await api.scoreHook({ hookText: hook, language: hookLang })
       setResult(data.hookScore)
-      toast('Hook scored!', 'success')
+      // Auto-fetch alternatives if score is below 80
+      if (data.hookScore.score < 80) {
+        setAltsLd(true)
+        api.hookAlternatives({ hookText: hook, score: data.hookScore.score, language: hookLang })
+          .then(r => setAlts(r.alternatives || []))
+          .catch(() => {})
+          .finally(() => setAltsLd(false))
+      }
     } catch (err) {
       toast(err.message, 'error')
     } finally {
@@ -251,20 +260,50 @@ export default function Score() {
                 </div>
               </div>
 
-              {/* Action row */}
-              {result.score < 75 && (
-                <div className="card card-sm" style={{ background: 'var(--accent-dim)', border: '1px solid rgba(255,95,31,0.2)' }}>
-                  <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.9rem', marginBottom: 8 }}>
-                    {t('score_weak_title')}
+              {/* Alternatives — auto-shown when score < 80 */}
+              {result.score < 80 && (
+                <div className="card" style={{ padding: '20px 20px 16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                    <span style={{ fontSize: '1rem' }}>⚡</span>
+                    <span style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.95rem' }}>
+                      Stronger alternatives
+                    </span>
+                    {altsLoading && <span className="spinner" style={{ width: 14, height: 14, marginLeft: 4 }} />}
                   </div>
-                  <p style={{ fontSize: '0.86rem', color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.6 }}>
-                    {t('score_weak_body')}
-                  </p>
-                  <a href="/generate" className="btn btn-primary btn-sm">{t('score_weak_btn')}</a>
+
+                  {altsLoading && alternatives.length === 0 && (
+                    <p style={{ fontSize: '0.84rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
+                      Generating 3 improved versions…
+                    </p>
+                  )}
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {alternatives.map((alt, i) => (
+                      <div key={i} style={{
+                        padding: '14px 16px', borderRadius: 10,
+                        background: 'var(--surface2)', border: '1px solid var(--border)',
+                        display: 'flex', flexDirection: 'column', gap: 8,
+                      }}>
+                        <p style={{ fontSize: '0.92rem', color: 'var(--text)', lineHeight: 1.55, margin: 0, fontWeight: 500 }}>
+                          "{alt.hook}"
+                        </p>
+                        <p style={{ fontSize: '0.76rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', fontStyle: 'italic', margin: 0 }}>
+                          {alt.reason}
+                        </p>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => { setHook(alt.hook); setResult(null); setAlts([]) }}
+                          style={{ alignSelf: 'flex-start', fontSize: '0.78rem' }}
+                        >
+                          Use this hook →
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {result.score >= 75 && (
+              {result.score >= 80 && (
                 <div className="card card-sm" style={{ background: 'var(--teal-dim)', border: '1px solid rgba(0,201,167,0.2)' }}>
                   <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '0.9rem', color: 'var(--teal)', marginBottom: 6 }}>
                     {t('score_ready_title')}
