@@ -184,7 +184,7 @@ Ignore generic "best practice" advice above if it conflicts with the creator's e
     : ''
 
   const durationInstruction = duration
-    ? `- Target Duration: ${duration} — write EXACTLY enough content for this length. Not more, not less.`
+    ? `- Target Duration: ${duration} minute${parseFloat(duration) === 1 ? '' : 's'} — calibrate the script length precisely for this. A 0.5 min script is ~75 words, 1 min ~150 words, 2 min ~300 words. Match the word count accordingly.`
     : ''
 
   const prompt = `

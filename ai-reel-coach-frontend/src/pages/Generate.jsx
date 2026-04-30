@@ -19,15 +19,6 @@ const REFINE_CHIPS = [
   { label: '📖 More storytelling',  instruction: 'Reframe using personal story structure — make it feel more human and relatable.' },
 ]
 
-const DURATIONS = [
-  { value: '',    label: 'Any length' },
-  { value: '5s',  label: '5 sec' },
-  { value: '15s', label: '15 sec' },
-  { value: '30s', label: '30 sec' },
-  { value: '60s', label: '60 sec' },
-  { value: '90s', label: '90 sec' },
-  { value: '3min',label: '3 min' },
-]
 
 const TONES  = ['motivational', 'educational', 'funny', 'storytelling', 'controversial', 'conversational']
 const NICHES = ['fitness', 'finance', 'food', 'travel', 'tech', 'fashion', 'lifestyle', 'education', 'comedy', 'business']
@@ -309,10 +300,18 @@ export default function Generate() {
               </select>
             </div>
             <div className="field">
-              <label style={fieldLabelStyle}>Duration</label>
-              <select className="select" value={form.duration} onChange={set('duration')}>
-                {DURATIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-              </select>
+              <label style={fieldLabelStyle}>Duration (min)</label>
+              <input
+                type="number"
+                className="input"
+                placeholder="e.g. 0.5"
+                min="0.1"
+                max="60"
+                step="0.5"
+                value={form.duration}
+                onChange={set('duration')}
+                style={{ width: '100%' }}
+              />
             </div>
           </div>
 
