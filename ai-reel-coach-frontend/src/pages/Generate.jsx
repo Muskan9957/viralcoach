@@ -326,7 +326,7 @@ export default function Generate() {
               <span style={{ fontSize: '1rem', flexShrink: 0 }}>🎙</span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#00C8FF' }}>
-                  ✦ Writing in your style
+                  ✦ Writing with your Creator DNA
                 </span>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {voiceProfile.summary}

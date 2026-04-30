@@ -84,7 +84,7 @@ export default function MyVoice() {
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
-          <h1 className="page-title" style={{ margin: 0 }}>My Voice</h1>
+          <h1 className="page-title" style={{ margin: 0 }}>Creator DNA</h1>
           <span style={{
             padding: '3px 12px', borderRadius: 99,
             fontSize: '0.7rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
@@ -111,7 +111,7 @@ export default function MyVoice() {
         }}>
           <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🎙</div>
           <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.2rem', marginBottom: 10 }}>
-            Unlock Your Creator Voice
+            Unlock Your Creator DNA
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: 400, margin: '0 auto 24px', lineHeight: 1.6 }}>
             Train the AI on your style so every script sounds authentically like you — your humour, your energy, your patterns.
