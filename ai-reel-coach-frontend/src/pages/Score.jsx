@@ -43,8 +43,9 @@ function BigScoreRing({ score }) {
           transform="rotate(-90 80 80)"
           style={{ filter: `drop-shadow(0 0 12px ${color})`, transition: 'stroke-dashoffset 1s ease' }}
         />
-        <text x="80" y="74" textAnchor="middle" fontFamily="var(--font-head)" fontSize="30" fontWeight="800" fill="var(--text)">{score}</text>
-        <text x="80" y="96" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12" fill={color}>
+        <text x="80" y="71" textAnchor="middle" fontFamily="var(--font-head)" fontSize="30" fontWeight="800" fill="var(--text)">{score}</text>
+        <text x="80" y="85" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill="var(--text-faint)">out of 100</text>
+        <text x="80" y="100" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="12" fill={color}>
           {grade} — {gradeLabel[grade]}
         </text>
       </svg>

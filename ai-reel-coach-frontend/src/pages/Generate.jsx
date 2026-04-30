@@ -359,6 +359,7 @@ export default function Generate() {
                   textShadow: `0 0 30px ${color}60`,
                 }}>
                   {hookScore.score}
+                  <span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--text-faint)', opacity: 0.6 }}>/100</span>
                 </div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 }}>
                   {t('generate_score_label')}
