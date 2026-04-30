@@ -160,6 +160,7 @@ export function useSpeechToText(onResult, langOverride, onInterim) {
   const [interimText, setInterimText] = useState('')
   const recognitionRef  = useRef(null)
   const finalRef        = useRef('')
+  const lastLiveRef     = useRef('')   // fallback: last interim text seen (iOS never finalises)
   const stoppedRef      = useRef(false)
   const flushedRef      = useRef(false)
   const silenceTimer    = useRef(null)
@@ -185,9 +186,13 @@ export function useSpeechToText(onResult, langOverride, onInterim) {
     try { recognitionRef.current?.stop() } catch {}
     setListening(false)
     setInterimText('')
-    const text = finalRef.current.trim()
-    finalRef.current = ''
-    // Always clear the interim preview so the parent input is never left locked
+    // Use final result if available; fall back to last interim text.
+    // iOS Safari often never fires isFinal:true — without this fallback the
+    // transcript is silently discarded and form.topic stays empty.
+    const text = (finalRef.current || lastLiveRef.current).trim()
+    finalRef.current  = ''
+    lastLiveRef.current = ''
+    // Always clear the interim preview so the connected input is never left locked
     if (onInterimRef.current) onInterimRef.current('')
     if (text) onResultRef.current(text)
   }
@@ -240,6 +245,7 @@ export function useSpeechToText(onResult, langOverride, onInterim) {
       // Reset timer on ANY speech activity
       if (newFinal || interim) armSilenceTimer()
       const live = (finalRef.current + (interim ? ' ' + interim : '')).trim()
+      if (live) lastLiveRef.current = live   // keep latest for flush() fallback
       setInterimText(live)
       // Live-update the connected input field so user sees their speech in real-time
       if (onInterimRef.current) onInterimRef.current(live || interim)
@@ -319,9 +325,10 @@ export function useSpeechToText(onResult, langOverride, onInterim) {
     const activeLang   = langOverride || globalLang
     SR_ref.current     = SR
     langRef.current    = LANG_CODES[activeLang] || 'en-IN'
-    finalRef.current   = ''
-    stoppedRef.current = false
-    flushedRef.current = false
+    finalRef.current    = ''
+    lastLiveRef.current = ''
+    stoppedRef.current  = false
+    flushedRef.current  = false
     setListening(true)
     setInterimText('')
     startSession()
