@@ -63,6 +63,7 @@ export default function Score() {
   const [loading, setLd]        = useState(false)
   const [result, setResult]     = useState(null)
   const [accepted, setAccepted] = useState(false)
+  const [micInterim, setMicInterim] = useState('')  // live speech preview
 
   // Pre-fill hook from Templates page
   useEffect(() => {
@@ -108,9 +109,11 @@ export default function Score() {
           <h2 style={styles.cardTitle}>{t('score_label')}</h2>
           <form onSubmit={scoreHook} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div className="field">
-              {/* Label row */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <label style={{ marginBottom: 0 }}>{t('score_hook_text')}</label>
+              {/* Label + char counter row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+                <label style={{ marginBottom: 0, fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  {t('score_hook_text')}
+                </label>
                 <span style={{
                   fontSize: '0.72rem',
                   fontFamily: 'var(--font-mono)',
@@ -121,36 +124,47 @@ export default function Score() {
                 </span>
               </div>
 
-              {/* Textarea + language picker + mic grouped together */}
+              {/* Language select — full-width row above textarea (same pattern as Generate page) */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <select
+                  value={hookLang}
+                  onChange={e => { setHookLang(e.target.value); localStorage.setItem('arc_script_lang', e.target.value) }}
+                  title="Language for mic & scoring"
+                  className="select"
+                  style={{ width: 130, fontSize: '0.82rem', height: 34, padding: '0 8px' }}
+                >
+                  {SCORE_LANGS.map(l => (
+                    <option key={l.value} value={l.value}>{l.label}</option>
+                  ))}
+                </select>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
+                  language · tap 🎙 to speak
+                </span>
+              </div>
+
+              {/* Textarea + mic side by side */}
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <textarea
                   className="textarea"
                   placeholder={'e.g. "I was broke at 25. Here\'s what changed everything."'}
-                  value={hook}
-                  onChange={e => setHook(e.target.value)}
+                  value={micInterim || hook}
+                  onChange={e => { if (!micInterim) setHook(e.target.value.slice(0, 1000)) }}
                   rows={5}
                   required
                   maxLength={1000}
-                  style={{ flex: 1, resize: 'vertical', fontSize: '0.95rem', lineHeight: 1.6 }}
+                  style={{
+                    flex: 1, minWidth: 0, resize: 'vertical', fontSize: '0.95rem', lineHeight: 1.6,
+                    opacity: micInterim ? 0.75 : 1,
+                    fontStyle: micInterim ? 'italic' : 'normal',
+                    transition: 'opacity 0.15s',
+                  }}
                 />
-                {/* Language + mic as a single unit */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
-                  <select
-                    value={hookLang}
-                    onChange={e => { setHookLang(e.target.value); localStorage.setItem('arc_script_lang', e.target.value) }}
-                    title="Language for mic & scoring"
-                    className="select"
-                    style={{ width: 110, fontSize: '0.82rem', height: 36, padding: '0 8px' }}
-                  >
-                    {SCORE_LANGS.map(l => (
-                      <option key={l.value} value={l.value}>{l.label}</option>
-                    ))}
-                  </select>
-                  <MicButton
-                    onResult={(text) => setHook(text.slice(0, 1000))}
-                    lang={hookLang}
-                  />
-                </div>
+                <MicButton
+                  onResult={text => { setMicInterim(''); setHook(text.slice(0, 1000)) }}
+                  onInterim={text => setMicInterim(text.slice(0, 1000))}
+                  lang={hookLang}
+                  style={{ marginTop: 4 }}
+                />
               </div>
             </div>
 

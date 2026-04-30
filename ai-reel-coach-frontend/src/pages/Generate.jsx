@@ -67,6 +67,7 @@ export default function Generate() {
   const [loading, setLd]        = useState(false)
   const [result, setResult]     = useState(null)
   const [copied, setCopied]     = useState(false)
+  const [micInterim, setMicInterim] = useState('')  // live speech preview inside textarea
 
   // Refinement / re-roll state
   const [versions, setVersions]       = useState([])
@@ -251,15 +252,24 @@ export default function Generate() {
               <textarea
                 className="textarea"
                 placeholder="e.g. How I grew from 0 to 10k followers in 90 days"
-                value={form.topic}
-                onChange={set('topic')}
+                value={micInterim || form.topic}
+                onChange={e => { if (!micInterim) set('topic')(e) }}
                 rows={3}
                 required
                 maxLength={1000}
-                style={{ flex: 1, minWidth: 0, resize: 'vertical', fontSize: '1rem' }}
+                style={{
+                  flex: 1, minWidth: 0, resize: 'vertical', fontSize: '1rem',
+                  opacity: micInterim ? 0.75 : 1,
+                  fontStyle: micInterim ? 'italic' : 'normal',
+                  transition: 'opacity 0.15s',
+                }}
               />
               <MicButton
-                onResult={text => setForm(f => ({ ...f, topic: text }))}
+                onResult={text => {
+                  setMicInterim('')
+                  setForm(f => ({ ...f, topic: text.slice(0, 1000) }))
+                }}
+                onInterim={text => setMicInterim(text.slice(0, 1000))}
                 lang={form.scriptLang}
                 style={{ marginTop: 4 }}
               />

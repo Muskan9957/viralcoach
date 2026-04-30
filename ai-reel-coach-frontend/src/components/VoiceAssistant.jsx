@@ -154,7 +154,7 @@ const isMobile  = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 const SILENCE_MS        = 2500   // desktop — wait longer before auto-submit
 const SILENCE_MS_MOBILE = 1500   // mobile  — submit faster after speech ends
 
-export function useSpeechToText(onResult, langOverride) {
+export function useSpeechToText(onResult, langOverride, onInterim) {
   const { lang: globalLang } = useLang()
   const [listening, setListening]     = useState(false)
   const [interimText, setInterimText] = useState('')
@@ -166,10 +166,12 @@ export function useSpeechToText(onResult, langOverride) {
   const SR_ref          = useRef(null)
   const langRef         = useRef('en-IN')
   const onResultRef     = useRef(onResult)
+  const onInterimRef    = useRef(onInterim)
   // Track highest result index already committed — prevents Chrome from
   // re-delivering old final results (e.resultIndex can be 0 for old items)
   const lastFinalIdxRef = useRef(-1)
   onResultRef.current   = onResult
+  onInterimRef.current  = onInterim
 
   const clearSilenceTimer = () => {
     if (silenceTimer.current) { clearTimeout(silenceTimer.current); silenceTimer.current = null }
@@ -235,7 +237,10 @@ export function useSpeechToText(onResult, langOverride) {
 
       // Reset timer on ANY speech activity
       if (newFinal || interim) armSilenceTimer()
-      setInterimText(interim || finalRef.current)
+      const live = (finalRef.current + (interim ? ' ' + interim : '')).trim()
+      setInterimText(live)
+      // Live-update the connected input field so user sees their speech in real-time
+      if (onInterimRef.current) onInterimRef.current(live || interim)
     }
 
     recognition.onend = () => {
@@ -250,19 +255,40 @@ export function useSpeechToText(onResult, langOverride) {
     }
 
     recognition.onerror = (e) => {
-      if (e.error === 'not-allowed') {
-        alert('Microphone permission denied.')
+      // Permission denied — hard stop, show guidance
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        alert('Microphone access denied. Please allow microphone permission in your browser settings and try again.')
         stoppedRef.current = true
         setListening(false); setInterimText('')
         clearSilenceTimer()
         return
       }
+      // No microphone hardware
+      if (e.error === 'audio-capture') {
+        alert('No microphone found. Please connect a microphone and try again.')
+        stoppedRef.current = true
+        setListening(false); setInterimText('')
+        clearSilenceTimer()
+        return
+      }
+      // Silent errors — just ignore
       if (e.error === 'aborted' || e.error === 'interrupted') return
+      // No speech detected on mobile — flush gracefully (don't restart)
+      if (e.error === 'no-speech' && isMobile()) { flush(); return }
+      // Desktop: restart on transient errors
       if (!stoppedRef.current) setTimeout(startSession, 200)
     }
 
     recognitionRef.current = recognition
-    try { recognition.start() } catch {}
+    try {
+      recognition.start()
+    } catch (err) {
+      // recognition.start() threw synchronously — reset listening state
+      console.warn('[STT] recognition.start() threw:', err?.message)
+      stoppedRef.current = true
+      setListening(false)
+      setInterimText('')
+    }
   }
 
   const startListening = async () => {
@@ -306,12 +332,12 @@ export function useSpeechToText(onResult, langOverride) {
 
 // ─── Mic Button ───────────────────────────────────────────────────
 // lang prop: optional BCP-47 short code ('hi', 'en', 'es' …)
-// If provided it overrides the global app UI language for speech recognition.
-// interimEl: optional ref to a container where interim text is injected
-//            instead of floating below the button (fixes mobile overflow).
-export function MicButton({ onResult, lang: langProp, style = {}, interimTarget }) {
+//   If provided it overrides the global app UI language for speech recognition.
+// onInterim: optional callback(text) fired on every interim transcript update
+//   so the parent can show live text inside its own input (no floating text).
+export function MicButton({ onResult, onInterim, lang: langProp, style = {} }) {
   const { t } = useLang()
-  const { listening, interimText, startListening, stopListening } = useSpeechToText(onResult, langProp)
+  const { listening, interimText, startListening, stopListening } = useSpeechToText(onResult, langProp, onInterim)
 
   return (
     <button
@@ -321,14 +347,16 @@ export function MicButton({ onResult, lang: langProp, style = {}, interimTarget 
         ? (interimText || t('voice_listening'))
         : t('voice_speak')}
       style={{
-        width: 40, height: 40, borderRadius: '50%',
+        width: 44, height: 44, borderRadius: '50%',
         border: listening ? '2px solid var(--accent)' : '1px solid var(--border)',
         background: listening ? 'var(--accent-dim)' : 'var(--surface2)',
         color: listening ? 'var(--accent)' : 'var(--text-muted)',
         cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 16,
+        fontSize: 18,
         flexShrink: 0,
+        touchAction: 'manipulation',   // removes 300ms tap-delay on iOS
+        WebkitTapHighlightColor: 'transparent',
         animation: listening ? 'pulseGlow 1s ease infinite' : 'none',
         transition: 'all 0.2s',
         ...style,
