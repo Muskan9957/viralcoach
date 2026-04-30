@@ -177,34 +177,38 @@ USE these proven high-scoring patterns instead:
 
 Write 1-2 sentences ONLY. No setup. No preamble. Start with impact.
 
-BODY (the main value — 45-75 seconds when spoken):
-[3-5 punchy points or a mini story. Keep sentences short. No filler words. Deliver on the hook's promise.]
+BODY (the main value — deliver on the hook's promise):
+[3-5 punchy points or a mini story. Keep sentences short. No filler words.]
 
 CTA (call to action — last 5 seconds):
 [One clear action: follow, comment, save, or share. Make it feel natural, not forced.]
 
+IDEAL_DURATION:
+[Based on this specific topic and tone, state the ideal reel length as a time range (e.g. "30–45 seconds") followed by a dash and ONE sentence explaining why this topic works best at that length. Consider: does it need storytelling build-up? Is it a quick tip that loses momentum if stretched? Is it emotional content that needs breathing room? Be opinionated and specific to this topic.]
+
 ---
 Rules:
-- Total speaking time must be 60-90 seconds (roughly 150-225 words)
 - Write like you are talking to a friend, not presenting to a boardroom
 - Do NOT use hashtags, emojis, or stage directions
-- Return ONLY the script, no extra commentary
+- Return ONLY the script in the format above, no extra commentary
 
 Script:
 `;
 
-  const raw = await ask(prompt, 1200);
+  const raw = await ask(prompt, 1400);
 
-  // Parse the three sections from the response
-  const hookMatch = raw.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i);
-  const bodyMatch = raw.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i);
-  const ctaMatch  = raw.match(/CTA[^:]*:\s*([\s\S]*?)$/i);
+  // Parse the four sections from the response
+  const hookMatch     = raw.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i);
+  const bodyMatch     = raw.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i);
+  const ctaMatch      = raw.match(/CTA[^:]*:\s*([\s\S]*?)(?=IDEAL_DURATION|$)/i);
+  const durationMatch = raw.match(/IDEAL_DURATION[^:]*:\s*([\s\S]*?)$/i);
 
   return {
-    hook      : hookMatch ? hookMatch[1].trim() : '',
-    body      : bodyMatch ? bodyMatch[1].trim() : '',
-    cta       : ctaMatch  ? ctaMatch[1].trim()  : '',
-    fullScript: raw,
+    hook         : hookMatch     ? hookMatch[1].trim()     : '',
+    body         : bodyMatch     ? bodyMatch[1].trim()     : '',
+    cta          : ctaMatch      ? ctaMatch[1].trim()      : '',
+    idealDuration: durationMatch ? durationMatch[1].trim() : null,
+    fullScript   : raw,
   };
 };
 

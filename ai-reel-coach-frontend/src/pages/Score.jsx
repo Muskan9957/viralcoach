@@ -124,22 +124,19 @@ export default function Score() {
                 </span>
               </div>
 
-              {/* Language select — full-width row above textarea (same pattern as Generate page) */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              {/* Language select */}
+              <div style={{ marginBottom: 8 }}>
                 <select
                   value={hookLang}
                   onChange={e => { setHookLang(e.target.value); localStorage.setItem('arc_script_lang', e.target.value) }}
                   title="Language for mic & scoring"
                   className="select"
-                  style={{ width: 130, fontSize: '0.82rem', height: 34, padding: '0 8px' }}
+                  style={{ width: 140, fontSize: '0.82rem', height: 34, padding: '0 8px' }}
                 >
                   {SCORE_LANGS.map(l => (
                     <option key={l.value} value={l.value}>{l.label}</option>
                   ))}
                 </select>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-                  language · tap 🎙 to speak
-                </span>
               </div>
 
               {/* Textarea + mic side by side */}
