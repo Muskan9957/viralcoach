@@ -544,7 +544,7 @@ const styles = {
     marginBottom: '16px',
     flexShrink: 0,
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
 
