@@ -431,12 +431,13 @@ const styles = {
   },
 
   logoWrap: {
-    padding: '6px 8px 20px',
+    padding: '6px 0 20px',
     borderBottom: '1px solid var(--border-nav)',
     marginBottom: '16px',
     flexShrink: 0,
     display: 'flex',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 
   nav: {

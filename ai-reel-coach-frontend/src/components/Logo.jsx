@@ -39,7 +39,6 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
         viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="vc-logo-mark"
         style={{ flexShrink: 0, overflow: 'visible' }}
         aria-hidden="true"
       >
