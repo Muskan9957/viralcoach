@@ -1,21 +1,45 @@
 /**
  * ViralCoach Logo
  *
- * Mark: Bold teal V + diagonal orange upward arrow + gold star at intersection
- * Wordmark: "viral" (bold teal gradient) + "coach" (light, muted)
+ * Mark  : Film clapperboard with a play-button triangle inside.
+ *         Body + two clapper boards (lower horizontal, upper angled).
+ *         Classic diagonal stripes on the clapper boards.
+ *
+ * Wordmark : "Viral" stacked above "coach" in Caveat (handwritten feel).
+ *
+ * Colours adapt to theme:
+ *   dark  → bright gold  (#FFE566 → #FFA520 → #C47800)
+ *   light → warm amber   (#C8880A → #8B5E06 → #5C3A03)
  */
+import { useTheme } from '../context/ThemeContext'
+
 export default function Logo({ size = 40, showWordmark = true, className = '' }) {
-  const uid = `vc-${Math.round(size)}`
-  const tG  = `${uid}-t`   // teal gradient (V arms)
-  const oG  = `${uid}-o`   // orange gradient (arrow)
-  const sG  = `${uid}-sg`  // gold gradient (star)
-  const blr = `${uid}-b`   // blur / glow filter
+  const { theme } = useTheme() || {}
+  const isDark = theme !== 'light'
+
+  const uid  = `vc-${Math.round(size)}`
+  const gG   = `${uid}-g`    // gold gradient
+  const sP   = `${uid}-sp`   // stripe pattern
+  const cLo  = `${uid}-clo`  // clip — lower bar
+  const cUp  = `${uid}-cup`  // clip — upper board
+  const blr  = `${uid}-b`    // glow blur
+
+  // Theme-aware gold palette
+  const [hi, mid, lo] = isDark
+    ? ['#FFE566', '#FFA520', '#C47800']
+    : ['#D4960A', '#9A6600', '#5C3A03']
+
+  // Wordmark gradient string
+  const wGrad = isDark
+    ? 'linear-gradient(135deg, #FFE566 0%, #FFA520 100%)'
+    : 'linear-gradient(135deg, #D4960A 0%, #9A6600 100%)'
 
   return (
     <div
       className={className}
-      style={{ display: 'flex', alignItems: 'center', gap: size > 28 ? 7 : 4 }}
+      style={{ display: 'flex', alignItems: 'center', gap: size > 28 ? 8 : 5 }}
     >
+      {/* ─── Clapperboard mark ─────────────────────────────── */}
       <svg
         width={size}
         height={size}
@@ -26,136 +50,112 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
         aria-hidden="true"
       >
         <defs>
-          {/* Teal — V arms, top-bright to bottom-dark */}
-          <linearGradient id={tG} x1="18" y1="8" x2="50" y2="84" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stopColor="#00DDD4" />
-            <stop offset="100%" stopColor="#006E6B" />
+          {/* Gold gradient — top-left → bottom-right */}
+          <linearGradient id={gG} x1="5" y1="5" x2="95" y2="95" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stopColor={hi}  />
+            <stop offset="55%"  stopColor={mid} />
+            <stop offset="100%" stopColor={lo}  />
           </linearGradient>
 
-          {/* Orange — arrow base-to-tip */}
-          <linearGradient id={oG} x1="50" y1="74" x2="86" y2="8" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stopColor="#C82B00" />
-            <stop offset="100%" stopColor="#FFA500" />
-          </linearGradient>
+          {/* Diagonal stripe pattern for clapper boards */}
+          <pattern
+            id={sP}
+            x="0" y="0" width="14" height="14"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(-48)"
+          >
+            <rect x="0" y="0" width="7"  height="14" fill="rgba(0,0,0,0.28)" />
+            <rect x="7" y="0" width="7"  height="14" fill="rgba(255,255,255,0.08)" />
+          </pattern>
 
-          {/* Gold — star */}
-          <linearGradient id={sG} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%"   stopColor="#FFE566" />
-            <stop offset="100%" stopColor="#FF8C00" />
-          </linearGradient>
+          {/* ClipPath — lower bar */}
+          <clipPath id={cLo}>
+            <rect x="5" y="32" width="90" height="14" rx="1" />
+          </clipPath>
 
-          {/* Soft glow blur */}
-          <filter id={blr} x="-100%" y="-100%" width="300%" height="300%">
+          {/* ClipPath — upper board */}
+          <clipPath id={cUp}>
+            <path d="M 5 32 L 95 19 L 95 9 L 5 22 Z" />
+          </clipPath>
+
+          {/* Glow filter */}
+          <filter id={blr} x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="5" />
           </filter>
         </defs>
 
-        {/* ── Glow layer ─────────────────────────── */}
-        <path
-          d="M 18 8 L 50 83 L 82 8"
-          stroke={`url(#${tG})`}
-          strokeWidth="28"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-          opacity="0.20"
+        {/* Subtle outer glow behind body */}
+        <rect
+          x="5" y="44" width="90" height="52" rx="5"
+          fill={mid} opacity="0.18"
           filter={`url(#${blr})`}
         />
 
-        {/* ── V arms — teal ─────────────────────── */}
-        <path
-          d="M 18 8 L 50 83 L 82 8"
-          stroke={`url(#${tG})`}
-          strokeWidth="18"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
+        {/* ── Body ──────────────────────────────────────────── */}
+        <rect x="5" y="44" width="90" height="52" rx="5" fill={`url(#${gG})`} />
+        {/* Body inner highlight — top edge shine */}
+        <rect x="5" y="44" width="90" height="6" rx="5" fill="rgba(255,255,255,0.18)" />
+
+        {/* ── Lower clapper bar ─────────────────────────────── */}
+        <rect x="5" y="32" width="90" height="14" rx="2" fill={`url(#${gG})`} />
+        {/* Diagonal stripes clipped to lower bar */}
+        <rect
+          x="5" y="32" width="90" height="14"
+          fill={`url(#${sP})`}
+          clipPath={`url(#${cLo})`}
         />
+        {/* Bottom border of lower bar */}
+        <line x1="5" y1="46" x2="95" y2="46" stroke="rgba(0,0,0,0.20)" strokeWidth="1" />
 
-        {/* Inner shine — gives the arms a 3-D rounded feel */}
+        {/* ── Upper clapper board (angled — open position) ───── */}
+        {/* Parallelogram: left side lower, right side raised */}
+        <path d="M 5 32 L 95 19 L 95 9 L 5 22 Z" fill={`url(#${gG})`} />
+        {/* Diagonal stripes clipped to upper board */}
         <path
-          d="M 18 8 L 50 83 L 82 8"
-          stroke="rgba(255,255,255,0.30)"
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
+          d="M 5 32 L 95 19 L 95 9 L 5 22 Z"
+          fill={`url(#${sP})`}
+          clipPath={`url(#${cUp})`}
         />
+        {/* Hinge pin — small circle on the left */}
+        <circle cx="10" cy="27" r="3.5" fill={lo} />
+        <circle cx="10" cy="27" r="1.8" fill={hi} opacity="0.7" />
 
-        {/* ── Orange upward arrow ────────────────── */}
-        {/*
-          Shaft from (50,74) → tip at (86,8)
-          Direction unit ≈ (0.47, -0.88)
-          Perpendicular ≈ (0.88, 0.47)
-          shaft half-width = 4 | head half-width = 10 | head length = 16
-
-          Polygon points (clockwise from shaft base-right):
-            base-right        (53.5, 75.9)
-            neck-right        (80.3, 24.5)
-            head-base-right   (85.2, 27.2)
-            tip               (86, 8)
-            head-base-left    (69.0, 17.6)
-            neck-left         (73.9, 21.2)
-            base-left         (46.5, 72.1)
-        */}
+        {/* ── Play triangle ─────────────────────────────────── */}
+        {/*  Centred in the body (y 44→96 → centre y≈70)        */}
         <path
-          d="M 54 76 L 80 25 L 85 27 L 86 8 L 69 18 L 74 21 L 47 72 Z"
-          fill={`url(#${oG})`}
-        />
-
-        {/* ── Star glow ──────────────────────────── */}
-        <circle
-          cx="76" cy="18" r="11"
-          fill="rgba(255,160,0,0.28)"
-          filter={`url(#${blr})`}
-        />
-
-        {/* ── Star — 5-pointed, centre (76,18), R=7, r=3 ── */}
-        {/*
-          Outer: (76,11) (82.7,15.8) (80.1,23.7) (71.9,23.7) (69.3,15.8)
-          Inner: (77.8,15.6) (78.9,18.9) (76,21) (73.2,18.9) (74.2,15.6)
-        */}
-        <path
-          d="
-            M 76 11
-            L 77.8 15.6  L 82.7 15.8
-            L 78.9 18.9  L 80.1 23.7
-            L 76 21
-            L 71.9 23.7  L 73.2 18.9
-            L 69.3 15.8  L 74.2 15.6
-            Z
-          "
-          fill={`url(#${sG})`}
+          d="M 35 57 L 35 80 L 68 68.5 Z"
+          fill="rgba(255,255,255,0.55)"
         />
       </svg>
 
+      {/* ─── Wordmark: stacked "Viral" / "coach" ───────────── */}
       {showWordmark && (
-        <div style={{ lineHeight: 1, userSelect: 'none' }}>
-          <span style={{
-            fontFamily:    'var(--font-head)',
-            fontSize:      Math.max(size * 0.44, 13),
-            letterSpacing: '-0.03em',
-            lineHeight:    1,
+        <div style={{ lineHeight: 1.1, userSelect: 'none' }}>
+          <div style={{
+            fontFamily:           '"Caveat", cursive',
+            fontWeight:           700,
+            fontSize:             Math.max(size * 0.50, 16),
+            background:           wGrad,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor:  'transparent',
+            backgroundClip:       'text',
+            letterSpacing:        '0.01em',
           }}>
-            {/* "viral" — bold teal gradient */}
-            <span style={{
-              fontWeight:           900,
-              background:           'linear-gradient(135deg, #00DDD4 0%, #009E98 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor:  'transparent',
-              backgroundClip:       'text',
-            }}>
-              viral
-            </span>
-            {/* "coach" — light, understated */}
-            <span style={{
-              fontWeight: 300,
-              color:      'var(--text)',
-              opacity:    0.58,
-            }}>
-              coach
-            </span>
-          </span>
+            Viral
+          </div>
+          <div style={{
+            fontFamily:           '"Caveat", cursive',
+            fontWeight:           600,
+            fontSize:             Math.max(size * 0.46, 15),
+            background:           wGrad,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor:  'transparent',
+            backgroundClip:       'text',
+            letterSpacing:        '0.01em',
+            marginTop:            -2,
+          }}>
+            coach
+          </div>
         </div>
       )}
     </div>
