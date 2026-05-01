@@ -1,29 +1,32 @@
 /**
- * ViralCoach Logo — Victory Hand ✌
+ * ViralCoach Logo — "The Signal V"
  *
- * The mark IS the letter V in "viral":
- *   [✌] + "iral" + "coach"  →  reads as "viralcoach"
+ * Concept: A single bold stroke forming a V where the right arm
+ * rises slightly above the left — subtle upward momentum.
+ * The mark reads as both the letter V and a trending-up signal.
  *
- * Anatomy:
- *   - Two rounded-tip finger strokes (index + middle finger)
- *   - Each finger curves slightly outward — organic, not geometric
- *   - A filled palm base connecting them at the bottom
- *   - Gradient: cyan (left finger) → indigo (palm) → violet (right finger)
- *   - Three depth layers: glow → mark → shine
+ * Design principles:
+ *   - One element only. No stars, arrows, or ornaments.
+ *   - Stroke-based (not filled) for a modern, minimal feel.
+ *   - Right tip sits higher than left: (85,10) vs (15,18) — going viral.
+ *   - Three depth layers: glow → mark → glass shine.
+ *   - Gradient: cyan (left) → indigo (centre) → violet (right).
  *
- * The negative space between the fingers forms the V naturally.
- * StrokeLinecap "round" gives the fingertip roundness for free.
+ * Wordmark: mark acts as the "V" in viral.
+ *   [mark] + "iral" (bold gradient) + "coach" (light muted) = "viralcoach"
  */
 export default function Logo({ size = 40, showWordmark = true, className = '' }) {
   const uid = `vc-${Math.round(size)}`
-  const g   = `${uid}-g`   // main gradient
-  const f   = `${uid}-f`   // blur filter
-  const pg  = `${uid}-pg`  // palm gradient (radial, centred)
+  const g   = `${uid}-g`    // stroke gradient
+  const f   = `${uid}-f`    // glow blur
+
+  // The V path — right arm terminates higher to suggest rising/viral momentum
+  const V = 'M 14 20 L 50 84 L 86 10'
 
   return (
     <div
       className={className}
-      style={{ display: 'flex', alignItems: 'center', gap: size > 28 ? 9 : 5 }}
+      style={{ display: 'flex', alignItems: 'center', gap: size > 28 ? 6 : 4 }}
     >
       <svg
         width={size}
@@ -35,114 +38,56 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
         aria-hidden="true"
       >
         <defs>
-          {/* Main left→right gradient */}
-          <linearGradient id={g} x1="12" y1="50" x2="88" y2="50" gradientUnits="userSpaceOnUse">
+          {/* Left → right brand gradient */}
+          <linearGradient id={g} x1="14" y1="50" x2="86" y2="50" gradientUnits="userSpaceOnUse">
             <stop offset="0%"   stopColor="#00E5FF" />
-            <stop offset="46%"  stopColor="#818CF8" />
+            <stop offset="48%"  stopColor="#818CF8" />
             <stop offset="100%" stopColor="#A855F7" />
           </linearGradient>
 
-          {/* Radial glow for the palm */}
-          <radialGradient id={pg} cx="50%" cy="40%" r="60%">
-            <stop offset="0%"   stopColor="#818CF8" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#5B21B6" stopOpacity="0.6" />
-          </radialGradient>
-
-          {/* Blur for atmospheric glow */}
-          <filter id={f} x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="7" />
+          {/* Soft glow filter */}
+          <filter id={f} x="-120%" y="-120%" width="340%" height="340%">
+            <feGaussianBlur stdDeviation="9" />
           </filter>
         </defs>
 
-        {/* ── Layer 1: Soft atmospheric glow ─────────────────────── */}
-        <g opacity="0.22" filter={`url(#${f})`}>
-          {/* Left finger glow */}
-          <path
-            d="M 43 79 Q 28 46 18 12"
-            stroke={`url(#${g})`}
-            strokeWidth="24"
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* Right finger glow */}
-          <path
-            d="M 57 79 Q 72 46 82 12"
-            stroke={`url(#${g})`}
-            strokeWidth="24"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </g>
-
-        {/* ── Layer 2: Palm base ──────────────────────────────────── */}
-        {/*
-            Arch shape:  top edge curves up slightly (like the back of a hand),
-            bottom edge is a smooth arc (the heel of the palm).
-            Sits behind the finger strokes — fingers appear to grow from the palm.
-        */}
+        {/* Layer 1 — atmospheric glow */}
         <path
-          d="
-            M 30 82
-            Q 36 75 43 79
-            Q 50 82 57 79
-            Q 64 75 70 82
-            Q 64 96 50 97
-            Q 36 96 30 82
-            Z
-          "
-          fill={`url(#${pg})`}
-          opacity="0.92"
+          d={V}
+          stroke={`url(#${g})`}
+          strokeWidth="22"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          opacity="0.25"
+          filter={`url(#${f})`}
         />
 
-        {/* ── Layer 3: Finger strokes ─────────────────────────────── */}
-        {/*
-            Left finger  — index finger, tilts upper-left.
-            Bezier control point pulls the stroke outward slightly
-            so it curves naturally, like a real finger.
-        */}
+        {/* Layer 2 — main bold stroke */}
         <path
-          d="M 43 79 Q 28 46 18 12"
+          d={V}
           stroke={`url(#${g})`}
           strokeWidth="15"
           strokeLinecap="round"
-          fill="none"
-        />
-        {/*
-            Right finger — middle finger, tilts upper-right.
-            Mirror of left.
-        */}
-        <path
-          d="M 57 79 Q 72 46 82 12"
-          stroke={`url(#${g})`}
-          strokeWidth="15"
-          strokeLinecap="round"
+          strokeLinejoin="round"
           fill="none"
         />
 
-        {/* ── Layer 4: Inner shine — glass / 3-D effect ───────────── */}
+        {/* Layer 3 — inner glass shine */}
         <path
-          d="M 43 79 Q 28 46 18 12"
-          stroke="rgba(255,255,255,0.24)"
+          d={V}
+          stroke="rgba(255,255,255,0.22)"
           strokeWidth="4"
           strokeLinecap="round"
-          fill="none"
-        />
-        <path
-          d="M 57 79 Q 72 46 82 12"
-          stroke="rgba(255,255,255,0.24)"
-          strokeWidth="4"
-          strokeLinecap="round"
+          strokeLinejoin="round"
           fill="none"
         />
 
-        {/* ── Fingertip accent dots — tiny highlights at the tips ─── */}
-        <circle cx="18" cy="12" r="3.5" fill="rgba(0,229,255,0.55)" />
-        <circle cx="82" cy="12" r="3.5" fill="rgba(168,85,247,0.55)" />
-        <circle cx="18" cy="12" r="1.8" fill="white"              opacity="0.7" />
-        <circle cx="82" cy="12" r="1.8" fill="white"              opacity="0.7" />
+        {/* Right-tip accent — the highest point, brightest, signals upward */}
+        <circle cx="86" cy="10" r="4"   fill="rgba(168,85,247,0.6)"  />
+        <circle cx="86" cy="10" r="2"   fill="white" opacity="0.85" />
       </svg>
 
-      {/* ── Wordmark: [✌] acts as the V, so text = "iral" + "coach" ── */}
       {showWordmark && (
         <div style={{ lineHeight: 1, userSelect: 'none' }}>
           <span style={{
@@ -151,7 +96,7 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
             letterSpacing: '-0.03em',
             lineHeight:    1,
           }}>
-            {/* "iral" — bold gradient, completes the word "viral" */}
+            {/* "iral" — bold gradient, completes the word "viral" with the mark */}
             <span style={{
               fontWeight:           900,
               background:           'linear-gradient(135deg, #00E5FF 0%, #818CF8 50%, #A855F7 100%)',
@@ -161,11 +106,11 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
             }}>
               iral
             </span>
-            {/* "coach" — light weight, muted */}
+            {/* "coach" — light weight, understated */}
             <span style={{
               fontWeight: 300,
               color:      'var(--text)',
-              opacity:    0.62,
+              opacity:    0.6,
             }}>
               coach
             </span>
