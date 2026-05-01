@@ -489,8 +489,6 @@ export default function Dashboard() {
         )
       })()}
 
-      {/* ─── Creator Score ───────────────────────────────────────── */}
-      <CreatorScoreCard score={creatorScore} />
 
       {/* ─── Streak chip ─────────────────────────────────────────── */}
       {streak > 0 && (
