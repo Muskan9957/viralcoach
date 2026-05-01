@@ -175,6 +175,7 @@ export default function Layout({ children }) {
   const { t }            = useLang()
   const navigate         = useNavigate()
   const isMobile         = useIsMobile()
+  const [moreOpen, setMoreOpen] = useState(false)
 
   const handleLogout = () => { logout(); navigate('/') }
   const location     = useLocation()
@@ -371,31 +372,138 @@ export default function Layout({ children }) {
 
       {/* ── Mobile Bottom Navigation ─────────────────────────────── */}
       {isMobile && (
-        <nav className="bottom-nav" aria-label="Main navigation">
-          {MOBILE_NAV_CONFIG.map(({ to, icon: Icon, labelKey }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `bottom-nav-item${isActive ? ' active' : ''}`
-              }
-              aria-label={t(labelKey)}
+        <>
+          {/* More sheet backdrop */}
+          {moreOpen && (
+            <div
+              onClick={() => setMoreOpen(false)}
+              style={{
+                position: 'fixed', inset: 0, zIndex: 99,
+                background: 'rgba(0,0,0,0.45)',
+                backdropFilter: 'blur(4px)',
+              }}
+            />
+          )}
+
+          {/* More sheet */}
+          <div style={{
+            position: 'fixed', left: 0, right: 0, bottom: moreOpen ? 64 : '-100%',
+            zIndex: 100,
+            background: 'var(--surface-nav)',
+            borderTop: '1px solid var(--border-nav)',
+            borderRadius: '20px 20px 0 0',
+            padding: '20px 16px 12px',
+            transition: 'bottom 0.3s cubic-bezier(0.32,0.72,0,1)',
+            maxHeight: '70vh',
+            overflowY: 'auto',
+          }}>
+            {/* Handle */}
+            <div style={{ width: 36, height: 4, borderRadius: 99, background: 'var(--border)', margin: '0 auto 20px' }} />
+
+            {[
+              { section: 'Studio', items: [
+                { to: '/scripts',     icon: IconScripts,     label: t('nav_scripts')     },
+                { to: '/score',       icon: IconScore,       label: t('nav_score')       },
+                { to: '/my-voice',    icon: VoiceIcon,       label: t('nav_my_voice'),   premium: true },
+              ]},
+              { section: 'Content', items: [
+                { to: '/crosspost',   icon: RemixIcon,       label: t('nav_remix')       },
+                { to: '/templates',   icon: TemplateIcon,    label: t('nav_templates')   },
+              ]},
+              { section: 'Insights', items: [
+                { to: '/trending',    icon: TrendIcon,       label: t('nav_trending')    },
+                { to: '/performance', icon: IconPerformance, label: t('nav_performance') },
+                { to: '/calendar',    icon: CalendarIcon,    label: t('nav_calendar')    },
+              ]},
+            ].map(group => (
+              <div key={group.section} style={{ marginBottom: 20 }}>
+                <div style={{
+                  fontSize: '0.62rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                  color: 'var(--text-faint)', marginBottom: 10, paddingLeft: 4,
+                }}>
+                  {group.section}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  {group.items.map(({ to, icon: Icon, label, premium }) => {
+                    const isActive = location.pathname === to
+                    return (
+                      <NavLink
+                        key={to} to={to}
+                        onClick={() => setMoreOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <div style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center',
+                          gap: 6, padding: '12px 8px', borderRadius: 14,
+                          background: isActive ? 'rgba(0,200,255,0.1)' : 'var(--surface2)',
+                          border: `1px solid ${isActive ? 'rgba(0,200,255,0.3)' : 'var(--border)'}`,
+                        }}>
+                          <span style={{ color: isActive ? '#00C8FF' : 'var(--text-muted)' }}>
+                            <Icon size={22} />
+                          </span>
+                          <span style={{
+                            fontSize: '0.68rem', fontWeight: 600, textAlign: 'center',
+                            color: isActive ? '#00C8FF' : 'var(--text-muted)',
+                            lineHeight: 1.2,
+                          }}>
+                            {label}
+                            {premium && <span style={{ display: 'block', fontSize: '0.58rem', color: '#00C8FF', marginTop: 2 }}>✦</span>}
+                          </span>
+                        </div>
+                      </NavLink>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom tab bar */}
+          <nav className="bottom-nav" aria-label="Main navigation">
+            {MOBILE_NAV_CONFIG.map(({ to, icon: Icon, labelKey }) => (
+              <NavLink
+                key={to} to={to}
+                onClick={() => setMoreOpen(false)}
+                className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}
+                aria-label={t(labelKey)}
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className="nav-dot" />
+                    <Icon size={22} />
+                    <span
+                      className="bottom-nav-label"
+                      style={isActive ? { background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+                    >
+                      {t(labelKey)}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+
+            {/* More tab */}
+            <button
+              className={`bottom-nav-item${moreOpen ? ' active' : ''}`}
+              onClick={() => setMoreOpen(o => !o)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
-              {({ isActive }) => (
-                <>
-                  <div className="nav-dot" />
-                  <Icon size={22} />
-                  <span
-                    className="bottom-nav-label"
-                    style={isActive ? { background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-                  >
-                    {t(labelKey)}
-                  </span>
-                </>
-              )}
-            </NavLink>
-          ))}
-        </nav>
+              <div className="nav-dot" />
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+                <circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+              </svg>
+              <span
+                className="bottom-nav-label"
+                style={moreOpen ? { background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+              >
+                More
+              </span>
+            </button>
+          </nav>
+        </>
       )}
 
     </div>
