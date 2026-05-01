@@ -63,10 +63,6 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
         </defs>
 
         {/* ── Body — var(--logo-v2) violet/purple ─────────── */}
-        {/* Subtle depth shadow */}
-        <rect x="8" y="47" width="88" height="50" rx="5"
-          fill="var(--logo-shadow)" opacity="0.30" />
-        {/* Main body */}
         <rect x="5" y="44" width="90" height="52" rx="5"
           fill="var(--logo-v2)" />
         {/* Top-edge shine */}
