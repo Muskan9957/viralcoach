@@ -1,28 +1,29 @@
 /**
- * ViralCoach Logo — "The Spark V"
+ * ViralCoach Logo — Victory Hand ✌
  *
- * Concept: Two arms converging at a single ignition point.
- * The moment content goes viral. Clean, bold, memorable.
+ * The mark IS the letter V in "viral":
+ *   [✌] + "iral" + "coach"  →  reads as "viralcoach"
  *
- * Three layers:
- *   1. Wide blurred glow  — depth/atmosphere
- *   2. Bold gradient V    — the mark
- *   3. Thin inner shine   — polish
+ * Anatomy:
+ *   - Two rounded-tip finger strokes (index + middle finger)
+ *   - Each finger curves slightly outward — organic, not geometric
+ *   - A filled palm base connecting them at the bottom
+ *   - Gradient: cyan (left finger) → indigo (palm) → violet (right finger)
+ *   - Three depth layers: glow → mark → shine
  *
- * + A bright spark node at the vertex — the focal point.
- *
- * Works on any background. Scales from 16px favicon to 400px hero.
+ * The negative space between the fingers forms the V naturally.
+ * StrokeLinecap "round" gives the fingertip roundness for free.
  */
 export default function Logo({ size = 40, showWordmark = true, className = '' }) {
-  const uid  = `vc-${Math.round(size)}`
-  const gid  = `${uid}-g`
-  const fid  = `${uid}-f`
-  const rid  = `${uid}-r`
+  const uid = `vc-${Math.round(size)}`
+  const g   = `${uid}-g`   // main gradient
+  const f   = `${uid}-f`   // blur filter
+  const pg  = `${uid}-pg`  // palm gradient (radial, centred)
 
   return (
     <div
       className={className}
-      style={{ display: 'flex', alignItems: 'center', gap: size > 28 ? 10 : 6 }}
+      style={{ display: 'flex', alignItems: 'center', gap: size > 28 ? 9 : 5 }}
     >
       <svg
         width={size}
@@ -34,71 +35,114 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
         aria-hidden="true"
       >
         <defs>
-          {/* Main V gradient — cyan left → indigo mid → violet right */}
-          <linearGradient id={gid} x1="15" y1="12" x2="85" y2="12" gradientUnits="userSpaceOnUse">
+          {/* Main left→right gradient */}
+          <linearGradient id={g} x1="12" y1="50" x2="88" y2="50" gradientUnits="userSpaceOnUse">
             <stop offset="0%"   stopColor="#00E5FF" />
-            <stop offset="48%"  stopColor="#818CF8" />
+            <stop offset="46%"  stopColor="#818CF8" />
             <stop offset="100%" stopColor="#A855F7" />
           </linearGradient>
 
-          {/* Glow blur filter */}
-          <filter id={fid} x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="7" result="blur" />
-          </filter>
-
-          {/* Radial glow at the spark node */}
-          <radialGradient id={rid} cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stopColor="#00E5FF" stopOpacity="1" />
-            <stop offset="60%"  stopColor="#818CF8" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#A855F7" stopOpacity="0" />
+          {/* Radial glow for the palm */}
+          <radialGradient id={pg} cx="50%" cy="40%" r="60%">
+            <stop offset="0%"   stopColor="#818CF8" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#5B21B6" stopOpacity="0.6" />
           </radialGradient>
+
+          {/* Blur for atmospheric glow */}
+          <filter id={f} x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="7" />
+          </filter>
         </defs>
 
-        {/* ── Layer 1: Atmospheric glow behind the V ─────────────── */}
+        {/* ── Layer 1: Soft atmospheric glow ─────────────────────── */}
+        <g opacity="0.22" filter={`url(#${f})`}>
+          {/* Left finger glow */}
+          <path
+            d="M 43 79 Q 28 46 18 12"
+            stroke={`url(#${g})`}
+            strokeWidth="24"
+            strokeLinecap="round"
+            fill="none"
+          />
+          {/* Right finger glow */}
+          <path
+            d="M 57 79 Q 72 46 82 12"
+            stroke={`url(#${g})`}
+            strokeWidth="24"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </g>
+
+        {/* ── Layer 2: Palm base ──────────────────────────────────── */}
+        {/*
+            Arch shape:  top edge curves up slightly (like the back of a hand),
+            bottom edge is a smooth arc (the heel of the palm).
+            Sits behind the finger strokes — fingers appear to grow from the palm.
+        */}
         <path
-          d="M 15 12 L 50 85 L 85 12"
-          stroke={`url(#${gid})`}
-          strokeWidth="28"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-          opacity="0.18"
-          filter={`url(#${fid})`}
+          d="
+            M 30 82
+            Q 36 75 43 79
+            Q 50 82 57 79
+            Q 64 75 70 82
+            Q 64 96 50 97
+            Q 36 96 30 82
+            Z
+          "
+          fill={`url(#${pg})`}
+          opacity="0.92"
         />
 
-        {/* ── Layer 2: Bold V — the mark ─────────────────────────── */}
+        {/* ── Layer 3: Finger strokes ─────────────────────────────── */}
+        {/*
+            Left finger  — index finger, tilts upper-left.
+            Bezier control point pulls the stroke outward slightly
+            so it curves naturally, like a real finger.
+        */}
         <path
-          d="M 15 12 L 50 85 L 85 12"
-          stroke={`url(#${gid})`}
+          d="M 43 79 Q 28 46 18 12"
+          stroke={`url(#${g})`}
           strokeWidth="15"
           strokeLinecap="round"
-          strokeLinejoin="round"
           fill="none"
         />
-
-        {/* ── Layer 3: Thin inner shine ───────────────────────────── */}
+        {/*
+            Right finger — middle finger, tilts upper-right.
+            Mirror of left.
+        */}
         <path
-          d="M 15 12 L 50 85 L 85 12"
-          stroke="rgba(255,255,255,0.28)"
-          strokeWidth="3.5"
+          d="M 57 79 Q 72 46 82 12"
+          stroke={`url(#${g})`}
+          strokeWidth="15"
           strokeLinecap="round"
-          strokeLinejoin="round"
           fill="none"
         />
 
-        {/* ── Spark node at vertex ────────────────────────────────── */}
-        {/* Outer radial glow */}
-        <circle cx="50" cy="85" r="14" fill={`url(#${rid})`} opacity="0.55" />
-        {/* Mid ring */}
-        <circle cx="50" cy="85" r="6"  fill="#818CF8" opacity="0.5" />
-        {/* Bright core */}
-        <circle cx="50" cy="85" r="3.5" fill="#00E5FF" opacity="1" />
-        {/* White hot centre */}
-        <circle cx="50" cy="85" r="1.8" fill="white"   opacity="0.95" />
+        {/* ── Layer 4: Inner shine — glass / 3-D effect ───────────── */}
+        <path
+          d="M 43 79 Q 28 46 18 12"
+          stroke="rgba(255,255,255,0.24)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M 57 79 Q 72 46 82 12"
+          stroke="rgba(255,255,255,0.24)"
+          strokeWidth="4"
+          strokeLinecap="round"
+          fill="none"
+        />
 
+        {/* ── Fingertip accent dots — tiny highlights at the tips ─── */}
+        <circle cx="18" cy="12" r="3.5" fill="rgba(0,229,255,0.55)" />
+        <circle cx="82" cy="12" r="3.5" fill="rgba(168,85,247,0.55)" />
+        <circle cx="18" cy="12" r="1.8" fill="white"              opacity="0.7" />
+        <circle cx="82" cy="12" r="1.8" fill="white"              opacity="0.7" />
       </svg>
 
-      {/* ── Wordmark ────────────────────────────────────────────────── */}
+      {/* ── Wordmark: [✌] acts as the V, so text = "iral" + "coach" ── */}
       {showWordmark && (
         <div style={{ lineHeight: 1, userSelect: 'none' }}>
           <span style={{
@@ -107,6 +151,7 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
             letterSpacing: '-0.03em',
             lineHeight:    1,
           }}>
+            {/* "iral" — bold gradient, completes the word "viral" */}
             <span style={{
               fontWeight:           900,
               background:           'linear-gradient(135deg, #00E5FF 0%, #818CF8 50%, #A855F7 100%)',
@@ -114,19 +159,19 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
               WebkitTextFillColor:  'transparent',
               backgroundClip:       'text',
             }}>
-              viral
+              iral
             </span>
+            {/* "coach" — light weight, muted */}
             <span style={{
               fontWeight: 300,
               color:      'var(--text)',
-              opacity:    0.65,
+              opacity:    0.62,
             }}>
               coach
             </span>
           </span>
         </div>
       )}
-
     </div>
   )
 }
