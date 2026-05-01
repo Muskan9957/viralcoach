@@ -25,6 +25,7 @@ export default function MyVoice() {
   const toast        = useToast()
   const { user }     = useAuth()
   const isPremium    = user?.plan === 'STARTER' || user?.plan === 'PRO'
+  const isFree       = !isPremium
 
   const [samples, setSamples]   = useState(['', '', ''])
   const [profile, setProfile]   = useState(null)
@@ -102,28 +103,8 @@ export default function MyVoice() {
         </p>
       </div>
 
-      {/* FREE plan gate */}
-      {!isPremium && (
-        <div className="card" style={{
-          background: 'linear-gradient(135deg, rgba(255,95,31,0.06), rgba(160,110,255,0.06))',
-          border: '1px solid rgba(160,110,255,0.2)',
-          textAlign: 'center', padding: '40px 28px',
-        }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🎙</div>
-          <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.2rem', marginBottom: 10 }}>
-            Unlock Your Creator DNA
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: 400, margin: '0 auto 24px', lineHeight: 1.6 }}>
-            Train the AI on your style so every script sounds authentically like you — your humour, your energy, your patterns.
-          </p>
-          <a href="/pricing" className="btn btn-primary" style={{ display: 'inline-block' }}>
-            Upgrade to Starter or Pro →
-          </a>
-        </div>
-      )}
-
-      {/* Premium: show profile if exists, otherwise show input form */}
-      {isPremium && !profile && (
+      {/* Show form when no profile yet — free users get 1 try */}
+      {!profile && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div className="card">
             <h2 style={cardTitleStyle}>Paste Your Content Samples</h2>
@@ -160,15 +141,27 @@ export default function MyVoice() {
                 </div>
               ))}
             </div>
+            {isFree && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '10px 14px', borderRadius: 10, marginTop: 16,
+                background: 'rgba(0,200,255,0.06)', border: '1px solid rgba(0,200,255,0.18)',
+              }}>
+                <span style={{ fontSize: '0.8rem' }}>🎁</span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  1 free build included. Upgrade to re-train anytime.
+                </span>
+              </div>
+            )}
             <button
               className="btn btn-primary btn-full"
               onClick={analyze}
               disabled={loading || samples.filter(s => s.trim().length >= MIN_CHARS).length === 0}
-              style={{ marginTop: 24, height: 52, fontSize: '1rem', fontWeight: 700 }}
+              style={{ marginTop: 16, height: 52, fontSize: '1rem', fontWeight: 700 }}
             >
               {loading
-                ? <><span className="spinner" /> Analysing your voice…</>
-                : '✦ Analyse My Voice'}
+                ? <><span className="spinner" /> Building your DNA…</>
+                : '✦ Build My Creator DNA'}
             </button>
           </div>
 
@@ -190,8 +183,8 @@ export default function MyVoice() {
         </div>
       )}
 
-      {/* Premium: voice profile display */}
-      {isPremium && profile && (
+      {/* Profile display — all users who have built their DNA */}
+      {profile && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Summary card */}
           <div className="card" style={{
@@ -268,28 +261,44 @@ export default function MyVoice() {
           </div>
 
           {/* Re-train + Delete */}
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <button
-              className="btn btn-ghost"
-              onClick={() => setProfile(null)}
-              style={{ flex: 1, minWidth: 140 }}
-            >
-              ↺ Re-train with new samples
-            </button>
-            <button
-              className="btn"
-              onClick={deleteProfile}
-              disabled={deleting}
-              style={{
-                flex: 1, minWidth: 140,
-                background: 'rgba(255,107,107,0.08)',
-                border: '1px solid rgba(255,107,107,0.25)',
-                color: '#FF6B6B',
-              }}
-            >
-              {deleting ? <><span className="spinner" /> Deleting…</> : '🗑 Delete Profile'}
-            </button>
-          </div>
+          {isPremium ? (
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setProfile(null)}
+                style={{ flex: 1, minWidth: 140 }}
+              >
+                ↺ Re-train with new samples
+              </button>
+              <button
+                className="btn"
+                onClick={deleteProfile}
+                disabled={deleting}
+                style={{
+                  flex: 1, minWidth: 140,
+                  background: 'rgba(255,107,107,0.08)',
+                  border: '1px solid rgba(255,107,107,0.25)',
+                  color: '#FF6B6B',
+                }}
+              >
+                {deleting ? <><span className="spinner" /> Deleting…</> : '🗑 Delete Profile'}
+              </button>
+            </div>
+          ) : (
+            <div style={{
+              padding: '14px 18px', borderRadius: 12,
+              background: 'linear-gradient(135deg, rgba(0,200,255,0.06), rgba(160,110,255,0.06))',
+              border: '1px solid rgba(160,110,255,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+            }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+                Upgrade to re-train your DNA with new samples anytime.
+              </p>
+              <a href="/pricing" className="btn btn-primary btn-sm" style={{ textDecoration: 'none', flexShrink: 0 }}>
+                Upgrade →
+              </a>
+            </div>
+          )}
         </div>
       )}
     </div>
