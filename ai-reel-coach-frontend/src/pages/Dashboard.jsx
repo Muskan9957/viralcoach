@@ -4,7 +4,6 @@ import { useAuth } from '../store'
 import { api } from '../api'
 import { useLang } from '../i18n.jsx'
 import { useTextToSpeech } from '../components/VoiceAssistant'
-import WeeklyReport from '../components/WeeklyReport'
 import { usePrefs } from '../hooks/usePrefs'
 import { getSavedRegion } from '../utils/detectRegion'
 import ThemeToggle from '../components/ThemeToggle'
@@ -443,27 +442,52 @@ export default function Dashboard() {
       <TrendingBrief userName={firstName} />
 
       {/* ─── Stats row ───────────────────────────────────────────── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: 12, marginBottom: 24,
-      }}>
-        <StatTile
-          label={t('weekly_scripts')}
-          value={scripts.length} sub={t('dash_all_time')}
-          color={C.cyan}
-        />
-        <StatTile
-          label={t('dash_this_month')}
-          value={<span>{used}<span style={{ fontSize: '1.2rem', color: 'var(--text-faint)', fontWeight: 600 }}>/{limit}</span></span>}
-          color={C.pink} progress={pct}
-        />
-        <StatTile
-          label={t('weekly_analyses')}
-          value={logs.length} sub={t('dash_videos_reviewed')}
-          color={C.lime}
-        />
-      </div>
+      {(() => {
+        const thisMonth = scripts.filter(s => {
+          const d = new Date(s.createdAt)
+          const now = new Date()
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+        }).length
+        const scored = scripts.filter(s => s.hookScore > 0)
+        const avgScore = scored.length
+          ? Math.round(scored.reduce((a, s) => a + s.hookScore, 0) / scored.length)
+          : null
+        const scoreColor = avgScore == null ? C.cyan : avgScore >= 80 ? C.lime : avgScore >= 60 ? C.amber : C.coral
+
+        return (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: 12, marginBottom: 24,
+          }}>
+            <StatTile
+              label="Scripts Written"
+              value={scripts.length}
+              sub={thisMonth > 0 ? `${thisMonth} this month` : 'Start creating!'}
+              color={C.cyan}
+            />
+            <StatTile
+              label="Avg Hook Score"
+              value={avgScore ?? '—'}
+              sub={avgScore == null ? 'Score a hook to start' : avgScore >= 80 ? 'Strong hooks 🔥' : 'Room to improve'}
+              color={scoreColor}
+            />
+            <StatTile
+              label="Videos Analysed"
+              value={logs.length}
+              sub={logs.length > 0 ? 'performance tracked' : 'Analyse a reel'}
+              color={C.lime}
+            />
+            <StatTile
+              label="Generations Left"
+              value={limit === '∞' ? '∞' : limit - used}
+              sub={limit === '∞' ? 'Unlimited plan' : `of ${limit} total`}
+              color={C.violet}
+              progress={limit === '∞' ? null : pct}
+            />
+          </div>
+        )
+      })()}
 
       {/* ─── Creator Score ───────────────────────────────────────── */}
       <CreatorScoreCard score={creatorScore} />
@@ -521,9 +545,95 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ─── Quick actions ──────────────────────────────────────── */}
+      {/* ─── Recent Scripts ─────────────────────────────────────── */}
+      {scripts.length > 0 && (() => {
+        const recent = [...scripts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3)
+        return (
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <h2 style={{
+                fontSize: '0.72rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0,
+              }}>Recent Scripts</h2>
+              <Link to="/scripts" style={{ fontSize: '0.75rem', color: 'var(--text-faint)', textDecoration: 'none', fontFamily: 'var(--font-mono)' }}>
+                View all →
+              </Link>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {recent.map(s => {
+                const score = s.hookScore
+                const scoreColor = !score ? 'var(--text-faint)' : score >= 80 ? C.lime : score >= 60 ? C.amber : C.coral
+                const ago = (() => {
+                  const diff = Date.now() - new Date(s.createdAt)
+                  const d = Math.floor(diff / 86400000)
+                  const h = Math.floor(diff / 3600000)
+                  const m = Math.floor(diff / 60000)
+                  if (d > 0) return `${d}d ago`
+                  if (h > 0) return `${h}h ago`
+                  return `${m}m ago`
+                })()
+                return (
+                  <div key={s.id} style={{
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 14,
+                    padding: '14px 18px',
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    transition: 'border-color 0.15s, transform 0.15s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-bright)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                  >
+                    {/* Score badge */}
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+                      background: score ? `${scoreColor}18` : 'var(--surface2)',
+                      border: `1px solid ${score ? `${scoreColor}44` : 'var(--border)'}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: 'var(--font-creator)', fontWeight: 800,
+                      fontSize: score ? '1rem' : '0.8rem',
+                      color: scoreColor,
+                    }}>
+                      {score || '—'}
+                    </div>
 
-      <WeeklyReport />
+                    {/* Content */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)', marginBottom: 3, letterSpacing: '-0.01em' }}>
+                        {s.topic || 'Untitled'}
+                      </div>
+                      <div style={{
+                        fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {s.hook || 'No hook preview'}
+                      </div>
+                    </div>
+
+                    {/* Time + actions */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0 }}>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>{ago}</span>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <Link to="/score" state={{ hook: s.hook }} style={{
+                          fontSize: '0.7rem', padding: '3px 10px', borderRadius: 6,
+                          border: '1px solid var(--border)', color: 'var(--text-muted)',
+                          textDecoration: 'none', fontFamily: 'var(--font-mono)', fontWeight: 600,
+                          transition: 'all 0.15s',
+                        }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = C.cyan; e.currentTarget.style.color = C.cyan }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                        >
+                          Score →
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ─── Upgrade banner ──────────────────────────────────────── */}
       {user?.plan === 'FREE' && (
