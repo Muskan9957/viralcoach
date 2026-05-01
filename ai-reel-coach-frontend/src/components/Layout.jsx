@@ -435,6 +435,8 @@ const styles = {
     borderBottom: '1px solid var(--border-nav)',
     marginBottom: '16px',
     flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'center',
   },
 
   nav: {
