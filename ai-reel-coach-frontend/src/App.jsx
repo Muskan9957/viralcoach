@@ -33,8 +33,8 @@ function Protected({ children }) {
   if (loading) return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-        <div style={{ animation: 'pulseGlow 1.4s ease infinite' }}>
-          <Logo size={52} showWordmark={false} />
+        <div>
+          <Logo size={52} showWordmark />
         </div>
         <p style={{ color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', letterSpacing: '0.12em' }}>
           LOADING
