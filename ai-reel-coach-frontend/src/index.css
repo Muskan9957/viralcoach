@@ -49,8 +49,8 @@
   --text-faint:  #6B8DB8;
 
   /* ── Typography ── */
-  --font-display: 'Caveat', 'Plus Jakarta Sans', sans-serif;
-  --font-head:    'Caveat', 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-head:    'Plus Jakarta Sans', sans-serif;
   --font-body:    'Inter', sans-serif;
   --font-creator: 'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif; /* big-energy moments */
   --font-mono:    'DM Mono', monospace;
@@ -378,13 +378,11 @@ body::after {
 ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
 /* ─── Typography ─────────────────────────────────────────────────── */
-h1, h2, h3, h4,
-.page-title, .section-title,
-.stat-value, .card-title {
-  font-family: 'Caveat', 'Plus Jakarta Sans', sans-serif;
-  font-weight: 700;
+h1, h2, h3, h4 {
+  font-family: var(--font-head);
+  font-weight: 800;
   line-height: 1.15;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.03em;
 }
 
 /* ─── Gradient Text ──────────────────────────────────────────────── */
