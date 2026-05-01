@@ -190,6 +190,12 @@ export default function Profile() {
   const { theme, toggle }  = useTheme()
   const navigate           = useNavigate()
   const toast              = useToast()
+  const [liveStreak, setLiveStreak] = useState(null)
+
+  useEffect(() => {
+    api.getUserProfile().then(p => { if (p?.streak != null) setLiveStreak(p.streak) }).catch(() => {})
+  }, [])
+
   const [showDanger, setShowDanger]       = useState(false)
   const [showAvatarGen, setShowAvatarGen] = useState(false)
   const [avatarTab, setAvatarTab]         = useState('gallery') // 'gallery' | 'custom'
@@ -331,7 +337,7 @@ export default function Profile() {
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Day Streak',    value: `${user?.streak || 0}🔥`,    sub: 'Keep posting daily' },
+          { label: 'Day Streak',    value: `${liveStreak ?? user?.streak ?? 0}🔥`,    sub: 'Generate, score or analyse daily' },
           { label: 'Scripts Made',  value: user?.generationsUsed || 0,   sub: 'Total all time' },
           { label: 'Member Since',  value: joinDate.split(' ')[2] || '2025', sub: joinDate.split(' ').slice(0,2).join(' ') },
         ].map(s => (
