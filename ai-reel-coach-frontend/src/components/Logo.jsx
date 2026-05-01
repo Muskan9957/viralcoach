@@ -1,15 +1,16 @@
 /**
  * ViralCoach Logo
  *
- * Mark  : Film clapperboard with a play-button triangle inside.
- *         Body + two clapper boards (lower horizontal, upper angled).
- *         Classic diagonal stripes on the clapper boards.
+ * Mark  : Film clapperboard — two-colour design.
+ *   • Clapper boards (striped top section) → CYAN   (#00E5FF family)
+ *   • Body (main rectangle + play button)  → VIOLET (#A855F7 family)
  *
- * Wordmark : "Viral" stacked above "coach" in Caveat (handwritten feel).
+ * Wordmark : "Viral" stacked above "coach" in Caveat (handwritten).
+ *   • Both lines use the cyan → violet brand gradient.
  *
- * Colours adapt to theme:
- *   dark  → bright gold  (#FFE566 → #FFA520 → #C47800)
- *   light → warm amber   (#C8880A → #8B5E06 → #5C3A03)
+ * Theme adaptation:
+ *   dark  → vivid cyan + vivid violet  (pops on dark backgrounds)
+ *   light → deeper teal + deeper indigo (readable on white)
  */
 import { useTheme } from '../context/ThemeContext'
 
@@ -17,29 +18,35 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
   const { theme } = useTheme() || {}
   const isDark = theme !== 'light'
 
-  const uid  = `vc-${Math.round(size)}`
-  const gG   = `${uid}-g`    // gold gradient
-  const sP   = `${uid}-sp`   // stripe pattern
-  const cLo  = `${uid}-clo`  // clip — lower bar
-  const cUp  = `${uid}-cup`  // clip — upper board
-  const blr  = `${uid}-b`    // glow blur
+  const uid = `vc-${Math.round(size)}`
+  const vG  = `${uid}-v`    // violet gradient  (body)
+  const cG  = `${uid}-c`    // cyan gradient    (clapper boards)
+  const sP  = `${uid}-sp`   // stripe pattern
+  const cLo = `${uid}-clo`  // clip — lower bar
+  const cUp = `${uid}-cup`  // clip — upper board
+  const blr = `${uid}-b`    // glow blur
 
-  // Theme-aware gold palette
-  const [hi, mid, lo] = isDark
-    ? ['#FFE566', '#FFA520', '#C47800']
-    : ['#D4960A', '#9A6600', '#5C3A03']
+  // Violet palette
+  const [v1, v2] = isDark
+    ? ['#C084FC', '#7C3AED']   // bright violet → deep indigo
+    : ['#7C3AED', '#4C1D95']   // deeper for light bg
 
-  // Wordmark gradient string
+  // Cyan palette
+  const [c1, c2] = isDark
+    ? ['#67E8F9', '#00B4D8']   // bright cyan → teal
+    : ['#0891B2', '#0E7490']   // deeper for light bg
+
+  // Wordmark gradient
   const wGrad = isDark
-    ? 'linear-gradient(135deg, #FFE566 0%, #FFA520 100%)'
-    : 'linear-gradient(135deg, #D4960A 0%, #9A6600 100%)'
+    ? 'linear-gradient(135deg, #67E8F9 0%, #C084FC 100%)'
+    : 'linear-gradient(135deg, #0891B2 0%, #7C3AED 100%)'
 
   return (
     <div
       className={className}
       style={{ display: 'flex', alignItems: 'center', gap: size > 28 ? 8 : 5 }}
     >
-      {/* ─── Clapperboard mark ─────────────────────────────── */}
+      {/* ─── Clapperboard mark ───────────────────────────── */}
       <svg
         width={size}
         height={size}
@@ -50,22 +57,27 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
         aria-hidden="true"
       >
         <defs>
-          {/* Gold gradient — top-left → bottom-right */}
-          <linearGradient id={gG} x1="5" y1="5" x2="95" y2="95" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stopColor={hi}  />
-            <stop offset="55%"  stopColor={mid} />
-            <stop offset="100%" stopColor={lo}  />
+          {/* Violet gradient — body */}
+          <linearGradient id={vG} x1="5" y1="44" x2="95" y2="96" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stopColor={v1} />
+            <stop offset="100%" stopColor={v2} />
           </linearGradient>
 
-          {/* Diagonal stripe pattern for clapper boards */}
+          {/* Cyan gradient — clapper boards */}
+          <linearGradient id={cG} x1="5" y1="9" x2="95" y2="46" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stopColor={c1} />
+            <stop offset="100%" stopColor={c2} />
+          </linearGradient>
+
+          {/* Diagonal stripes pattern */}
           <pattern
             id={sP}
             x="0" y="0" width="14" height="14"
             patternUnits="userSpaceOnUse"
             patternTransform="rotate(-48)"
           >
-            <rect x="0" y="0" width="7"  height="14" fill="rgba(0,0,0,0.28)" />
-            <rect x="7" y="0" width="7"  height="14" fill="rgba(255,255,255,0.08)" />
+            <rect x="0" y="0" width="7" height="14" fill="rgba(0,0,0,0.22)" />
+            <rect x="7" y="0" width="7" height="14" fill="rgba(255,255,255,0.10)" />
           </pattern>
 
           {/* ClipPath — lower bar */}
@@ -78,57 +90,50 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
             <path d="M 5 32 L 95 19 L 95 9 L 5 22 Z" />
           </clipPath>
 
-          {/* Glow filter */}
+          {/* Soft glow */}
           <filter id={blr} x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="5" />
           </filter>
         </defs>
 
-        {/* Subtle outer glow behind body */}
+        {/* Glow behind body */}
         <rect
           x="5" y="44" width="90" height="52" rx="5"
-          fill={mid} opacity="0.18"
+          fill={v1} opacity="0.20"
           filter={`url(#${blr})`}
         />
 
-        {/* ── Body ──────────────────────────────────────────── */}
-        <rect x="5" y="44" width="90" height="52" rx="5" fill={`url(#${gG})`} />
-        {/* Body inner highlight — top edge shine */}
-        <rect x="5" y="44" width="90" height="6" rx="5" fill="rgba(255,255,255,0.18)" />
+        {/* ── Body (violet) ──────────────────────────────── */}
+        <rect x="5" y="44" width="90" height="52" rx="5" fill={`url(#${vG})`} />
+        {/* Top-edge shine */}
+        <rect x="5" y="44" width="90" height="7" rx="5" fill="rgba(255,255,255,0.15)" />
 
-        {/* ── Lower clapper bar ─────────────────────────────── */}
-        <rect x="5" y="32" width="90" height="14" rx="2" fill={`url(#${gG})`} />
-        {/* Diagonal stripes clipped to lower bar */}
+        {/* ── Lower clapper bar (cyan) ────────────────────── */}
+        <rect x="5" y="32" width="90" height="14" rx="2" fill={`url(#${cG})`} />
         <rect
           x="5" y="32" width="90" height="14"
           fill={`url(#${sP})`}
           clipPath={`url(#${cLo})`}
         />
-        {/* Bottom border of lower bar */}
-        <line x1="5" y1="46" x2="95" y2="46" stroke="rgba(0,0,0,0.20)" strokeWidth="1" />
+        <line x1="5" y1="46" x2="95" y2="46" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
 
-        {/* ── Upper clapper board (angled — open position) ───── */}
-        {/* Parallelogram: left side lower, right side raised */}
-        <path d="M 5 32 L 95 19 L 95 9 L 5 22 Z" fill={`url(#${gG})`} />
-        {/* Diagonal stripes clipped to upper board */}
+        {/* ── Upper clapper board — angled, open (cyan) ───── */}
+        <path d="M 5 32 L 95 19 L 95 9 L 5 22 Z" fill={`url(#${cG})`} />
         <path
           d="M 5 32 L 95 19 L 95 9 L 5 22 Z"
           fill={`url(#${sP})`}
           clipPath={`url(#${cUp})`}
         />
-        {/* Hinge pin — small circle on the left */}
-        <circle cx="10" cy="27" r="3.5" fill={lo} />
-        <circle cx="10" cy="27" r="1.8" fill={hi} opacity="0.7" />
 
-        {/* ── Play triangle ─────────────────────────────────── */}
-        {/*  Centred in the body (y 44→96 → centre y≈70)        */}
-        <path
-          d="M 35 57 L 35 80 L 68 68.5 Z"
-          fill="rgba(255,255,255,0.55)"
-        />
+        {/* Hinge pin */}
+        <circle cx="10" cy="27" r="3.5" fill={v2} />
+        <circle cx="10" cy="27" r="1.8" fill={c1} opacity="0.8" />
+
+        {/* ── Play triangle (white, inside violet body) ────── */}
+        <path d="M 35 57 L 35 80 L 68 68.5 Z" fill="rgba(255,255,255,0.60)" />
       </svg>
 
-      {/* ─── Wordmark: stacked "Viral" / "coach" ───────────── */}
+      {/* ─── Wordmark ────────────────────────────────────── */}
       {showWordmark && (
         <div style={{ lineHeight: 1.1, userSelect: 'none' }}>
           <div style={{
