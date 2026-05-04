@@ -36,9 +36,10 @@ export const api = {
   openPortal:     ()      => req('POST', '/payments/portal'),
 
   // Scripts
+  // Calls the Vercel Edge Function — true streaming, no Railway buffering
   generateStream: (body) => {
     const token = getToken()
-    return fetch(`${BASE}/scripts/generate-stream`, {
+    return fetch(`/api/generate-stream`, {
       method : 'POST',
       headers: {
         'Content-Type': 'application/json',

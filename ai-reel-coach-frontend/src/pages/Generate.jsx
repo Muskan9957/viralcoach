@@ -67,6 +67,8 @@ export default function Generate() {
     }
   }, [])
   const [loading, setLd]            = useState(false)
+  const [streaming, setStreaming]   = useState(false)
+  const [streamText, setStreamText] = useState('')
   const [result, setResult]         = useState(null)
   const [copied, setCopied]         = useState(false)
   const [micInterim, setMicInterim] = useState('')
@@ -116,21 +118,86 @@ export default function Generate() {
   const submit = async e => {
     e.preventDefault()
     if (!form.topic.trim()) { toast('Please enter a topic', 'error'); return }
+
     setLd(true)
+    setStreaming(false)
+    setStreamText('')
     setResult(null)
     setVersions([])
     setActiveVer(0)
     setRerollCount(0)
+
+    saveRegion(form.audience)
+    localStorage.setItem(SCRIPT_LANG_KEY, form.scriptLang)
+
+    const voiceInstruction = voiceProfile?.promptInstruction || undefined
+
+    // Try Vercel Edge streaming first, fall back to regular on any failure
+    let useStream = true
+    let res
     try {
-      saveRegion(form.audience)
-      localStorage.setItem(SCRIPT_LANG_KEY, form.scriptLang)
-      const data = await api.generate({ ...form, language: form.scriptLang })
-      setResult(data)
-      setVersions([{ ...data.script, label: 'v1 · Original' }])
-      setActiveVer(0)
+      res = await api.generateStream({ ...form, language: form.scriptLang, voiceInstruction })
+      if (!res.ok || !res.body) useStream = false
+    } catch {
+      useStream = false
+    }
+
+    if (!useStream) {
+      try {
+        const data = await api.generate({ ...form, language: form.scriptLang })
+        setResult(data)
+        setVersions([{ ...data.script, label: 'v1 · Original' }])
+        setActiveVer(0)
+      } catch (err) {
+        toast(err.message, 'error')
+      } finally {
+        setLd(false)
+      }
+      return
+    }
+
+    // Streaming path
+    setLd(false)
+    setStreaming(true)
+
+    try {
+      const reader  = res.body.getReader()
+      const decoder = new TextDecoder()
+      let   buffer  = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const parts = buffer.split('\n\n')
+        buffer = parts.pop()
+
+        for (const part of parts) {
+          const line = part.trim()
+          if (!line.startsWith('data:')) continue
+          try {
+            const event = JSON.parse(line.slice(5).trim())
+            if (event.type === 'chunk') {
+              setStreamText(prev => prev + event.text)
+            } else if (event.type === 'script') {
+              setStreaming(false)
+              setResult({ script: event.data, usage: event.usage, newBadges: event.newBadges })
+              setVersions([{ ...event.data, label: 'v1 · Original' }])
+              setActiveVer(0)
+            } else if (event.type === 'error') {
+              throw new Error(event.message)
+            }
+          } catch (parseErr) {
+            if (parseErr.message && parseErr.message !== 'Unexpected end of JSON input') {
+              throw parseErr
+            }
+          }
+        }
+      }
     } catch (err) {
       toast(err.message, 'error')
-    } finally {
+      setStreaming(false)
       setLd(false)
     }
   }
@@ -416,6 +483,29 @@ export default function Generate() {
             {t('generate_ai_writing')}
           </p>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{t('generate_crafting')}</p>
+        </div>
+      )}
+
+      {/* Live streaming card */}
+      {streaming && (
+        <div className="card" style={{
+          background: 'linear-gradient(135deg, rgba(255,95,31,0.04), rgba(160,110,255,0.04))',
+          border: '1px solid rgba(160,110,255,0.2)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <div style={{ display: 'flex', gap: 5 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', animation: `pulse 1s ease ${i*0.18}s infinite` }} />
+              ))}
+            </div>
+            <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Writing your script…
+            </span>
+          </div>
+          <pre style={{ fontFamily: 'inherit', fontSize: '0.93rem', lineHeight: 1.75, color: 'var(--text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>
+            {streamText}
+            <span style={{ display: 'inline-block', width: 2, height: '1em', background: 'var(--accent)', marginLeft: 2, verticalAlign: 'text-bottom', animation: 'cursorBlink 0.9s step-end infinite' }} />
+          </pre>
         </div>
       )}
 

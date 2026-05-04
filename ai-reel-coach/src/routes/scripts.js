@@ -9,6 +9,12 @@ const router = express.Router();
 // All script routes require login
 router.use(protect);
 
+// GET /api/scripts/check-quota
+router.get('/check-quota', controller.checkQuota);
+
+// POST /api/scripts/save (Vercel Edge posts here after streaming)
+router.post('/save', controller.save);
+
 // POST /api/scripts/generate-stream (SSE)
 router.post(
   '/generate-stream',

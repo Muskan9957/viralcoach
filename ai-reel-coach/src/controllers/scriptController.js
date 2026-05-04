@@ -4,6 +4,54 @@ const aiService      = require('../services/aiService');
 const planService    = require('../services/planService');
 const { checkAndAwardBadges, updateStreak } = require('../services/badgeService');
 
+// ─── GET /api/scripts/check-quota ────────────────────────────────
+const checkQuota = async (req, res, next) => {
+  try {
+    const { allowed, used, limit } = await planService.checkGenerationLimit(req.user.id)
+    if (!allowed) {
+      return res.status(403).json({
+        error: `You've used all ${limit} generations this month. Upgrade to continue.`,
+        used, limit,
+      })
+    }
+    return res.json({ allowed: true, used, limit })
+  } catch (err) { next(err) }
+}
+
+// ─── POST /api/scripts/save (called by Vercel Edge after streaming) ─
+const save = async (req, res, next) => {
+  try {
+    const { topic, niche, tone, language, hook, body, cta, fullScript } = req.body
+    const { used, limit } = await planService.checkGenerationLimit(req.user.id)
+
+    const script = await prisma.script.create({
+      data: { userId: req.user.id, topic, niche: niche || null, tone: tone || null, hook, body, cta, fullScript, hookScore: 0 },
+    })
+
+    await Promise.all([planService.incrementGenerations(req.user.id), updateStreak(req.user.id)])
+    const newBadges = await checkAndAwardBadges(req.user.id)
+
+    // Score hook in background
+    aiService.scoreHook(hook, language)
+      .then(async (d) => {
+        await Promise.all([
+          prisma.script.update({ where: { id: script.id }, data: { hookScore: d.score } }),
+          prisma.hookScore.create({
+            data: { userId: req.user.id, scriptId: script.id, hookText: hook, score: d.score, grade: d.grade, status: d.status, reasons: JSON.stringify(d.reasons) },
+          }),
+        ])
+      })
+      .catch(() => {})
+
+    return res.status(201).json({
+      id      : script.id,
+      used    : used + 1,
+      limit,
+      newBadges: newBadges.length > 0 ? newBadges : undefined,
+    })
+  } catch (err) { next(err) }
+}
+
 // ─── POST /api/scripts/generate-stream (SSE) ─────────────────────
 const generateStream = async (req, res, next) => {
   res.setHeader('Content-Type',  'text/event-stream')
@@ -190,4 +238,4 @@ const getOne = async (req, res, next) => {
   }
 };
 
-module.exports = { generateStream, generate, getAll, getOne };
+module.exports = { checkQuota, save, generateStream, generate, getAll, getOne };
