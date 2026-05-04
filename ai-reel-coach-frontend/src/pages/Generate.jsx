@@ -151,6 +151,61 @@ export default function Generate() {
         setResult(data)
         setVersions([{ ...data.script, label: 'v1 · Original' }])
         setActiveVer(0)
+      } catch (err) {
+        toast(err.message, 'error')
+      } finally {
+        setLd(false)
+      }
+      return
+    }
+
+    // Streaming path
+    setLd(false)
+    setStreaming(true)
+
+    try {
+      const reader  = res.body.getReader()
+      const decoder = new TextDecoder()
+      let   buffer  = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const parts = buffer.split('\n\n')
+        buffer = parts.pop()
+
+        for (const part of parts) {
+          const line = part.trim()
+          if (!line.startsWith('data:')) continue
+          try {
+            const event = JSON.parse(line.slice(5).trim())
+            if (event.type === 'chunk') {
+              setStreamText(prev => prev + event.text)
+            } else if (event.type === 'script') {
+              setStreaming(false)
+              setResult({ script: event.data, usage: event.usage, newBadges: event.newBadges })
+              setVersions([{ ...event.data, label: 'v1 · Original' }])
+              setActiveVer(0)
+            } else if (event.type === 'extras') {
+              setResult(prev => prev ? {
+                ...prev,
+                script: {
+                  ...prev.script,
+                  visual: event.data?.visual || null,
+                  music : event.data?.music  || null,
+                },
+              } : prev)
+            } else if (event.type === 'error') {
+              throw new Error(event.message)
+            }
+          } catch (parseErr) {
+            if (parseErr.message && parseErr.message !== 'Unexpected end of JSON input') {
+              throw parseErr
+            }
+          }
+        }
       }
     } catch (err) {
       toast(err.message, 'error')
