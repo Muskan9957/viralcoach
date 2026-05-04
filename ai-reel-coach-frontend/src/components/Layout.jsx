@@ -402,7 +402,6 @@ export default function Layout({ children }) {
             {[
               { section: 'Studio', items: [
                 { to: '/scripts',     icon: IconScripts,     label: t('nav_scripts')     },
-                { to: '/score',       icon: IconScore,       label: t('nav_score')       },
                 { to: '/my-voice',    icon: VoiceIcon,       label: t('nav_my_voice'),   premium: true },
               ]},
               { section: 'Content', items: [
