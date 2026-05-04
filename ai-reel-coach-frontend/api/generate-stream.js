@@ -205,14 +205,12 @@ export default async function handler(req) {
       let scriptData = { topic, hook, body: bodyText, cta, fullScript: fullText }
       let usage      = null
       let newBadges  = null
-      let scriptId   = null
 
       if (saveRes.ok) {
-        const saved  = await saveRes.json()
-        scriptId     = saved.id
-        scriptData.id = scriptId
-        usage        = { used: saved.used, limit: saved.limit }
-        newBadges    = saved.newBadges
+        const saved   = await saveRes.json()
+        scriptData.id = saved.id
+        usage         = { used: saved.used, limit: saved.limit }
+        newBadges     = saved.newBadges
       } else {
         const err = await saveRes.json().catch(() => ({}))
         await send({ type: 'script', data: scriptData, error: err.error || null })
@@ -222,25 +220,13 @@ export default async function handler(req) {
         return
       }
 
+      // Send script event — frontend will score hook async after receiving this
       await send({ type: 'script', data: scriptData, usage, newBadges })
 
-      // ── 5. Score hook + send extras concurrently ─────────────────
-      const scorePromise = fetch(`${RAILWAY}/api/hooks/score`, {
-        method : 'POST',
-        headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
-        body   : JSON.stringify({ hookText: hook, scriptId, language }),
-      })
-
-      const [extras, scoreRes] = await Promise.all([extrasPromise, scorePromise])
-
+      // ── 5. Send extras (visual direction + music) ────────────────
+      // Hook scoring is handled by the frontend to keep edge function lean
+      const extras = await extrasPromise
       if (extras) await send({ type: 'extras', data: extras })
-
-      if (scoreRes.ok) {
-        const scoreData = await scoreRes.json()
-        if (scoreData.hookScore) {
-          await send({ type: 'hookScore', data: scoreData.hookScore })
-        }
-      }
 
     } catch (err) {
       await send({ type: 'error', message: err.message || 'Generation failed' })

@@ -198,6 +198,18 @@ export default function Generate() {
               setResult({ script: event.data, usage: event.usage, newBadges: event.newBadges })
               setVersions([{ ...event.data, label: 'v1 · Original' }])
               setActiveVer(0)
+              // Score hook async — banner pops in ~2-3s after script appears
+              // hookScore event from Railway SSE fallback also handled below
+              if (event.data.hook) {
+                api.scoreHook({ hookText: event.data.hook, language: form.scriptLang })
+                  .then(res => {
+                    const hs = res?.hookScore
+                    if (!hs) return
+                    setResult(prev => prev ? { ...prev, script: { ...prev.script, hookScore: hs } } : prev)
+                    setVersions(prev => prev.map((v, i) => i === 0 ? { ...v, hookScore: hs } : v))
+                  })
+                  .catch(() => {})
+              }
             } else if (event.type === 'hookScore') {
               // Hook score arrives async after script sections
               setResult(prev => prev ? {
