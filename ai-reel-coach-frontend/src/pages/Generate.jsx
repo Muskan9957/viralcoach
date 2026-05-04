@@ -185,6 +185,18 @@ export default function Generate() {
               setResult({ script: event.data, usage: event.usage, newBadges: event.newBadges })
               setVersions([{ ...event.data, label: 'v1 · Original' }])
               setActiveVer(0)
+              // Score hook async — banner appears after script renders
+              if (event.data.hook) {
+                api.scoreHook({ hook: event.data.hook })
+                  .then(scoreData => {
+                    setResult(prev => prev ? {
+                      ...prev,
+                      script: { ...prev.script, hookScore: scoreData },
+                    } : prev)
+                    setVersions(prev => prev.map((v, i) => i === 0 ? { ...v, hookScore: scoreData } : v))
+                  })
+                  .catch(() => {})
+              }
             } else if (event.type === 'error') {
               throw new Error(event.message)
             }
