@@ -467,10 +467,10 @@ export default function Dashboard() {
               color={C.lime}
             />
             <StatTile
-              label="Generations Left"
-              value={limit === '∞' ? '∞' : limit - used}
-              sub={limit === '∞' ? 'Unlimited plan' : `of ${limit} total`}
-              color={C.violet}
+              label="Scripts This Month"
+              value={limit === '∞' ? used : `${used}/${limit}`}
+              sub={limit === '∞' ? 'Unlimited plan 🚀' : pct >= 80 ? 'Running low — upgrade?' : `${limit - used} scripts remaining`}
+              color={limit === '∞' ? C.violet : pct >= 80 ? C.coral : pct >= 50 ? C.amber : C.violet}
               progress={limit === '∞' ? null : pct}
             />
           </div>
