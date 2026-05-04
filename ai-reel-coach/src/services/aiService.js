@@ -74,7 +74,7 @@ Script:
 
   const client = getClient()
   const stream = client.messages.stream({
-    model     : MODEL,
+    model     : MODEL_FAST,   // Haiku — 5x faster, still great for scripts
     max_tokens: 800,
     messages  : [{ role: 'user', content: prompt }],
   })
