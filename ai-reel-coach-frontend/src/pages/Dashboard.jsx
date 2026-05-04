@@ -448,12 +448,6 @@ export default function Dashboard() {
           const now = new Date()
           return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
         }).length
-        const scored = scripts.filter(s => s.hookScore > 0)
-        const avgScore = scored.length
-          ? Math.round(scored.reduce((a, s) => a + s.hookScore, 0) / scored.length)
-          : null
-        const scoreColor = avgScore == null ? C.cyan : avgScore >= 80 ? C.lime : avgScore >= 60 ? C.amber : C.coral
-
         return (
           <div style={{
             display: 'grid',
@@ -465,12 +459,6 @@ export default function Dashboard() {
               value={scripts.length}
               sub={thisMonth > 0 ? `${thisMonth} this month` : 'Start creating!'}
               color={C.cyan}
-            />
-            <StatTile
-              label="Avg Hook Score"
-              value={avgScore ?? '—'}
-              sub={avgScore == null ? 'Score a hook to start' : avgScore >= 80 ? 'Strong hooks 🔥' : 'Room to improve'}
-              color={scoreColor}
             />
             <StatTile
               label="Videos Analysed"
