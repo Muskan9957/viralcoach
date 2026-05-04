@@ -483,6 +483,43 @@ export default function Generate() {
                 </div>
               </div>
             </div>
+
+            {/* Contextual hook improvement CTA */}
+            <div style={{
+              marginTop: 14,
+              paddingTop: 14,
+              borderTop: `1px solid ${color}25`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              flexWrap: 'wrap',
+            }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
+                {hookScore.score < 80
+                  ? 'Hook can be stronger — test alternatives'
+                  : 'Great hook! Want to test a variant?'}
+              </span>
+              <Link
+                to="/score"
+                state={{ hook: result.script.hook }}
+                style={{
+                  fontSize: '0.8rem', fontWeight: 700,
+                  color,
+                  textDecoration: 'none',
+                  fontFamily: 'var(--font-mono)',
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '5px 14px', borderRadius: 20,
+                  background: `${color}15`,
+                  border: `1px solid ${color}35`,
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  transition: 'background 0.15s',
+                }}
+              >
+                {hookScore.score < 80 ? '⚡ Improve hook →' : '↺ Try a variant →'}
+              </Link>
+            </div>
           )}
 
           {/* Script Card */}

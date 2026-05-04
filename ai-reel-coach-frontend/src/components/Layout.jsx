@@ -146,7 +146,6 @@ const NAV_CONFIG = [
   { to: '/dashboard',   icon: IconDashboard,   labelKey: 'nav_dashboard'   },
   { to: '/generate',    icon: IconGenerate,    labelKey: 'nav_generate'    },
   { to: '/scripts',     icon: IconScripts,     labelKey: 'nav_scripts'     },
-  { to: '/score',       icon: IconScore,       labelKey: 'nav_score'       },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'       },
   { to: '/my-voice',    icon: VoiceIcon,       labelKey: 'nav_my_voice',   premium: true },
   { section: 'Content',  sectionClass: 'nav-section-content'  },
