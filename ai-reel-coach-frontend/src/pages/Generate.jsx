@@ -302,14 +302,15 @@ export default function Generate() {
             <div className="field">
               <label style={fieldLabelStyle}>Duration (min)</label>
               <input
-                type="number"
+                type="text"
                 className="input"
                 placeholder="e.g. 1"
-                min="1"
-                max="60"
-                step="1"
                 value={form.duration}
-                onChange={set('duration')}
+                onChange={e => {
+                  const val = e.target.value.replace(/[^0-9]/g, '')
+                  setForm(f => ({ ...f, duration: val }))
+                }}
+                maxLength={2}
                 style={{ width: '100%' }}
               />
             </div>
