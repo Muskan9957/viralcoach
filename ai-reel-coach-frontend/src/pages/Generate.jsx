@@ -428,6 +428,7 @@ export default function Generate() {
 
           {/* Hook Score Banner */}
           {hookScore && (
+            <>
             <div style={{
               background: `linear-gradient(135deg, ${color}18, transparent)`,
               border: `1px solid ${color}40`,
@@ -520,6 +521,7 @@ export default function Generate() {
                 {hookScore.score < 80 ? '⚡ Improve hook →' : '↺ Try a variant →'}
               </Link>
             </div>
+            </>
           )}
 
           {/* Script Card */}
