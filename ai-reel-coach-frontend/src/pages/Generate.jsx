@@ -304,10 +304,10 @@ export default function Generate() {
               <input
                 type="number"
                 className="input"
-                placeholder="e.g. 0.5"
-                min="0.1"
+                placeholder="e.g. 1"
+                min="1"
                 max="60"
-                step="0.5"
+                step="1"
                 value={form.duration}
                 onChange={set('duration')}
                 style={{ width: '100%' }}
