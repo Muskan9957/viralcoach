@@ -39,8 +39,6 @@ const SCRIPT_LANGS = [
 const SCRIPT_LANG_KEY = 'arc_script_lang'
 const getSavedScriptLang = () => localStorage.getItem(SCRIPT_LANG_KEY) || 'en'
 
-const gradeColor = { A: '#00C9A7', B: '#00C9A7', C: '#FFD60A', D: '#FF9F43', F: '#FF6B6B' }
-const gradeLabel = { A: 'Excellent', B: 'Good', C: 'Average', D: 'Weak', F: 'Poor' }
 
 export default function Generate() {
   const toast      = useToast()
@@ -73,6 +71,11 @@ export default function Generate() {
   const [copied, setCopied]         = useState(false)
   const [micInterim, setMicInterim] = useState('')
   const [voiceProfile, setVoiceProfile] = useState(null)
+
+  // Inline hook improvement
+  const [hookImproving, setHookImproving]   = useState(false)
+  const [hookSuggestion, setHookSuggestion] = useState(null)
+  const [hookAccepting, setHookAccepting]   = useState(false)
 
   // Load voice profile on mount — shows indicator when active
   useEffect(() => {
@@ -148,94 +151,6 @@ export default function Generate() {
         setResult(data)
         setVersions([{ ...data.script, label: 'v1 · Original' }])
         setActiveVer(0)
-        // Score hook async for non-streaming fallback path
-        if (data.script?.hook) {
-          api.scoreHook({ hookText: data.script.hook, language: form.scriptLang })
-            .then(scoreData => {
-              if (scoreData?.hookScore) {
-                setResult(prev => prev ? {
-                  ...prev,
-                  script: { ...prev.script, hookScore: scoreData.hookScore },
-                } : prev)
-              }
-            })
-            .catch(() => {})
-        }
-      } catch (err) {
-        toast(err.message, 'error')
-      } finally {
-        setLd(false)
-      }
-      return
-    }
-
-    // Streaming path
-    setLd(false)
-    setStreaming(true)
-
-    try {
-      const reader  = res.body.getReader()
-      const decoder = new TextDecoder()
-      let   buffer  = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const parts = buffer.split('\n\n')
-        buffer = parts.pop()
-
-        for (const part of parts) {
-          const line = part.trim()
-          if (!line.startsWith('data:')) continue
-          try {
-            const event = JSON.parse(line.slice(5).trim())
-            if (event.type === 'chunk') {
-              setStreamText(prev => prev + event.text)
-            } else if (event.type === 'script') {
-              setStreaming(false)
-              setResult({ script: event.data, usage: event.usage, newBadges: event.newBadges })
-              setVersions([{ ...event.data, label: 'v1 · Original' }])
-              setActiveVer(0)
-              // Score hook async — banner pops in ~2-3s after script appears
-              // hookScore event from Railway SSE fallback also handled below
-              if (event.data.hook) {
-                api.scoreHook({ hookText: event.data.hook, language: form.scriptLang })
-                  .then(res => {
-                    const hs = res?.hookScore
-                    if (!hs) return
-                    setResult(prev => prev ? { ...prev, script: { ...prev.script, hookScore: hs } } : prev)
-                    setVersions(prev => prev.map((v, i) => i === 0 ? { ...v, hookScore: hs } : v))
-                  })
-                  .catch(() => {})
-              }
-            } else if (event.type === 'hookScore') {
-              // Hook score arrives async after script sections
-              setResult(prev => prev ? {
-                ...prev,
-                script: { ...prev.script, hookScore: event.data },
-              } : prev)
-              setVersions(prev => prev.map((v, i) => i === 0 ? { ...v, hookScore: event.data } : v))
-            } else if (event.type === 'extras') {
-              // Visual direction + music arrive async
-              setResult(prev => prev ? {
-                ...prev,
-                script: {
-                  ...prev.script,
-                  visual: event.data?.visual || null,
-                  music : event.data?.music  || null,
-                },
-              } : prev)
-            } else if (event.type === 'error') {
-              throw new Error(event.message)
-            }
-          } catch (parseErr) {
-            if (parseErr.message && parseErr.message !== 'Unexpected end of JSON input') {
-              throw parseErr
-            }
-          }
-        }
       }
     } catch (err) {
       toast(err.message, 'error')
@@ -309,9 +224,40 @@ export default function Generate() {
     toast('Copied!', 'success')
   }
 
-  const hookScore = result?.script?.hookScore
-  const grade = hookScore ? (hookScore.score >= 90 ? 'A' : hookScore.score >= 75 ? 'B' : hookScore.score >= 60 ? 'C' : hookScore.score >= 50 ? 'D' : 'F') : null
-  const color = grade ? gradeColor[grade] : '#00C9A7'
+  const improveHook = async () => {
+    if (!result?.script?.id || hookImproving) return
+    setHookImproving(true)
+    setHookSuggestion(null)
+    try {
+      const data = await api.rewriteHook({
+        scriptId    : result.script.id,
+        originalHook: result.script.hook,
+        language    : form.scriptLang,
+      })
+      setHookSuggestion(data.rewrite)
+    } catch (err) {
+      toast(err.message, 'error')
+    } finally {
+      setHookImproving(false)
+    }
+  }
+
+  const acceptHookImprovement = async () => {
+    if (!hookSuggestion?.id || hookAccepting) return
+    setHookAccepting(true)
+    try {
+      await api.acceptRewrite({ rewriteId: hookSuggestion.id })
+      const newHook = hookSuggestion.rewrittenHook
+      setResult(prev => prev ? { ...prev, script: { ...prev.script, hook: newHook } } : prev)
+      setVersions(prev => prev.map((v, i) => i === 0 ? { ...v, hook: newHook } : v))
+      setHookSuggestion(null)
+      toast('Hook updated!', 'success')
+    } catch (err) {
+      toast(err.message, 'error')
+    } finally {
+      setHookAccepting(false)
+    }
+  }
 
   return (
     <div className="page-enter" style={{ maxWidth: 720, margin: '0 auto' }}>
@@ -553,131 +499,28 @@ export default function Generate() {
 
       {/* Result — full width, auto-scrolled to */}
       {result && (
-        <div ref={resultRef} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div ref={resultRef} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          {/* Hook Score Banner */}
-          {hookScore && (
-            <>
-            <div style={{
-              background: `linear-gradient(135deg, ${color}18, transparent)`,
-              border: `1px solid ${color}40`,
-              borderRadius: 'var(--radius-lg)',
-              padding: '20px 24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 20,
-              flexWrap: 'wrap',
-            }}>
-              {/* Big score */}
-              <div style={{ textAlign: 'center', minWidth: 70 }}>
-                <div style={{
-                  fontFamily: 'var(--font-head)',
-                  fontSize: '3rem',
-                  fontWeight: 900,
-                  color,
-                  lineHeight: 1,
-                  textShadow: `0 0 30px ${color}60`,
-                }}>
-                  {hookScore.score}
-                  <span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--text-faint)', opacity: 0.6 }}>/100</span>
-                </div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 }}>
-                  {t('generate_score_label')}
-                </div>
-              </div>
-              <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span style={{
-                    fontFamily: 'var(--font-head)',
-                    fontSize: '1.1rem',
-                    fontWeight: 800,
-                    color,
-                  }}>Grade {grade} — {gradeLabel[grade]}</span>
-                  <span style={{
-                    fontSize: '0.72rem',
-                    padding: '3px 10px',
-                    borderRadius: 20,
-                    background: `${color}22`,
-                    color,
-                    fontWeight: 600,
-                    fontFamily: 'var(--font-mono)',
-                  }}>{hookScore.status}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {hookScore.reasons?.slice(0, 2).map((r, i) => (
-                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: color, flexShrink: 0, marginTop: 7 }} />
-                      <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{r}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          {/* ── Script Card ── compact ── */}
+          <div className="card" style={{ padding: '20px 22px' }}>
 
-            {/* Contextual hook improvement CTA */}
-            <div style={{
-              marginTop: 14,
-              paddingTop: 14,
-              borderTop: `1px solid ${color}25`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
-              flexWrap: 'wrap',
-            }}>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-                {hookScore.score < 80
-                  ? 'Hook can be stronger — test alternatives'
-                  : 'Great hook! Want to test a variant?'}
-              </span>
-              <Link
-                to="/score"
-                state={{ hook: result.script.hook }}
-                style={{
-                  fontSize: '0.8rem', fontWeight: 700,
-                  color,
-                  textDecoration: 'none',
-                  fontFamily: 'var(--font-mono)',
-                  display: 'flex', alignItems: 'center', gap: 4,
-                  padding: '5px 14px', borderRadius: 20,
-                  background: `${color}15`,
-                  border: `1px solid ${color}35`,
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'background 0.15s',
-                }}
-              >
-                {hookScore.score < 80 ? '⚡ Improve hook →' : '↺ Try a variant →'}
-              </Link>
-            </div>
-            </>
-          )}
-
-          {/* Script Card */}
-          <div className="card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                  <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.15rem', margin: 0 }}>
-                    {t('generate_your_script')}
-                  </h2>
-                  <span style={{
-                    fontSize: '0.65rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
-                    padding: '2px 8px', borderRadius: 99, letterSpacing: '0.06em',
-                    background: 'linear-gradient(135deg, rgba(255,180,0,0.15), rgba(255,95,31,0.15))',
-                    border: '1px solid rgba(255,160,0,0.3)', color: '#FFB800',
-                  }}>⚡ Viral edited</span>
-                </div>
-                {result.script?.viralEditNote && (
-                  <p style={{ color: 'var(--text-faint)', fontSize: '0.75rem', fontFamily: 'var(--font-mono)', margin: '2px 0 0', fontStyle: 'italic' }}>
-                    {result.script.viralEditNote}
-                  </p>
-                )}
-                <p style={{ color: 'var(--text-faint)', fontSize: '0.78rem', fontFamily: 'var(--font-mono)', marginTop: 4 }}>
+            {/* Card header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, gap: 12, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+                <h2 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1.05rem', margin: 0, whiteSpace: 'nowrap' }}>
+                  {t('generate_your_script')}
+                </h2>
+                <span style={{
+                  fontSize: '0.62rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                  padding: '2px 7px', borderRadius: 99, letterSpacing: '0.06em', whiteSpace: 'nowrap', flexShrink: 0,
+                  background: 'linear-gradient(135deg, rgba(255,180,0,0.15), rgba(255,95,31,0.15))',
+                  border: '1px solid rgba(255,160,0,0.3)', color: '#FFB800',
+                }}>⚡ Viral</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
                   {form.topic}
-                </p>
+                </span>
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 <SpeakButton text={result.script?.fullScript} />
                 <button onClick={copyScript} className="btn btn-ghost btn-sm">
                   {copied ? `✓ ${t('generate_copied')}` : t('generate_copy_all')}
@@ -685,60 +528,96 @@ export default function Generate() {
               </div>
             </div>
 
-            {/* duration banner removed — user picks duration in form */}
-            {false && (
-              <div style={{
-                display: 'flex', alignItems: 'flex-start', gap: 12,
-                padding: '12px 16px', borderRadius: 10, marginBottom: 20,
-                background: 'rgba(0,200,255,0.07)',
-                border: '1px solid rgba(0,200,255,0.2)',
-              }}>
-                <span style={{ fontSize: '1.1rem', flexShrink: 0, marginTop: 1 }}>⏱</span>
-                <div>
-                  <span style={{
-                    fontSize: '0.68rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
-                    textTransform: 'uppercase', letterSpacing: '0.1em',
-                    color: '#00C8FF', display: 'block', marginBottom: 3,
-                  }}>
-                    Ideal Reel Length
-                  </span>
-                  <span style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.5 }}>
-                    {result.script.idealDuration}
-                  </span>
-                </div>
-              </div>
-            )}
-
             {/* Hook */}
-            <div style={sectionStyle('#00C8FF')}>
-              <div style={labelStyle}>🎣 {t('generate_hook').toUpperCase()} — {form.scriptLang === 'hi' ? 'पहले 3 सेकंड' : 'First 3 seconds'}</div>
-              <p style={scriptTextStyle}>{result.script.hook}</p>
+            <div style={{ marginBottom: 10, padding: '13px 16px', borderRadius: 10, background: 'rgba(0,200,255,0.05)', borderLeft: '3px solid #00C8FF' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, gap: 8 }}>
+                <span style={{ fontSize: '0.66rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#00C8FF' }}>
+                  🎣 {t('generate_hook')} — {form.scriptLang === 'hi' ? 'पहले 3 सेकंड' : 'First 3 sec'}
+                </span>
+                {result.script?.id && (
+                  <button
+                    type="button"
+                    onClick={improveHook}
+                    disabled={hookImproving}
+                    style={{
+                      padding: '3px 10px', borderRadius: 20,
+                      fontSize: '0.7rem', fontWeight: 700,
+                      fontFamily: 'var(--font-mono)',
+                      border: '1px solid rgba(0,200,255,0.3)',
+                      background: 'rgba(0,200,255,0.08)',
+                      color: '#00C8FF',
+                      cursor: hookImproving ? 'not-allowed' : 'pointer',
+                      opacity: hookImproving ? 0.55 : 1,
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      transition: 'all 0.15s', flexShrink: 0,
+                    }}
+                    onMouseEnter={e => { if (!hookImproving) e.currentTarget.style.background = 'rgba(0,200,255,0.18)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,200,255,0.08)' }}
+                  >
+                    {hookImproving
+                      ? <><span className="spinner" style={{ width: 9, height: 9, borderColor: 'rgba(0,200,255,0.2)', borderTopColor: '#00C8FF' }} /> Improving…</>
+                      : '⚡ Improve Hook'}
+                  </button>
+                )}
+              </div>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--text)', margin: 0 }}>{result.script.hook}</p>
+
+              {/* Inline suggestion */}
+              {hookSuggestion && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(0,200,255,0.18)' }}>
+                  <div style={{ fontSize: '0.66rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(0,200,255,0.7)', marginBottom: 8 }}>
+                    ✨ Suggested rewrite
+                  </div>
+                  <p style={{ fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--text)', margin: '0 0 6px', fontStyle: 'italic' }}>
+                    {hookSuggestion.rewrittenHook}
+                  </p>
+                  {hookSuggestion.changes && (
+                    <p style={{ fontSize: '0.76rem', color: 'var(--text-faint)', margin: '0 0 12px', lineHeight: 1.5 }}>
+                      {hookSuggestion.changes}
+                    </p>
+                  )}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button type="button" onClick={acceptHookImprovement} disabled={hookAccepting}
+                      className="btn btn-primary btn-sm" style={{ fontSize: '0.78rem', height: 32, paddingInline: 14 }}>
+                      {hookAccepting ? <><span className="spinner" style={{ width: 9, height: 9 }} /> Applying…</> : '✓ Use this hook'}
+                    </button>
+                    <button type="button" onClick={() => setHookSuggestion(null)}
+                      className="btn btn-ghost btn-sm" style={{ fontSize: '0.78rem', height: 32, paddingInline: 14 }}>
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Body */}
-            <div style={sectionStyle('#00C9A7')}>
-              <div style={labelStyle}>📖 {t('generate_body').toUpperCase()} — {form.scriptLang === 'hi' ? 'मुख्य मूल्य' : 'Main value'}</div>
-              <p style={{ ...scriptTextStyle, whiteSpace: 'pre-line' }}>{result.script.body}</p>
+            <div style={{ marginBottom: 10, padding: '13px 16px', borderRadius: 10, background: 'rgba(0,201,167,0.05)', borderLeft: '3px solid #00C9A7' }}>
+              <div style={{ fontSize: '0.66rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#00C9A7', marginBottom: 8 }}>
+                📖 {t('generate_body')} — {form.scriptLang === 'hi' ? 'मुख्य मूल्य' : 'Main value'}
+              </div>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--text)', margin: 0, whiteSpace: 'pre-line' }}>{result.script.body}</p>
             </div>
 
             {/* CTA */}
-            <div style={sectionStyle('#FFD60A')}>
-              <div style={labelStyle}>📣 {t('generate_cta').toUpperCase()}</div>
-              <p style={scriptTextStyle}>{result.script.cta}</p>
+            <div style={{ marginBottom: 14, padding: '13px 16px', borderRadius: 10, background: 'rgba(255,214,10,0.04)', borderLeft: '3px solid #FFD60A' }}>
+              <div style={{ fontSize: '0.66rem', fontFamily: 'var(--font-mono)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#FFD60A', marginBottom: 8 }}>
+                📣 {t('generate_cta')}
+              </div>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.7, color: 'var(--text)', margin: 0 }}>{result.script.cta}</p>
             </div>
 
-            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
+            {/* Footer */}
+            <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
                 {result.usage?.used}/{result.usage?.limit} {t('generate_usage')}
               </span>
               {result.newBadges?.length > 0 && (
-                <span style={{ fontSize: '0.8rem', color: 'var(--yellow)', fontWeight: 600 }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--yellow)', fontWeight: 600 }}>
                   {t('generate_new_badge')}
                 </span>
               )}
             </div>
           </div>
-
           {/* ── Visual Direction ─────────────────────────────────── */}
           {result.script?.visual && (
             <div className="card" style={{ borderLeft: '3px solid #A78BFA' }}>
