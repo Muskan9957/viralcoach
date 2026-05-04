@@ -81,9 +81,15 @@ Script:
 
   let fullText = ''
 
-  for await (const text of stream.textStream) {
-    fullText += text
-    yield { type: 'chunk', text }
+  for await (const event of stream) {
+    if (
+      event.type === 'content_block_delta' &&
+      event.delta?.type === 'text_delta' &&
+      event.delta.text
+    ) {
+      fullText += event.delta.text
+      yield { type: 'chunk', text: event.delta.text }
+    }
   }
 
   // Parse sections from the complete streamed text
