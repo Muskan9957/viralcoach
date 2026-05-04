@@ -857,18 +857,52 @@ export default function Generate() {
             </div>
           )}
 
-          {/* ── Tweak chips + version history ────────────────────── */}
-          <div ref={refineRef} style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 40 }}>
+          {/* ── Tweak This Take ──────────────────────────────────── */}
+          <div ref={refineRef} className="card" style={{
+            background: 'linear-gradient(145deg, rgba(123,92,240,0.08) 0%, rgba(0,200,255,0.03) 100%)',
+            border: '1px solid rgba(123,92,240,0.25)',
+            paddingBottom: 24,
+          }}>
 
-            {/* Divider */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>tweak this take</span>
-              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
+              <div>
+                <h3 style={{
+                  fontFamily: 'var(--font-head)',
+                  fontWeight: 800,
+                  fontSize: '1.05rem',
+                  margin: '0 0 3px',
+                  background: 'linear-gradient(135deg, #fff 20%, #C4ABFF 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}>
+                  ✦ Tweak This Take
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-faint)', fontFamily: 'var(--font-body)' }}>
+                  Refine without spending quota
+                </p>
+              </div>
+              {refining && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  padding: '6px 13px', borderRadius: 20,
+                  background: 'rgba(123,92,240,0.15)',
+                  border: '1px solid rgba(155,114,255,0.3)',
+                }}>
+                  <span className="spinner" style={{ width: 11, height: 11, borderColor: 'rgba(155,114,255,0.25)', borderTopColor: '#9B72FF' }} />
+                  <span style={{ fontSize: '0.74rem', color: '#B39DFF', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>Rewriting…</span>
+                </div>
+              )}
             </div>
 
-            {/* Refine chips */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {/* Chip grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))',
+              gap: 8,
+              marginBottom: 6,
+            }}>
               {REFINE_CHIPS.map(chip => (
                 <button
                   key={chip.label}
@@ -876,34 +910,60 @@ export default function Generate() {
                   onClick={() => refine(chip.instruction)}
                   disabled={refining || rerolling}
                   style={{
-                    padding: '7px 15px',
-                    borderRadius: 20,
-                    fontSize: '0.8rem',
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    fontSize: '0.83rem',
                     fontWeight: 600,
-                    border: '1px solid var(--border)',
-                    background: 'var(--surface2)',
+                    fontFamily: 'var(--font-body)',
+                    border: '1px solid rgba(123,92,240,0.2)',
+                    background: 'rgba(13,18,66,0.6)',
                     color: 'var(--text-muted)',
                     cursor: (refining || rerolling) ? 'not-allowed' : 'pointer',
-                    opacity: (refining || rerolling) ? 0.45 : 1,
-                    transition: 'border-color 0.15s, color 0.15s',
+                    opacity: (refining || rerolling) ? 0.38 : 1,
+                    transition: 'all 0.18s ease',
+                    textAlign: 'left',
                     whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    lineHeight: 1.3,
                   }}
-                  onMouseEnter={e => { if (!refining && !rerolling) { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                  onMouseEnter={e => {
+                    if (refining || rerolling) return
+                    e.currentTarget.style.borderColor = 'rgba(155,114,255,0.6)'
+                    e.currentTarget.style.background = 'rgba(123,92,240,0.2)'
+                    e.currentTarget.style.color = '#D4BFFF'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(123,92,240,0.25)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'rgba(123,92,240,0.2)'
+                    e.currentTarget.style.background = 'rgba(13,18,66,0.6)'
+                    e.currentTarget.style.color = 'var(--text-muted)'
+                    e.currentTarget.style.transform = 'none'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
                 >
-                  {refining ? <><span className="spinner" style={{ width: 10, height: 10 }} /></> : null}
                   {chip.label}
                 </button>
               ))}
             </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginTop: -8 }}>
-              Tweaks don't use your generation quota
-            </div>
 
-            {/* Row 3 — Version history (only when multiple takes exist) */}
+            {/* Version history */}
             {versions.length > 1 && (
-              <div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+              <div style={{
+                marginTop: 22,
+                paddingTop: 18,
+                borderTop: '1px solid rgba(123,92,240,0.15)',
+              }}>
+                <div style={{
+                  fontSize: '0.69rem',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.12em',
+                  color: 'var(--text-faint)',
+                  marginBottom: 10,
+                }}>
                   Your takes
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -913,18 +973,22 @@ export default function Generate() {
                       type="button"
                       onClick={() => switchVersion(i)}
                       style={{
-                        padding: '5px 14px',
+                        padding: '6px 15px',
                         borderRadius: 20,
                         fontSize: '0.75rem',
                         fontFamily: 'var(--font-mono)',
                         fontWeight: 600,
-                        border: `1px solid ${i === activeVer ? 'var(--accent)' : 'var(--border)'}`,
-                        background: i === activeVer ? 'var(--accent-dim)' : 'transparent',
-                        color: i === activeVer ? 'var(--accent)' : 'var(--text-muted)',
+                        border: i === activeVer ? '1px solid rgba(155,114,255,0.55)' : '1px solid var(--border)',
+                        background: i === activeVer
+                          ? 'linear-gradient(135deg, rgba(123,92,240,0.28), rgba(0,200,255,0.1))'
+                          : 'transparent',
+                        color: i === activeVer ? '#C4ABFF' : 'var(--text-faint)',
                         cursor: 'pointer',
                         transition: 'all 0.15s',
+                        boxShadow: i === activeVer ? '0 2px 14px rgba(123,92,240,0.22)' : 'none',
                       }}
                     >
+                      {i === activeVer && <span style={{ marginRight: 5, fontSize: '0.55rem', verticalAlign: 'middle' }}>▶</span>}
                       {v.label}
                     </button>
                   ))}
