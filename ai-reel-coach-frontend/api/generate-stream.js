@@ -27,6 +27,34 @@ function durationToWords(duration) {
   }
 }
 
+function parseScript(fullText) {
+  // Strip markdown bold/italic that models sometimes add
+  const text = fullText.replace(/\*\*/g, '').replace(/\*/g, '')
+
+  const hookIdx = text.search(/\bHOOK\s*[:(]/i)
+  const bodyIdx = text.search(/\bBODY\s*[:(]/i)
+  const ctaIdx  = text.search(/\bCTA\s*[:(]/i)
+
+  let hook = '', body = '', cta = ''
+
+  if (hookIdx !== -1) {
+    const end = bodyIdx !== -1 ? bodyIdx : (ctaIdx !== -1 ? ctaIdx : text.length)
+    hook = text.slice(hookIdx, end).replace(/^HOOK[^:\n]*[:\n]\s*/i, '').trim()
+  }
+  if (bodyIdx !== -1) {
+    const end = ctaIdx !== -1 ? ctaIdx : text.length
+    body = text.slice(bodyIdx, end).replace(/^BODY[^:\n]*[:\n]\s*/i, '').trim()
+  }
+  if (ctaIdx !== -1) {
+    cta = text.slice(ctaIdx).replace(/^CTA[^:\n]*[:\n]\s*/i, '').trim()
+  }
+
+  // Last-resort fallback: if none parsed, dump everything into body
+  if (!hook && !body && !cta) body = fullText.trim()
+
+  return { hook, body, cta }
+}
+
 function buildPrompt({ topic, niche, tone, language, voiceInstruction, duration }) {
   const lang   = LANG[language] || ''
   const voice  = voiceInstruction ? `\nVOICE STYLE (follow strictly):\n${voiceInstruction}` : ''
@@ -34,25 +62,24 @@ function buildPrompt({ topic, niche, tone, language, voiceInstruction, duration 
 
   return `You are an expert short-form content coach for viral Instagram Reels and YouTube Shorts.
 ${lang ? '\n' + lang + '\n' : ''}
-Generate a high-performing short-form video script:
-- Topic   : ${topic}
-- Niche   : ${niche || 'general'}
-- Tone    : ${tone  || 'conversational'}
-- Duration: ${wc.label} (${wc.min}–${wc.max} spoken words)
+Write a short-form video script with EXACTLY these three sections labelled HOOK:, BODY:, and CTA:
+
+Topic   : ${topic}
+Niche   : ${niche || 'general'}
+Tone    : ${tone  || 'conversational'}
+Duration: ${wc.label} (${wc.min}–${wc.max} spoken words)
 ${voice}
 
-HOOK (first 3 seconds — stop the scroll):
-[1-2 sentences. Curiosity, bold claim, or shocking statement.]
+HOOK:
+[1-2 sentences. First 3 seconds. Curiosity, bold claim, or shocking statement that stops the scroll.]
 
-BODY (main value):
-[Punchy points or mini story. Short sentences. No filler. Match the duration.]
+BODY:
+[Punchy points or mini story. Short sentences. No filler. Match the duration target.]
 
-CTA (last 5 seconds):
-[One clear action: follow, comment, save, or share.]
+CTA:
+[One clear action for the last 5 seconds: follow, comment, save, or share.]
 
-Rules: Approx ${wc.min}–${wc.max} spoken words. Write like talking to a friend. No hashtags or emojis. Return only the script.
-
-Script:`
+Important: keep the labels HOOK:, BODY:, and CTA: exactly as shown. ${wc.min}–${wc.max} spoken words total. Write like talking to a friend. No hashtags, no emojis.`
 }
 
 export default async function handler(req) {
@@ -119,9 +146,7 @@ export default async function handler(req) {
       }
 
       // Parse sections
-      const hook     = fullText.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i)?.[1]?.trim()  || ''
-      const bodyText = fullText.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i)?.[1]?.trim()   || ''
-      const cta      = fullText.match(/CTA[^:]*:\s*([\s\S]*?)$/i)?.[1]?.trim()            || ''
+      const { hook, body: bodyText, cta } = parseScript(fullText)
 
       // Save to Railway (quota, streak, badges) — after streaming completes
       const saveRes  = await fetch(`${RAILWAY}/api/scripts/save`, {
