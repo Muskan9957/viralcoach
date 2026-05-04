@@ -304,13 +304,13 @@ export default function Generate() {
               <input
                 type="text"
                 className="input"
-                placeholder="e.g. 1"
+                placeholder="e.g. 2.5"
                 value={form.duration}
                 onChange={e => {
-                  const val = e.target.value.replace(/[^0-9]/g, '')
+                  const val = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
                   setForm(f => ({ ...f, duration: val }))
                 }}
-                maxLength={2}
+                maxLength={5}
                 style={{ width: '100%' }}
               />
             </div>
