@@ -136,6 +136,18 @@ export default function Generate() {
       const voiceInstruction = voiceProfile?.promptInstruction || undefined
       const res = await api.generateStream({ ...form, language: form.scriptLang, voiceInstruction })
 
+      // Fallback: if streaming route not available yet, use regular endpoint
+      if (res.status === 404) {
+        setStreaming(false)
+        setLd(true)
+        const data = await api.generate({ ...form, language: form.scriptLang })
+        setResult(data)
+        setVersions([{ ...data.script, label: 'v1 · Original' }])
+        setActiveVer(0)
+        setLd(false)
+        return
+      }
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.error || 'Generation failed')
