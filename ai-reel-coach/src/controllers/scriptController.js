@@ -110,63 +110,48 @@ const generate = async (req, res, next) => {
     const { topic, niche, tone, language } = req.body;
     const { hook, body, cta, fullScript } = await aiService.generateScript({ topic, niche, tone, language });
 
-    // 3. Auto-score the hook (same language for consistency)
-    const hookScoreData = await aiService.scoreHook(hook, language);
-
-    // 4. Save script to database
+    // 3. Save script immediately (hookScore placeholder — scored async below)
     const script = await prisma.script.create({
-      data: {
-        userId: req.user.id,
-        topic,
-        niche : niche || null,
-        tone  : tone  || null,
-        hook,
-        body,
-        cta,
-        fullScript,
-        hookScore: hookScoreData.score,
-      },
+      data: { userId: req.user.id, topic, niche: niche || null, tone: tone || null, hook, body, cta, fullScript, hookScore: 0 },
     });
 
-    // 5. Save hook score record (needs script.id — can't fully parallelize with step 4)
-    await prisma.hookScore.create({
-      data: {
-        userId  : req.user.id,
-        scriptId: script.id,
-        hookText: hook,
-        score   : hookScoreData.score,
-        grade   : hookScoreData.grade,
-        status  : hookScoreData.status,
-        reasons : JSON.stringify(hookScoreData.reasons),
-      },
-    });
-
-    // 6 & 7. Increment usage + update streak in parallel — they don't depend on each other
+    // 4. Usage + streak in parallel
     await Promise.all([
       planService.incrementGenerations(req.user.id),
       updateStreak(req.user.id),
     ]);
     const newBadges = await checkAndAwardBadges(req.user.id);
 
+    // 5. Return script to user immediately — don't wait for hook scoring
     const response = {
       message: 'Script generated successfully!',
-      script : {
-        id        : script.id,
-        topic,
-        hook,
-        body,
-        cta,
-        fullScript,
-        hookScore : hookScoreData,
-      },
-      usage: { used: used + 1, limit },
+      script : { id: script.id, topic, hook, body, cta, fullScript, hookScore: null },
+      usage  : { used: used + 1, limit },
     };
+    if (newBadges.length > 0) response.newBadges = newBadges;
+    res.status(201).json(response);
 
-    if (newBadges.length > 0) {
-      response.newBadges = newBadges;
-    }
+    // 6. Score hook in background — saves to DB, doesn't block the user
+    aiService.scoreHook(hook, language)
+      .then(async (hookScoreData) => {
+        await Promise.all([
+          prisma.script.update({ where: { id: script.id }, data: { hookScore: hookScoreData.score } }),
+          prisma.hookScore.create({
+            data: {
+              userId  : req.user.id,
+              scriptId: script.id,
+              hookText: hook,
+              score   : hookScoreData.score,
+              grade   : hookScoreData.grade,
+              status  : hookScoreData.status,
+              reasons : JSON.stringify(hookScoreData.reasons),
+            },
+          }),
+        ]);
+      })
+      .catch(() => {});
 
-    return res.status(201).json(response);
+    return;
   } catch (err) {
     next(err);
   }
