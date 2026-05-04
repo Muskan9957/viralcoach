@@ -2,7 +2,6 @@ import Anthropic from '@anthropic-ai/sdk'
 
 export const config = { runtime: 'edge' }
 
-// ─── Language instructions ────────────────────────────────────────
 const LANG = {
   hi      : 'IMPORTANT: Write ALL content entirely in Hindi (Devanagari script).',
   hinglish: 'IMPORTANT: Write ALL content in Hinglish — natural Hindi+English mix, Roman script.',
@@ -16,34 +15,47 @@ const LANG = {
   ko      : 'IMPORTANT: Write ALL content entirely in Korean.',
 }
 
-function buildPrompt({ topic, niche, tone, language, voiceInstruction }) {
-  const lang  = LANG[language] || ''
-  const voice = voiceInstruction ? `\nVOICE STYLE (follow strictly):\n${voiceInstruction}` : ''
+// Approx 130 words per minute of speaking
+function durationToWords(duration) {
+  const mins = parseFloat(duration)
+  if (!mins || isNaN(mins)) return { min: 150, max: 225, label: '60-90 seconds' }
+  const words = Math.round(mins * 130)
+  return {
+    min  : Math.max(80, Math.round(words * 0.9)),
+    max  : Math.round(words * 1.1),
+    label: `${mins} minute${mins !== 1 ? 's' : ''}`,
+  }
+}
+
+function buildPrompt({ topic, niche, tone, language, voiceInstruction, duration }) {
+  const lang   = LANG[language] || ''
+  const voice  = voiceInstruction ? `\nVOICE STYLE (follow strictly):\n${voiceInstruction}` : ''
+  const wc     = durationToWords(duration)
+
   return `You are an expert short-form content coach for viral Instagram Reels and YouTube Shorts.
 ${lang ? '\n' + lang + '\n' : ''}
 Generate a high-performing short-form video script:
-- Topic: ${topic}
-- Niche: ${niche || 'general'}
-- Tone: ${tone || 'conversational'}
+- Topic   : ${topic}
+- Niche   : ${niche || 'general'}
+- Tone    : ${tone  || 'conversational'}
+- Duration: ${wc.label} (${wc.min}–${wc.max} spoken words)
 ${voice}
 
 HOOK (first 3 seconds — stop the scroll):
 [1-2 sentences. Curiosity, bold claim, or shocking statement.]
 
 BODY (main value):
-[3-5 punchy points or mini story. Short sentences. No filler.]
+[Punchy points or mini story. Short sentences. No filler. Match the duration.]
 
 CTA (last 5 seconds):
 [One clear action: follow, comment, save, or share.]
 
-Rules: 150-225 words total. Write like talking to a friend. No hashtags or emojis.
+Rules: Approx ${wc.min}–${wc.max} spoken words. Write like talking to a friend. No hashtags or emojis. Return only the script.
 
 Script:`
 }
 
-// ─── Edge handler ─────────────────────────────────────────────────
 export default async function handler(req) {
-  // CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       headers: {
@@ -64,47 +76,33 @@ export default async function handler(req) {
   }
 
   const RAILWAY = process.env.RAILWAY_API_URL
-  if (!RAILWAY) {
-    return new Response(JSON.stringify({ error: 'Server misconfigured: missing RAILWAY_API_URL' }), {
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
+
+  if (!RAILWAY || !ANTHROPIC_KEY) {
+    return new Response(JSON.stringify({ error: 'misconfigured' }), {
       status: 500, headers: { 'Content-Type': 'application/json' },
     })
   }
 
   const body = await req.json()
-  const { topic, niche, tone, language = 'en', voiceInstruction } = body
+  const { topic, niche, tone, language = 'en', voiceInstruction, duration } = body
 
   const encoder = new TextEncoder()
   const { readable, writable } = new TransformStream()
   const writer = writable.getWriter()
+  const send = async (data) => writer.write(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
 
-  const send = async (data) => {
-    await writer.write(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
-  }
-
-  // Run everything async — response starts streaming immediately
   ;(async () => {
     try {
-      // 1. Check quota on Railway (fast, no AI)
-      const quotaRes = await fetch(`${RAILWAY}/api/scripts/check-quota`, {
-        headers: { Authorization: authHeader },
-      })
-
-      if (!quotaRes.ok) {
-        const err = await quotaRes.json().catch(() => ({}))
-        await send({ type: 'error', message: err.error || 'Quota exceeded or session expired' })
-        await writer.close()
-        return
-      }
-
-      const { used, limit } = await quotaRes.json()
-
-      // 2. Stream from Anthropic — words appear in browser instantly
-      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-      const prompt = buildPrompt({ topic, niche, tone, language, voiceInstruction })
+      // Stream from Anthropic immediately — no blocking quota check
+      const client  = new Anthropic({ apiKey: ANTHROPIC_KEY })
+      const wc      = durationToWords(duration)
+      const maxTok  = Math.min(1200, Math.max(500, Math.round(wc.max * 1.5)))
+      const prompt  = buildPrompt({ topic, niche, tone, language, voiceInstruction, duration })
 
       const stream = client.messages.stream({
         model     : 'claude-haiku-4-5-20251001',
-        max_tokens: 700,
+        max_tokens: maxTok,
         messages  : [{ role: 'user', content: prompt }],
       })
 
@@ -120,26 +118,35 @@ export default async function handler(req) {
         }
       }
 
-      // 3. Parse sections
-      const hook     = fullText.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i)?.[1]?.trim()     || ''
-      const bodyText = fullText.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i)?.[1]?.trim()      || ''
-      const cta      = fullText.match(/CTA[^:]*:\s*([\s\S]*?)$/i)?.[1]?.trim()               || ''
+      // Parse sections
+      const hook     = fullText.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i)?.[1]?.trim()  || ''
+      const bodyText = fullText.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i)?.[1]?.trim()   || ''
+      const cta      = fullText.match(/CTA[^:]*:\s*([\s\S]*?)$/i)?.[1]?.trim()            || ''
 
-      // 4. Save to Railway (quota decrement, streak, badges)
-      const saveRes = await fetch(`${RAILWAY}/api/scripts/save`, {
+      // Save to Railway (quota, streak, badges) — after streaming completes
+      const saveRes  = await fetch(`${RAILWAY}/api/scripts/save`, {
         method : 'POST',
         headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
         body   : JSON.stringify({ topic, niche, tone, language, hook, body: bodyText, cta, fullScript: fullText }),
       })
 
-      const saveData = saveRes.ok ? await saveRes.json() : {}
-
-      await send({
-        type     : 'script',
-        data     : { id: saveData.id, topic, hook, body: bodyText, cta, fullScript: fullText },
-        usage    : { used: used + 1, limit },
-        newBadges: saveData.newBadges,
-      })
+      if (!saveRes.ok) {
+        const err = await saveRes.json().catch(() => ({}))
+        // Quota exceeded — still show the script but warn
+        await send({
+          type : 'script',
+          data : { topic, hook, body: bodyText, cta, fullScript: fullText },
+          error: err.error || null,
+        })
+      } else {
+        const saved = await saveRes.json()
+        await send({
+          type     : 'script',
+          data     : { id: saved.id, topic, hook, body: bodyText, cta, fullScript: fullText },
+          usage    : { used: saved.used, limit: saved.limit },
+          newBadges: saved.newBadges,
+        })
+      }
 
     } catch (err) {
       await send({ type: 'error', message: err.message || 'Generation failed' })
