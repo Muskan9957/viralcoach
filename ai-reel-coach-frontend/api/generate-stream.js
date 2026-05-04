@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-export const config = { runtime: 'edge' }
+export const config = { runtime: 'edge', maxDuration: 30 }
 
 const LANG = {
   hi      : 'IMPORTANT: Write ALL content entirely in Hindi (Devanagari script).',
@@ -82,6 +82,50 @@ CTA:
 Important: keep the labels HOOK:, BODY:, and CTA: exactly as shown. ${wc.min}–${wc.max} spoken words total. Write like talking to a friend. No hashtags, no emojis.`
 }
 
+// Generate visual direction + music vibe suggestions via a fast Haiku call
+async function generateExtras(topic, hook, body, tone, apiKey) {
+  try {
+    const client = new Anthropic({ apiKey })
+    const res = await client.messages.create({
+      model     : 'claude-haiku-4-5-20251001',
+      max_tokens: 450,
+      messages  : [{
+        role   : 'user',
+        content: `You are a video production consultant. Based on this short-form video script, suggest a visual direction and background music.
+
+Topic: ${topic}
+Tone: ${tone || 'conversational'}
+Hook: ${hook}
+Body: ${body.slice(0, 250)}
+
+Return ONLY this JSON with no extra text:
+{
+  "visual": {
+    "background": "ideal filming background in one sentence",
+    "style": "shooting style in one phrase (e.g. handheld, talking-head, walking)",
+    "broll": ["b-roll idea 1", "b-roll idea 2", "b-roll idea 3"],
+    "colorMood": "color/lighting mood in a few words",
+    "textOverlay": "text to display on screen during the hook"
+  },
+  "music": {
+    "genre": "music genre e.g. Lo-fi Hip Hop",
+    "mood": "music mood e.g. Uplifting & Motivational",
+    "bpm": 95,
+    "searchQuery": "exact royalty-free music search term",
+    "tip": "one practical tip for using background music in this video"
+  }
+}`,
+      }],
+    })
+    const text = res.content[0].text.trim()
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) return null
+    return JSON.parse(jsonMatch[0])
+  } catch {
+    return null
+  }
+}
+
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -102,7 +146,7 @@ export default async function handler(req) {
     })
   }
 
-  const RAILWAY = process.env.RAILWAY_API_URL
+  const RAILWAY     = process.env.RAILWAY_API_URL
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY
 
   if (!RAILWAY || !ANTHROPIC_KEY) {
@@ -121,7 +165,7 @@ export default async function handler(req) {
 
   ;(async () => {
     try {
-      // Stream from Anthropic immediately — no blocking quota check
+      // ── 1. Stream script from Anthropic immediately ──────────────
       const client  = new Anthropic({ apiKey: ANTHROPIC_KEY })
       const wc      = durationToWords(duration)
       const maxTok  = Math.min(1200, Math.max(500, Math.round(wc.max * 1.5)))
@@ -145,32 +189,57 @@ export default async function handler(req) {
         }
       }
 
-      // Parse sections
+      // ── 2. Parse sections ────────────────────────────────────────
       const { hook, body: bodyText, cta } = parseScript(fullText)
 
-      // Save to Railway (quota, streak, badges) — after streaming completes
-      const saveRes  = await fetch(`${RAILWAY}/api/scripts/save`, {
+      // ── 3. Kick off save + extras generation in parallel ─────────
+      const savePromise   = fetch(`${RAILWAY}/api/scripts/save`, {
         method : 'POST',
         headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
         body   : JSON.stringify({ topic, niche, tone, language, hook, body: bodyText, cta, fullScript: fullText }),
       })
+      const extrasPromise = generateExtras(topic, hook, bodyText, tone, ANTHROPIC_KEY)
 
-      if (!saveRes.ok) {
-        const err = await saveRes.json().catch(() => ({}))
-        // Quota exceeded — still show the script but warn
-        await send({
-          type : 'script',
-          data : { topic, hook, body: bodyText, cta, fullScript: fullText },
-          error: err.error || null,
-        })
+      // ── 4. Send script event as soon as save completes ───────────
+      const saveRes  = await savePromise
+      let scriptData = { topic, hook, body: bodyText, cta, fullScript: fullText }
+      let usage      = null
+      let newBadges  = null
+      let scriptId   = null
+
+      if (saveRes.ok) {
+        const saved  = await saveRes.json()
+        scriptId     = saved.id
+        scriptData.id = scriptId
+        usage        = { used: saved.used, limit: saved.limit }
+        newBadges    = saved.newBadges
       } else {
-        const saved = await saveRes.json()
-        await send({
-          type     : 'script',
-          data     : { id: saved.id, topic, hook, body: bodyText, cta, fullScript: fullText },
-          usage    : { used: saved.used, limit: saved.limit },
-          newBadges: saved.newBadges,
-        })
+        const err = await saveRes.json().catch(() => ({}))
+        await send({ type: 'script', data: scriptData, error: err.error || null })
+        // Still try to send extras even on quota error
+        const extras = await extrasPromise
+        if (extras) await send({ type: 'extras', data: extras })
+        return
+      }
+
+      await send({ type: 'script', data: scriptData, usage, newBadges })
+
+      // ── 5. Score hook + send extras concurrently ─────────────────
+      const scorePromise = fetch(`${RAILWAY}/api/hooks/score`, {
+        method : 'POST',
+        headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+        body   : JSON.stringify({ hookText: hook, scriptId, language }),
+      })
+
+      const [extras, scoreRes] = await Promise.all([extrasPromise, scorePromise])
+
+      if (extras) await send({ type: 'extras', data: extras })
+
+      if (scoreRes.ok) {
+        const scoreData = await scoreRes.json()
+        if (scoreData.hookScore) {
+          await send({ type: 'hookScore', data: scoreData.hookScore })
+        }
       }
 
     } catch (err) {

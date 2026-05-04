@@ -148,6 +148,19 @@ export default function Generate() {
         setResult(data)
         setVersions([{ ...data.script, label: 'v1 · Original' }])
         setActiveVer(0)
+        // Score hook async for non-streaming fallback path
+        if (data.script?.hook) {
+          api.scoreHook({ hookText: data.script.hook, language: form.scriptLang })
+            .then(scoreData => {
+              if (scoreData?.hookScore) {
+                setResult(prev => prev ? {
+                  ...prev,
+                  script: { ...prev.script, hookScore: scoreData.hookScore },
+                } : prev)
+              }
+            })
+            .catch(() => {})
+        }
       } catch (err) {
         toast(err.message, 'error')
       } finally {
@@ -185,18 +198,23 @@ export default function Generate() {
               setResult({ script: event.data, usage: event.usage, newBadges: event.newBadges })
               setVersions([{ ...event.data, label: 'v1 · Original' }])
               setActiveVer(0)
-              // Score hook async — banner appears after script renders
-              if (event.data.hook) {
-                api.scoreHook({ hook: event.data.hook })
-                  .then(scoreData => {
-                    setResult(prev => prev ? {
-                      ...prev,
-                      script: { ...prev.script, hookScore: scoreData },
-                    } : prev)
-                    setVersions(prev => prev.map((v, i) => i === 0 ? { ...v, hookScore: scoreData } : v))
-                  })
-                  .catch(() => {})
-              }
+            } else if (event.type === 'hookScore') {
+              // Hook score arrives async after script sections
+              setResult(prev => prev ? {
+                ...prev,
+                script: { ...prev.script, hookScore: event.data },
+              } : prev)
+              setVersions(prev => prev.map((v, i) => i === 0 ? { ...v, hookScore: event.data } : v))
+            } else if (event.type === 'extras') {
+              // Visual direction + music arrive async
+              setResult(prev => prev ? {
+                ...prev,
+                script: {
+                  ...prev.script,
+                  visual: event.data?.visual || null,
+                  music : event.data?.music  || null,
+                },
+              } : prev)
             } else if (event.type === 'error') {
               throw new Error(event.message)
             }
