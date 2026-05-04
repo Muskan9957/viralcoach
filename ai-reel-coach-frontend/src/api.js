@@ -36,6 +36,17 @@ export const api = {
   openPortal:     ()      => req('POST', '/payments/portal'),
 
   // Scripts
+  generateStream: (body) => {
+    const token = getToken()
+    return fetch(`${BASE}/scripts/generate-stream`, {
+      method : 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(body),
+    })
+  },
   generate:      (body) => req('POST', '/scripts/generate', body),
   retakeScript:  (body) => req('POST', '/scripts/retake', body),
   refineScript:  (body) => req('POST', '/scripts/refine', body),

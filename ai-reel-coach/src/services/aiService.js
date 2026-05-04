@@ -19,15 +19,85 @@ const LANG_INSTRUCTIONS = {
 
 const getLangInstruction = (language) => LANG_INSTRUCTIONS[language] || ''
 
-// ─── Helper — client created per-call so it always picks up the env var ─
+// ─── Singleton client ─────────────────────────────────────────────
+const getClient = () => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// ─── Helper — non-streaming request ──────────────────────────────
 const ask = async (prompt, maxTokens = 1024, model = MODEL) => {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const client = getClient();
   const response = await client.messages.create({
     model,
     max_tokens: maxTokens,
     messages  : [{ role: 'user', content: prompt }],
   });
   return response.content[0].text.trim();
+};
+
+// ─────────────────────────────────────────────────────────────────
+// 0. STREAMING SCRIPT GENERATION (async generator)
+// ─────────────────────────────────────────────────────────────────
+const generateScriptStream = async function* ({ topic, niche, tone, language = 'en', voiceInstruction }) {
+  const langInstruction = getLangInstruction(language)
+  const voiceSuffix = voiceInstruction
+    ? `\n\nVOICE STYLE INSTRUCTION (follow strictly):\n${voiceInstruction}`
+    : ''
+
+  const prompt = `
+You are an expert short-form content coach who specializes in viral Instagram Reels and YouTube Shorts.
+${langInstruction ? '\n' + langInstruction + '\n' : ''}
+Generate a high-performing short-form video script for the following:
+- Topic : ${topic}
+- Niche  : ${niche || 'general'}
+- Tone   : ${tone  || 'engaging and conversational'}
+${voiceSuffix}
+
+The script must follow this exact structure:
+
+HOOK (first 3 seconds — must stop the scroll immediately):
+[Write 1-2 sentences. Use curiosity, a bold claim, a question, or a shocking statement.]
+
+BODY (the main value — 45-75 seconds when spoken):
+[3-5 punchy points or a mini story. Keep sentences short. No filler words.]
+
+CTA (call to action — last 5 seconds):
+[One clear action: follow, comment, save, or share. Make it feel natural, not forced.]
+
+---
+Rules:
+- Total speaking time must be 60-90 seconds (roughly 150-225 words)
+- Write like you are talking to a friend, not presenting to a boardroom
+- Do NOT use hashtags, emojis, or stage directions
+- Return ONLY the script, no extra commentary
+
+Script:
+`
+
+  const client = getClient()
+  const stream = client.messages.stream({
+    model     : MODEL,
+    max_tokens: 800,
+    messages  : [{ role: 'user', content: prompt }],
+  })
+
+  let fullText = ''
+
+  for await (const text of stream.textStream) {
+    fullText += text
+    yield { type: 'chunk', text }
+  }
+
+  // Parse sections from the complete streamed text
+  const hookMatch = fullText.match(/HOOK[^:]*:\s*([\s\S]*?)(?=BODY|$)/i)
+  const bodyMatch = fullText.match(/BODY[^:]*:\s*([\s\S]*?)(?=CTA|$)/i)
+  const ctaMatch  = fullText.match(/CTA[^:]*:\s*([\s\S]*?)$/i)
+
+  yield {
+    type      : 'parsed',
+    hook      : hookMatch ? hookMatch[1].trim() : '',
+    body      : bodyMatch ? bodyMatch[1].trim() : '',
+    cta       : ctaMatch  ? ctaMatch[1].trim()  : '',
+    fullScript: fullText,
+  }
 };
 
 // ─────────────────────────────────────────────────────────────────
@@ -570,6 +640,7 @@ const coachChat = async ({ message, history = [], userContext, language = 'en' }
 };
 
 module.exports = {
+  generateScriptStream,
   generateScript,
   scoreHook,
   rewriteHook,

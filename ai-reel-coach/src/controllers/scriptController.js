@@ -4,6 +4,92 @@ const aiService      = require('../services/aiService');
 const planService    = require('../services/planService');
 const { checkAndAwardBadges, updateStreak } = require('../services/badgeService');
 
+// ─── POST /api/scripts/generate-stream (SSE) ─────────────────────
+const generateStream = async (req, res, next) => {
+  res.setHeader('Content-Type',  'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection',    'keep-alive')
+  res.setHeader('X-Accel-Buffering', 'no') // disable nginx buffering
+  res.flushHeaders()
+
+  const send = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`)
+
+  try {
+    // 1. Plan limit check
+    const { allowed, used, limit } = await planService.checkGenerationLimit(req.user.id)
+    if (!allowed) {
+      send({ type: 'error', message: `You've used all ${limit} generations this month. Upgrade to continue.` })
+      return res.end()
+    }
+
+    const { topic, niche, tone, language, voiceInstruction } = req.body
+
+    // 2. Stream script tokens to client
+    let parsedScript = null
+    for await (const event of aiService.generateScriptStream({ topic, niche, tone, language, voiceInstruction })) {
+      if (event.type === 'chunk') {
+        send(event)
+      } else if (event.type === 'parsed') {
+        parsedScript = event
+      }
+    }
+
+    if (!parsedScript) {
+      send({ type: 'error', message: 'Script generation failed. Please try again.' })
+      return res.end()
+    }
+
+    const { hook, body, cta, fullScript } = parsedScript
+
+    // 3. Save script (placeholder hookScore=0, updated async below)
+    const script = await prisma.script.create({
+      data: { userId: req.user.id, topic, niche: niche || null, tone: tone || null, hook, body, cta, fullScript, hookScore: 0 },
+    })
+
+    // 4. Usage + streak in parallel
+    await Promise.all([
+      planService.incrementGenerations(req.user.id),
+      updateStreak(req.user.id),
+    ])
+    const newBadges = await checkAndAwardBadges(req.user.id)
+
+    // 5. Send structured script — client can now render sections
+    send({
+      type     : 'script',
+      data     : { id: script.id, topic, hook, body, cta, fullScript },
+      usage    : { used: used + 1, limit },
+      newBadges: newBadges.length > 0 ? newBadges : undefined,
+    })
+
+    // 6. Score hook in background — don't block, send when ready
+    aiService.scoreHook(hook, language)
+      .then(async (hookScoreData) => {
+        send({ type: 'hookScore', data: hookScoreData })
+
+        await Promise.all([
+          prisma.script.update({ where: { id: script.id }, data: { hookScore: hookScoreData.score } }),
+          prisma.hookScore.create({
+            data: {
+              userId  : req.user.id,
+              scriptId: script.id,
+              hookText: hook,
+              score   : hookScoreData.score,
+              grade   : hookScoreData.grade,
+              status  : hookScoreData.status,
+              reasons : JSON.stringify(hookScoreData.reasons),
+            },
+          }),
+        ])
+      })
+      .catch(() => {})
+      .finally(() => res.end())
+
+  } catch (err) {
+    send({ type: 'error', message: err.message || 'Something went wrong' })
+    res.end()
+  }
+}
+
 // ─── POST /api/scripts/generate ──────────────────────────────────
 const generate = async (req, res, next) => {
   try {
@@ -119,4 +205,4 @@ const getOne = async (req, res, next) => {
   }
 };
 
-module.exports = { generate, getAll, getOne };
+module.exports = { generateStream, generate, getAll, getOne };

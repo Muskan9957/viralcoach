@@ -9,6 +9,18 @@ const router = express.Router();
 // All script routes require login
 router.use(protect);
 
+// POST /api/scripts/generate-stream (SSE)
+router.post(
+  '/generate-stream',
+  aiLimiter,
+  [
+    body('topic').trim().notEmpty().withMessage('Topic is required.').isLength({ max: 1000 }),
+    body('niche').optional().trim().isLength({ max: 100 }),
+    body('tone').optional().trim().isIn(['educational', 'funny', 'motivational', 'storytelling', 'controversial', 'conversational']),
+  ],
+  controller.generateStream
+);
+
 // POST /api/scripts/generate
 router.post(
   '/generate',

@@ -66,11 +66,14 @@ export default function Generate() {
       })
     }
   }, [])
-  const [loading, setLd]        = useState(false)
-  const [result, setResult]     = useState(null)
-  const [copied, setCopied]     = useState(false)
-  const [micInterim, setMicInterim] = useState('')  // live speech preview inside textarea
-  const [voiceProfile, setVoiceProfile] = useState(null)  // creator voice fingerprint
+  const [loading, setLd]              = useState(false)
+  const [streaming, setStreaming]     = useState(false)
+  const [streamText, setStreamText]   = useState('')
+  const [hookScoreLoading, setHookScoreLoading] = useState(false)
+  const [result, setResult]           = useState(null)
+  const [copied, setCopied]           = useState(false)
+  const [micInterim, setMicInterim]   = useState('')
+  const [voiceProfile, setVoiceProfile] = useState(null)
 
   // Load voice profile on mount — shows indicator when active
   useEffect(() => {
@@ -116,22 +119,82 @@ export default function Generate() {
   const submit = async e => {
     e.preventDefault()
     if (!form.topic.trim()) { toast('Please enter a topic', 'error'); return }
+
     setLd(true)
+    setStreaming(false)
+    setStreamText('')
     setResult(null)
     setVersions([])
     setActiveVer(0)
     setRerollCount(0)
+    setHookScoreLoading(false)
+
     try {
       saveRegion(form.audience)
       localStorage.setItem(SCRIPT_LANG_KEY, form.scriptLang)
-      const data = await api.generate({ ...form, language: form.scriptLang })
-      setResult(data)
-      // Seed version history with v1
-      setVersions([{ ...data.script, label: 'v1 · Original' }])
-      setActiveVer(0)
+
+      const voiceInstruction = voiceProfile?.promptInstruction || undefined
+      const res = await api.generateStream({ ...form, language: form.scriptLang, voiceInstruction })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Generation failed')
+      }
+
+      setLd(false)
+      setStreaming(true)
+
+      const reader  = res.body.getReader()
+      const decoder = new TextDecoder()
+      let   buffer  = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const parts = buffer.split('\n\n')
+        buffer = parts.pop() // keep incomplete last chunk
+
+        for (const part of parts) {
+          const line = part.trim()
+          if (!line.startsWith('data:')) continue
+          try {
+            const event = JSON.parse(line.slice(5).trim())
+
+            if (event.type === 'chunk') {
+              setStreamText(prev => prev + event.text)
+
+            } else if (event.type === 'script') {
+              setStreaming(false)
+              setHookScoreLoading(true)
+              const scriptData = { ...event.data, hookScore: null }
+              setResult({ script: scriptData, usage: event.usage, newBadges: event.newBadges })
+              setVersions([{ ...scriptData, label: 'v1 · Original' }])
+              setActiveVer(0)
+
+            } else if (event.type === 'hookScore') {
+              setHookScoreLoading(false)
+              setResult(prev => prev
+                ? { ...prev, script: { ...prev.script, hookScore: event.data } }
+                : prev
+              )
+
+            } else if (event.type === 'error') {
+              throw new Error(event.message)
+            }
+          } catch (parseErr) {
+            if (parseErr.message !== 'Unexpected end of JSON input') {
+              toast(parseErr.message, 'error')
+              setStreaming(false)
+              setLd(false)
+            }
+          }
+        }
+      }
     } catch (err) {
       toast(err.message, 'error')
-    } finally {
+      setStreaming(false)
       setLd(false)
     }
   }
@@ -397,11 +460,10 @@ export default function Generate() {
         </form>
       </div>
 
-      {/* Loading State — prominent, in the flow */}
+      {/* Initial loading — waiting for first chunk */}
       {loading && (
         <div className="card" style={{
-          textAlign: 'center',
-          padding: '48px 24px',
+          textAlign: 'center', padding: '48px 24px',
           background: 'linear-gradient(135deg, rgba(255,95,31,0.05), rgba(255,60,172,0.05))',
           border: '1px solid rgba(255,95,31,0.2)',
         }}>
@@ -417,15 +479,66 @@ export default function Generate() {
           <p style={{ fontFamily: 'var(--font-head)', fontWeight: 700, fontSize: '1.1rem', marginBottom: 8 }}>
             {t('generate_ai_writing')}
           </p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            {t('generate_crafting')}
-          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{t('generate_crafting')}</p>
+        </div>
+      )}
+
+      {/* Live streaming text */}
+      {streaming && (
+        <div className="card" style={{
+          background: 'linear-gradient(135deg, rgba(255,95,31,0.04), rgba(160,110,255,0.04))',
+          border: '1px solid rgba(160,110,255,0.2)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <div style={{ display: 'flex', gap: 5 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: 'var(--accent)',
+                  animation: `pulse 1s ease ${i * 0.18}s infinite`,
+                }} />
+              ))}
+            </div>
+            <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              Writing your script…
+            </span>
+          </div>
+          <pre style={{
+            fontFamily: 'var(--font-body, inherit)',
+            fontSize: '0.93rem',
+            lineHeight: 1.75,
+            color: 'var(--text)',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            margin: 0,
+          }}>
+            {streamText}
+            <span style={{
+              display: 'inline-block', width: 2, height: '1em',
+              background: 'var(--accent)', marginLeft: 2, verticalAlign: 'text-bottom',
+              animation: 'cursorBlink 0.9s step-end infinite',
+            }} />
+          </pre>
         </div>
       )}
 
       {/* Result — full width, auto-scrolled to */}
       {result && (
         <div ref={resultRef} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* Hook Score — loading pill while scoring in background */}
+          {hookScoreLoading && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '12px 18px', borderRadius: 'var(--radius-lg)',
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+            }}>
+              <span className="spinner" style={{ width: 14, height: 14, flexShrink: 0 }} />
+              <span style={{ fontSize: '0.8rem', fontFamily: 'var(--font-mono)', color: 'var(--text-faint)' }}>
+                Scoring your hook…
+              </span>
+            </div>
+          )}
 
           {/* Hook Score Banner */}
           {hookScore && (
