@@ -442,40 +442,30 @@ export default function Dashboard() {
       <TrendingBrief userName={firstName} />
 
       {/* ─── Stats row ───────────────────────────────────────────── */}
-      {(() => {
-        const thisMonth = scripts.filter(s => {
-          const d = new Date(s.createdAt)
-          const now = new Date()
-          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-        }).length
-        return (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: 12, marginBottom: 24,
-          }}>
-            <StatTile
-              label="Scripts Written"
-              value={scripts.length}
-              sub={thisMonth > 0 ? `${thisMonth} this month` : 'Start creating!'}
-              color={C.cyan}
-            />
-            <StatTile
-              label="Videos Analysed"
-              value={logs.length}
-              sub={logs.length > 0 ? 'performance tracked' : 'Analyse a reel'}
-              color={C.lime}
-            />
-            <StatTile
-              label="Scripts This Month"
-              value={limit === '∞' ? used : `${used}/${limit}`}
-              sub={limit === '∞' ? 'Unlimited plan 🚀' : pct >= 80 ? 'Running low — upgrade?' : `${limit - used} scripts remaining`}
-              color={limit === '∞' ? C.violet : pct >= 80 ? C.coral : pct >= 50 ? C.amber : C.violet}
-              progress={limit === '∞' ? null : pct}
-            />
-          </div>
-        )
-      })()}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gap: 12, marginBottom: 24,
+      }}>
+        <StatTile
+          label="Scripts Written"
+          value={scripts.length}
+          sub={scripts.length > 0 ? 'all-time total' : 'Start creating!'}
+          color={C.cyan}
+        />
+        <StatTile
+          label="Videos Analysed"
+          value={logs.length}
+          sub={logs.length > 0 ? 'performance tracked' : 'Analyse a reel'}
+          color={C.lime}
+        />
+        <StatTile
+          label="Badges Earned"
+          value={badges.length}
+          sub={badges.length === 0 ? 'Keep creating to unlock!' : `Latest: ${BADGE_META[badges[badges.length - 1]?.type]?.emoji ?? '🏅'} ${BADGE_META[badges[badges.length - 1]?.type]?.label ?? badges[badges.length - 1]?.type}`}
+          color={C.amber}
+        />
+      </div>
 
 
       {/* ─── Streak chip ─────────────────────────────────────────── */}
