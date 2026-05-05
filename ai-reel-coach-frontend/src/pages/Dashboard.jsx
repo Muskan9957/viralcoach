@@ -19,6 +19,21 @@ const C = {
   teal:   '#00D4B1',
 }
 
+const NICHE_META = {
+  comedy:        { emoji: '😂', color: '#FF2D8B' },
+  fitness:       { emoji: '💪', color: '#00D4FF' },
+  finance:       { emoji: '💰', color: '#A8FF3C' },
+  food:          { emoji: '🍜', color: '#FFB800' },
+  fashion:       { emoji: '👗', color: '#FF2D8B' },
+  tech:          { emoji: '⚡', color: '#A855F7' },
+  lifestyle:     { emoji: '✨', color: '#00D4B1' },
+  education:     { emoji: '📚', color: '#A855F7' },
+  travel:        { emoji: '🗺️', color: '#00D4FF' },
+  motivation:    { emoji: '🔥', color: '#FFB800' },
+  business:      { emoji: '🚀', color: '#00D4B1' },
+  relationships: { emoji: '❤️', color: '#FF5F4C' },
+}
+
 const BADGE_META = {
   FIRST_SCRIPT: { emoji: '🎬', label: 'First Script'    },
   SCRIPTS_10:   { emoji: '📚', label: '10 Scripts'       },
@@ -520,6 +535,36 @@ export default function Dashboard() {
           {t('dash_overview')}
         </p>
       </div>
+
+      {/* ─── Active niche chips ──────────────────────────────────── */}
+      {niches.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+          <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em', flexShrink: 0 }}>
+            Active niche
+          </span>
+          {niches.map(n => {
+            const meta = NICHE_META[n] || { emoji: '🎯', color: C.cyan }
+            return (
+              <Link key={n} to={`/trending`} style={{ textDecoration: 'none' }}>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '4px 12px', borderRadius: 99,
+                  background: `${meta.color}14`, border: `1px solid ${meta.color}40`,
+                  color: meta.color, fontSize: '0.75rem', fontWeight: 700,
+                  fontFamily: 'var(--font-mono)', cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  letterSpacing: '0.03em',
+                }}>
+                  {meta.emoji} {n.charAt(0).toUpperCase() + n.slice(1)}
+                </span>
+              </Link>
+            )
+          })}
+          <Link to="/profile" style={{ textDecoration: 'none', fontSize: '0.68rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginLeft: 2 }}>
+            edit →
+          </Link>
+        </div>
+      )}
 
       {/* ─── Today's Brief ───────────────────────────────────────── */}
       <TrendingBrief userName={firstName} niches={niches} />

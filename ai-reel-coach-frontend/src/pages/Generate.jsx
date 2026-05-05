@@ -402,7 +402,14 @@ export default function Generate() {
           {/* Row 1 — Niche + Tone + Duration */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
             <div className="field">
-              <label style={fieldLabelStyle}>Niche</label>
+              <label style={{ ...fieldLabelStyle, display: 'flex', alignItems: 'center', gap: 6 }}>
+                Niche
+                {primaryNiche && form.niche === primaryNiche && (
+                  <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#00C9A7', fontFamily: 'var(--font-mono)', background: 'rgba(0,201,167,0.12)', border: '1px solid rgba(0,201,167,0.3)', padding: '1px 6px', borderRadius: 99, letterSpacing: '0.04em' }}>
+                    ✓ your niche
+                  </span>
+                )}
+              </label>
               <select className="select" value={form.niche} onChange={set('niche')}>
                 <option value="">General</option>
                 {NICHES.map(n => <option key={n} value={n}>{n.charAt(0).toUpperCase() + n.slice(1)}</option>)}

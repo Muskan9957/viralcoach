@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useLang } from '../i18n.jsx'
+import { usePrefs } from '../hooks/usePrefs'
 
 const CATEGORIES = ['All', 'Fitness', 'Finance', 'Food', 'Tech', 'Motivation', 'Relationships', 'Business', 'Health']
 const TYPES      = ['All', 'Question', 'Bold Claim', 'Story', 'Statistic', 'Controversy', 'How-To']
@@ -45,10 +46,17 @@ function HighlightedTemplate({ text }) {
 export default function HookLibrary() {
   const navigate = useNavigate()
   const { t } = useLang()
+  const { primaryNiche } = usePrefs()
+
+  // Default to user's niche if it maps to a known category
+  const defaultCategory = CATEGORIES.map(c => c.toLowerCase()).includes(primaryNiche?.toLowerCase())
+    ? primaryNiche.charAt(0).toUpperCase() + primaryNiche.slice(1)
+    : 'All'
+
   const [templates, setTemplates] = useState([])
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState('')
-  const [category,  setCategory]  = useState('all')
+  const [category,  setCategory]  = useState(defaultCategory)
   const [type,      setType]      = useState('all')
   const [search,    setSearch]    = useState('')
   const [debSearch, setDebSearch] = useState('')
@@ -85,7 +93,19 @@ export default function HookLibrary() {
     <div className="page-enter">
       <div style={{ marginBottom: 24 }}>
         <h1 className="page-title">{t('hooks_title')}</h1>
-        <p className="page-sub">{t('hooks_sub')}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <p className="page-sub" style={{ margin: 0 }}>{t('hooks_sub')}</p>
+          {defaultCategory !== 'All' && category === defaultCategory && (
+            <span style={{
+              fontSize: '0.68rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+              padding: '3px 10px', borderRadius: 99,
+              background: 'rgba(0,201,167,0.1)', border: '1px solid rgba(0,201,167,0.3)',
+              color: '#00C9A7', letterSpacing: '0.05em',
+            }}>
+              ✓ filtered for your niche
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Filter bar */}

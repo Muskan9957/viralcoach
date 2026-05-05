@@ -119,9 +119,8 @@ export default function Trending() {
   }, [niche, lang]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGenerate = (topic) => {
-    // Pass topic to Generate page via localStorage as fallback + navigation state
     localStorage.setItem('arc_prefill_topic', topic)
-    navigate('/generate', { state: { topic } })
+    navigate('/generate', { state: { topic, niche } })
   }
 
   const handleBookmark = async (topic, idx) => {
@@ -143,11 +142,39 @@ export default function Trending() {
     }
   }
 
+  const isOnUserNiche = defaultNiche !== 'general' && niche === defaultNiche
+
   return (
     <div className="page-enter">
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 20 }}>
         <h1 className="page-title">{t('trending_title')}</h1>
-        <p className="page-sub">Discover what's viral in your niche and turn it into a script instantly.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <p className="page-sub" style={{ margin: 0 }}>Discover what's viral in your niche and turn it into a script instantly.</p>
+          {defaultNiche !== 'general' && (
+            isOnUserNiche ? (
+              <span style={{
+                fontSize: '0.68rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                padding: '3px 10px', borderRadius: 99,
+                background: 'rgba(0,201,167,0.1)', border: '1px solid rgba(0,201,167,0.3)',
+                color: '#00C9A7', letterSpacing: '0.05em',
+              }}>
+                ✓ your niche
+              </span>
+            ) : (
+              <button
+                onClick={() => setNiche(defaultNiche)}
+                style={{
+                  fontSize: '0.68rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                  padding: '3px 10px', borderRadius: 99, cursor: 'pointer',
+                  background: 'rgba(255,95,31,0.08)', border: '1px solid rgba(255,95,31,0.3)',
+                  color: 'var(--accent)', letterSpacing: '0.05em',
+                }}
+              >
+                ↩ Back to your niche ({defaultNiche})
+              </button>
+            )
+          )}
+        </div>
       </div>
 
       {/* Niche selector */}

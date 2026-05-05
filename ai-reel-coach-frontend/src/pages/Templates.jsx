@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useLang } from '../i18n.jsx'
 import { useToast } from '../components/Toast'
+import { usePrefs } from '../hooks/usePrefs'
 
 const TABS = [
   { key: '',       label: 'All'     },
@@ -115,6 +116,7 @@ export default function Templates() {
   const { t }    = useLang()
   const navigate = useNavigate()
   const toast    = useToast()
+  const { primaryNiche } = usePrefs()
 
   const [activeTab,  setActiveTab]  = useState('')
   const [templates,  setTemplates]  = useState([])
@@ -151,13 +153,32 @@ export default function Templates() {
     }
   }
 
-  const filtered = templates // already filtered by API tab, but keep local reference
+  // Sort: niche-matching templates float to top
+  const filtered = primaryNiche
+    ? [...templates].sort((a, b) => {
+        const aMatch = a.niche?.toLowerCase() === primaryNiche.toLowerCase() ? -1 : 0
+        const bMatch = b.niche?.toLowerCase() === primaryNiche.toLowerCase() ? -1 : 0
+        return aMatch - bMatch
+      })
+    : templates
 
   return (
     <div className="page-enter">
       <div style={{ marginBottom: 28 }}>
         <h1 className="page-title">{t('templates_title')}</h1>
-        <p className="page-sub">Reuse your best content frameworks and saved topics.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <p className="page-sub" style={{ margin: 0 }}>Reuse your best content frameworks and saved topics.</p>
+          {primaryNiche && (
+            <span style={{
+              fontSize: '0.68rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+              padding: '3px 10px', borderRadius: 99,
+              background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.3)',
+              color: '#A855F7', letterSpacing: '0.05em',
+            }}>
+              {primaryNiche.charAt(0).toUpperCase() + primaryNiche.slice(1)} first
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}

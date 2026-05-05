@@ -146,44 +146,67 @@ export default function Coach() {
         {/* Messages scroll area */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', minHeight: 0 }}>
           {/* Empty state with starter questions */}
-          {isEmpty && (
-            <div style={{ textAlign: 'center', paddingTop: 20 }}>
-              <div style={{ fontSize: '2rem', marginBottom: 12 }}>💬</div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 20 }}>
-                {t('coach_empty')}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 400, margin: '0 auto' }}>
-                {[t('coach_q1'), t('coach_q2'), t('coach_q3'), t('coach_q4')].map((q, i) => (
-                  <button
-                    key={i}
-                    onClick={() => sendMessage(q)}
-                    style={{
-                      padding: '10px 16px',
-                      background: 'var(--surface2)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 10,
-                      color: 'var(--text-muted)',
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.15s',
-                      fontFamily: 'var(--font-body)',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = 'var(--accent)'
-                      e.currentTarget.style.color = 'var(--text)'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = 'var(--border)'
-                      e.currentTarget.style.color = 'var(--text-muted)'
-                    }}
-                  >
-                    {q}
-                  </button>
-                ))}
+          {isEmpty && (() => {
+            const primaryNiche = niches[0] || ''
+            const nicheLabel = primaryNiche ? primaryNiche.charAt(0).toUpperCase() + primaryNiche.slice(1) : ''
+            // Niche-specific starter questions when niche is set
+            const nicheQuestions = nicheLabel ? [
+              `What type of ${nicheLabel} content is going viral right now?`,
+              `Give me 5 hook ideas for my ${nicheLabel} audience`,
+              `What posting schedule works best for ${nicheLabel} creators?`,
+              `How do I stand out in the ${nicheLabel} niche?`,
+            ] : [t('coach_q1'), t('coach_q2'), t('coach_q3'), t('coach_q4')]
+
+            return (
+              <div style={{ textAlign: 'center', paddingTop: 20 }}>
+                <div style={{ fontSize: '2rem', marginBottom: 12 }}>💬</div>
+                {nicheLabel ? (
+                  <div style={{ marginBottom: 20 }}>
+                    <p style={{ color: 'var(--text)', fontSize: '0.92rem', fontWeight: 600, marginBottom: 4 }}>
+                      I'm set up for your <span style={{ color: 'var(--accent)' }}>{nicheLabel}</span> content
+                    </p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                      Ask me anything — scripts, growth tactics, hook ideas, strategy
+                    </p>
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 20 }}>
+                    {t('coach_empty')}
+                  </p>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420, margin: '0 auto' }}>
+                  {nicheQuestions.map((q, i) => (
+                    <button
+                      key={i}
+                      onClick={() => sendMessage(q)}
+                      style={{
+                        padding: '10px 16px',
+                        background: 'var(--surface2)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 10,
+                        color: 'var(--text-muted)',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.15s',
+                        fontFamily: 'var(--font-body)',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = 'var(--accent)'
+                        e.currentTarget.style.color = 'var(--text)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = 'var(--border)'
+                        e.currentTarget.style.color = 'var(--text-muted)'
+                      }}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* Loading skeleton while history loads */}
           {!historyLoaded && (
