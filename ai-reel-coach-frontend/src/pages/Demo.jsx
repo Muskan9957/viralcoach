@@ -199,7 +199,7 @@ export default function Demo() {
     { icon: '✦', title: 'AI Script Generator', desc: 'Generate viral-ready scripts for Reels, Shorts & TikTok in seconds. Tailored to your niche, platform, and language.', accent: '#00C8FF', delay: 0 },
     { icon: '◎', title: 'Hook Scorer', desc: 'Paste any hook and get an instant score with detailed breakdown — curiosity gap, urgency, clarity, and more.', accent: '#7B5CF0', delay: 0.1 },
     { icon: '📈', title: 'Trending Topics', desc: 'Real-time trends across niches with AI-generated script ideas. Never run out of content ideas again.', accent: '#00C9A7', delay: 0.2 },
-    { icon: '🤖', title: 'AI Coach', desc: 'Your 24/7 content strategist. Ask anything about growth, scripts, strategy, and get expert-level answers instantly.', accent: '#FFD60A', delay: 0.3 },
+    { icon: '🤖', title: 'Creator Advisor', desc: 'Your 24/7 content strategist. Ask anything about growth, scripts, strategy, and get expert-level answers instantly.', accent: '#FFD60A', delay: 0.3 },
     { icon: '◈', title: 'Performance Analyzer', desc: 'Paste your video link and get a deep analysis of what worked, what didn\'t, and exactly how to improve it.', accent: '#FF6EE7', delay: 0.4 },
     { icon: '📅', title: 'Content Calendar', desc: 'Plan and schedule your entire content month. Track streaks, stay consistent, never miss a posting day.', accent: '#00C8FF', delay: 0.5 },
     { icon: '🎨', title: 'Caption Generator', desc: 'Generate scroll-stopping captions with hashtags, emojis, and CTAs optimized for maximum engagement.', accent: '#00C9A7', delay: 0.6 },

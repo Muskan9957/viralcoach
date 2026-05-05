@@ -7,7 +7,7 @@ import { useLang } from '../i18n.jsx'
 function TypingIndicator() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '12px 16px' }}>
-      <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginRight: 4 }}>AI Coach</span>
+      <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginRight: 4 }}>Creator Advisor</span>
       {[0, 1, 2].map(i => (
         <span
           key={i}
@@ -50,7 +50,7 @@ function Message({ msg }) {
       }}>
         {!isUser && (
           <div style={{ fontSize: '0.65rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            AI Coach
+            Creator Advisor
           </div>
         )}
         <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.65, color: isUser ? '#fff' : 'var(--text)', whiteSpace: 'pre-wrap' }}>

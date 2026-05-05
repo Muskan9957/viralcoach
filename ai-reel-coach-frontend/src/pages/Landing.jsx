@@ -187,11 +187,11 @@ function AppPhone() {
             </div>
           </div>
 
-          {/* ── Screen 5: AI Coach ── */}
+          {/* ── Screen 5: Creator Advisor ── */}
           <div className="ap-scene ap-s5">
             <div className="ap-hdr" style={{ '--hc': '#A855F7' }}>
               <span className="ap-hdr-icon">🤖</span>
-              <span className="ap-hdr-title">AI Coach</span>
+              <span className="ap-hdr-title">Creator Advisor</span>
               <span className="ap-badge" style={{ '--bc': '#A855F7' }}>24/7</span>
             </div>
 
@@ -228,7 +228,7 @@ function AppPhone() {
           { n:2, text:'Hook Score',     c:'#A8FF3C' },
           { n:3, text:'Crosspost',      c:'#FF2D8B' },
           { n:4, text:'Trending',       c:'#FFB800' },
-          { n:5, text:'AI Coach',       c:'#A855F7' },
+          { n:5, text:'Creator Advisor', c:'#A855F7' },
         ].map(f => (
           <div key={f.n} className={`ap-label ap-label-${f.n}`} style={{ '--lc': f.c }}>
             {f.text}
