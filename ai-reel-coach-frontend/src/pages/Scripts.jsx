@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useToast } from '../components/Toast'
 import { useLang } from '../i18n.jsx'
@@ -10,6 +10,7 @@ const gradeLabel = s => s >= 90 ? 'Excellent' : s >= 75 ? 'Good' : s >= 60 ? 'Av
 export default function Scripts() {
   const toast                   = useToast()
   const { t }                   = useLang()
+  const navigate                = useNavigate()
   const [scripts, setScripts]   = useState([])
   const [loading, setLoading]   = useState(true)
   const [expanded, setExpanded] = useState(null)
@@ -172,14 +173,29 @@ export default function Scripts() {
                         {full.body && <ScriptBlock label={t('scripts_body_label')} text={full.body} onCopy={() => copy(full.body)} accent="#7B5CF0" copyLabel={t('copy')} />}
                         {/* CTA */}
                         {full.cta && <ScriptBlock label={t('scripts_cta_label')} text={full.cta} onCopy={() => copy(full.cta)} accent="#00C9A7" copyLabel={t('copy')} />}
-                        {/* Copy full */}
-                        <button
-                          onClick={() => copy(full.fullScript || [full.hook, full.body, full.cta].filter(Boolean).join('\n\n'))}
-                          className="btn btn-ghost btn-sm"
-                          style={{ alignSelf: 'flex-start', marginTop: 4 }}
-                        >
-                          {t('scripts_copy_full')}
-                        </button>
+                        {/* Actions row */}
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
+                          <button
+                            onClick={() => copy(full.fullScript || [full.hook, full.body, full.cta].filter(Boolean).join('\n\n'))}
+                            className="btn btn-ghost btn-sm"
+                          >
+                            {t('scripts_copy_full')}
+                          </button>
+                          <button
+                            onClick={() => navigate('/generate', {
+                              state: {
+                                topic:    s.topic,
+                                niche:    full.niche    || s.niche    || '',
+                                tone:     full.tone     || s.tone     || 'motivational',
+                                language: full.language || s.language || 'en',
+                              }
+                            })}
+                            className="btn btn-primary btn-sm"
+                            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                          >
+                            ✏️ Edit Again
+                          </button>
+                        </div>
                       </>
                     ) : (
                       <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>{t('scripts_no_detail')}</div>

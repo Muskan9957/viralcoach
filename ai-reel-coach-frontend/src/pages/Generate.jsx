@@ -96,7 +96,13 @@ export default function Generate() {
   useEffect(() => {
     const stateTopic = location.state?.topic
     if (stateTopic) {
-      setForm(f => ({ ...f, topic: stateTopic }))
+      setForm(f => ({
+        ...f,
+        topic:      stateTopic,
+        niche:      location.state?.niche      || f.niche,
+        tone:       location.state?.tone       || f.tone,
+        scriptLang: location.state?.language   || f.scriptLang,
+      }))
       window.history.replaceState({}, document.title)
     } else {
       const stored = localStorage.getItem('arc_prefill_topic')
