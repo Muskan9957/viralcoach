@@ -147,7 +147,7 @@ const NAV_CONFIG = [
   { to: '/generate',    icon: IconGenerate,    labelKey: 'nav_generate'    },
   { to: '/scripts',     icon: IconScripts,     labelKey: 'nav_scripts'     },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'       },
-  { to: '/my-voice',    icon: VoiceIcon,       labelKey: 'nav_my_voice',   premium: true },
+  { to: '/creator-dna', icon: VoiceIcon,       labelKey: 'nav_my_voice'  },
   { section: 'Content',  sectionClass: 'nav-section-content'  },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'    },
   { to: '/crosspost',   icon: RemixIcon,       labelKey: 'nav_remix'       },
@@ -402,7 +402,7 @@ export default function Layout({ children }) {
             {[
               { section: 'Studio', items: [
                 { to: '/scripts',     icon: IconScripts,     label: t('nav_scripts')     },
-                { to: '/my-voice',    icon: VoiceIcon,       label: t('nav_my_voice'),   premium: true },
+                { to: '/creator-dna', icon: VoiceIcon,       label: t('nav_my_voice')  },
               ]},
               { section: 'Content', items: [
                 { to: '/crosspost',   icon: RemixIcon,       label: t('nav_remix')       },

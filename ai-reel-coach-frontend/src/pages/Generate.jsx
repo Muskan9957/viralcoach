@@ -471,7 +471,7 @@ export default function Generate() {
                   {voiceProfile.summary}
                 </p>
               </div>
-              <a href="/my-voice" style={{ fontSize: '0.72rem', color: 'var(--text-faint)', textDecoration: 'none', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
+              <a href="/creator-dna" style={{ fontSize: '0.72rem', color: 'var(--text-faint)', textDecoration: 'none', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>
                 edit →
               </a>
             </div>

@@ -92,7 +92,8 @@ export default function App() {
                 <Route path="/remix"        element={<Navigate to="/crosspost" replace />} />
                 <Route path="/coach"        element={<Protected><Coach /></Protected>} />
                 <Route path="/profile"      element={<Protected><Profile /></Protected>} />
-                <Route path="/my-voice"     element={<Protected><MyVoice /></Protected>} />
+                <Route path="/creator-dna"  element={<Protected><MyVoice /></Protected>} />
+                <Route path="/my-voice"     element={<Navigate to="/creator-dna" replace />} />
                 <Route path="*"             element={<Navigate to="/" replace />} />
               </Routes>
             </ToastProvider>
