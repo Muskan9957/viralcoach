@@ -72,7 +72,10 @@ export const api = {
 
   // Trending
   getTrending:  (niche, language) => req('GET', `/trending?niche=${niche}&language=${language}`),
-  getGreeting:  (region, language) => req('GET', `/trending/greeting?region=${encodeURIComponent(region)}&language=${language || 'en'}`),
+  getGreeting:  (region, language, niches = []) => {
+    const n = niches.length ? `&niches=${encodeURIComponent(niches.join(','))}` : ''
+    return req('GET', `/trending/greeting?region=${encodeURIComponent(region)}&language=${language || 'en'}${n}`)
+  },
 
   // Templates
   getTemplates:   (type) => req('GET',    `/templates${type ? `?type=${type}` : ''}`),
@@ -105,6 +108,7 @@ export const api = {
   updateLanguage:  (language) => req('PATCH', '/user/language', { language }),
   getBadges:       ()         => req('GET',   '/user/badges'),
   markOnboarded:   ()         => req('PATCH', '/user/onboarded'),
+  savePrefs:       (body)     => req('PATCH', '/user/prefs', body),
   generateAvatar:  (style)    => req('POST',  '/user/generate-avatar', { style }),
   saveAvatar:      (url)      => req('PATCH', '/user/avatar', { url }),
 

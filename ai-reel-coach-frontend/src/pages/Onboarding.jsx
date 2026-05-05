@@ -138,9 +138,11 @@ export default function Onboarding() {
   }
 
   const finish = () => {
+    const prefs = { niches, platform, goals }
     localStorage.setItem('vs_onboarded', '1')
-    localStorage.setItem('vs_prefs', JSON.stringify({ niches, platform, goals }))
+    localStorage.setItem('vs_prefs', JSON.stringify(prefs))
     api.markOnboarded().catch(() => {})
+    api.savePrefs(prefs).catch(() => {})   // persist to backend so prefs survive new devices
     setDone(true)
     setTimeout(() => navigate('/dashboard'), 2000)
   }

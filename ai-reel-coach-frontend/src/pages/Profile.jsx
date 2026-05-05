@@ -397,7 +397,13 @@ export default function Profile() {
           <Row
             icon="🎯"
             label="Niche"
-            value={prefs.niche ? prefs.niche.charAt(0).toUpperCase() + prefs.niche.slice(1) : 'Not set'}
+            value={
+              Array.isArray(prefs.niches) && prefs.niches.length
+                ? prefs.niches.map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(', ')
+                : prefs.niche
+                  ? prefs.niche.charAt(0).toUpperCase() + prefs.niche.slice(1)
+                  : 'Not set'
+            }
             action={
               <button
                 onClick={() => { localStorage.removeItem('vs_onboarded'); navigate('/onboarding') }}

@@ -49,16 +49,20 @@ function getTimeMood() {
 /* ─── Today's Brief ──────────────────────────────────────────────── */
 const BRIEF_CACHE_KEY = 'arc_brief_cache'
 
-function TrendingBrief({ userName }) {
+function TrendingBrief({ userName, niches = [] }) {
   const { t, lang } = useLang()
   const { speak, speaking, stopSpeaking } = useTextToSpeech()
   const [played, setPlayed] = useState(false)
+  const primaryNiche = niches[0] || ''
+
+  // Cache key is unique per niche selection + lang + date
+  const cacheKey = `${BRIEF_CACHE_KEY}_${niches.join(',')}_${lang}`
 
   // Load from localStorage instantly so screen never shows blank
   const [greeting, setGreeting] = useState(() => {
     try {
-      const c = JSON.parse(localStorage.getItem(BRIEF_CACHE_KEY) || 'null')
-      if (c?.lang === lang && c?.date === new Date().toISOString().slice(0,10)) return c.data
+      const c = JSON.parse(localStorage.getItem(cacheKey) || 'null')
+      if (c?.date === new Date().toISOString().slice(0,10)) return c.data
     } catch {}
     return null
   })
@@ -67,14 +71,27 @@ function TrendingBrief({ userName }) {
   useEffect(() => {
     const region = getSavedRegion() || 'India'
     const today  = new Date().toISOString().slice(0, 10)
-    api.getGreeting(region, lang)
-      .then(data => {
-        setGreeting(data)
-        localStorage.setItem(BRIEF_CACHE_KEY, JSON.stringify({ data, lang, date: today }))
+
+    const greetingPromise = api.getGreeting(region, lang, niches)
+    // If user has a niche, also pull niche-specific trending topics
+    const trendingPromise = primaryNiche
+      ? api.getTrending(primaryNiche, lang).catch(() => null)
+      : Promise.resolve(null)
+
+    Promise.all([greetingPromise, trendingPromise])
+      .then(([greetData, trendData]) => {
+        // Merge niche-specific trends over the generic greeting trends
+        const merged = {
+          ...greetData,
+          trends: trendData?.trends?.length ? trendData.trends : greetData?.trends,
+          nicheLabel: primaryNiche ? primaryNiche.charAt(0).toUpperCase() + primaryNiche.slice(1) : null,
+        }
+        setGreeting(merged)
+        localStorage.setItem(cacheKey, JSON.stringify({ data: merged, date: today }))
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [lang])
+  }, [lang, niches.join(',')])
 
   const playGreeting = () => {
     if (!greeting) return
@@ -91,6 +108,7 @@ function TrendingBrief({ userName }) {
       padding: '22px 26px',
       marginBottom: 24,
     }}>
+      {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
         <span style={{
           fontSize: '0.74rem', fontFamily: 'var(--font-mono)',
@@ -99,6 +117,17 @@ function TrendingBrief({ userName }) {
         }}>
           {t('dash_todays_brief')}
         </span>
+        {/* Niche badge */}
+        {greeting?.nicheLabel && (
+          <span style={{
+            fontSize: '0.62rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+            padding: '2px 8px', borderRadius: 99, letterSpacing: '0.06em',
+            background: `${C.violet}18`, border: `1px solid ${C.violet}40`, color: C.violet,
+            textTransform: 'uppercase',
+          }}>
+            {greeting.nicheLabel}
+          </span>
+        )}
         <div style={{ flex: 1 }} />
         <button
           onClick={playGreeting}
@@ -117,6 +146,38 @@ function TrendingBrief({ userName }) {
         </button>
       </div>
 
+      {/* No niche set — prompt user to personalise */}
+      {!loading && niches.length === 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 12, flexWrap: 'wrap',
+          padding: '14px 16px', borderRadius: 12,
+          background: `${C.amber}0D`, border: `1px solid ${C.amber}30`,
+          marginBottom: greeting ? 14 : 0,
+        }}>
+          <div>
+            <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)' }}>
+              📌 Personalise your brief
+            </p>
+            <p style={{ margin: '3px 0 0', fontSize: '0.78rem', color: 'var(--text-faint)' }}>
+              Set your niche to get content ideas tailored to your audience
+            </p>
+          </div>
+          <Link
+            to="/profile"
+            style={{
+              textDecoration: 'none', flexShrink: 0,
+              padding: '7px 16px', borderRadius: 99,
+              background: C.amber, color: '#000',
+              fontSize: '0.78rem', fontWeight: 700,
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            Set niche →
+          </Link>
+        </div>
+      )}
+
       {loading ? (
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <div className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
@@ -133,12 +194,12 @@ function TrendingBrief({ userName }) {
             gap: 10,
           }}>
             {greeting.trends?.slice(0, 3).map((trend, i) => {
-              const color = CATEGORY_COLORS[trend.category] || C.cyan
+              const color = CATEGORY_COLORS[trend.category] || CATEGORY_COLORS[primaryNiche] || C.cyan
               return (
                 <Link
                   key={i}
                   to="/generate"
-                  state={{ topic: trend.title }}
+                  state={{ topic: trend.title, niche: primaryNiche || trend.category?.toLowerCase() }}
                   style={{ textDecoration: 'none', color: 'inherit' }}
                 >
                   <div style={{
@@ -168,7 +229,14 @@ function TrendingBrief({ userName }) {
             })}
           </div>
         </>
-      ) : null}
+      ) : (
+        /* API failed / no data — show fallback instead of blank */
+        !niches.length ? null : (
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-faint)', margin: 0 }}>
+            Could not load today's trends. <button onClick={() => window.location.reload()} style={{ background: 'none', border: 'none', color: C.cyan, cursor: 'pointer', fontSize: 'inherit', padding: 0, textDecoration: 'underline' }}>Retry</button>
+          </p>
+        )
+      )}
     </div>
   )
 }
@@ -383,6 +451,21 @@ export default function Dashboard() {
         setBadges(b.badges || [])
         setProfile(prof)
         setCreatorScore(cs)
+
+        // Sync prefs from backend → localStorage for users on a new device
+        // or those who skipped onboarding but later saved prefs via profile
+        if (prof?.niches?.length) {
+          try {
+            const stored = JSON.parse(localStorage.getItem('vs_prefs') || '{}')
+            if (!stored.niches?.length) {
+              localStorage.setItem('vs_prefs', JSON.stringify({
+                niches:   prof.niches,
+                platform: prof.platform || stored.platform || null,
+                goals:    prof.goals    || stored.goals    || [],
+              }))
+            }
+          } catch {}
+        }
       })
       .finally(() => setLd(false))
   }, [])
@@ -439,7 +522,7 @@ export default function Dashboard() {
       </div>
 
       {/* ─── Today's Brief ───────────────────────────────────────── */}
-      <TrendingBrief userName={firstName} />
+      <TrendingBrief userName={firstName} niches={niches} />
 
       {/* ─── Stats row ───────────────────────────────────────────── */}
       <div style={{
