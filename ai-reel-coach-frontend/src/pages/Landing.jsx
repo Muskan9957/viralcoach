@@ -39,7 +39,76 @@ function LangFlip() {
    Scales with transform:scale for mobile — no layout rewrite needed.
    Screens: Script Studio → Hook Score → Crosspost → Trending → Coach
 ══════════════════════════════════════════════════════════════════ */
+
+const DEMO = {
+  en: {
+    s1Title: 'Script Studio',
+    topic: 'Morning fitness routine',
+    hook: 'Most beginners quit the gym in week 2.',
+    body: "Here's the one habit that kept me consistent for 2 years straight.",
+    cta: 'Follow for part 2 🔥',
+    topicLbl: 'Topic', hookLbl: 'Hook', bodyLbl: 'Body', ctaLbl: 'CTA',
+    s2Title: 'Hook Score',
+    viralPotential: 'Viral Potential',
+    bars: [
+      { l: 'Curiosity', v: 96, c: '#00D4FF' },
+      { l: 'Emotion',   v: 88, c: '#FF2D8B' },
+      { l: 'Clarity',   v: 97, c: '#A8FF3C' },
+      { l: 'CTA Power', v: 92, c: '#FFB800' },
+    ],
+    s3Title: 'Crosspost',
+    cpDesc: 'Script adapted & posted everywhere ✓',
+    cpNote: 'One click. Every platform.',
+    s4Title: 'Trending Now',
+    trends: [
+      { tag: '#MorningRoutine', views: '2.4M views', delta: '+38%', i: 1, c: '#FF2D8B', delay: '0.3s' },
+      { tag: '#FitnessIndia',   views: '1.8M views', delta: '+21%', i: 2, c: '#00D4FF', delay: '0.7s' },
+      { tag: '#AILifestyle',    views: '987K views',  delta: '+57%', i: 3, c: '#A8FF3C', delay: '1.1s' },
+      { tag: '#5AMClub',        views: '741K views',  delta: '+14%', i: 4, c: '#FFB800', delay: '1.5s' },
+    ],
+    s5Title: 'Creator Advisor',
+    q1: 'How do I grow faster on Reels?',
+    a1: 'Post between 7–9 AM daily. Use trending audio. Your hooks need more pattern interrupts — start with a bold claim or question. 💡',
+    q2: 'Which hashtags?',
+    labels: ['Script Studio', 'Hook Score', 'Crosspost', 'Trending', 'Creator Advisor'],
+  },
+  hi: {
+    s1Title: 'स्क्रिप्ट स्टूडियो',
+    topic: 'सुबह की फिटनेस रूटीन',
+    hook: 'ज़्यादातर नए लोग gym दूसरे हफ्ते छोड़ देते हैं।',
+    body: 'यही एक आदत है जिसने मुझे 2 साल तक consistent रखा।',
+    cta: 'Part 2 के लिए follow करो 🔥',
+    topicLbl: 'विषय', hookLbl: 'हुक', bodyLbl: 'बॉडी', ctaLbl: 'CTA',
+    s2Title: 'हुक स्कोर',
+    viralPotential: 'वायरल संभावना',
+    bars: [
+      { l: 'जिज्ञासा',   v: 96, c: '#00D4FF' },
+      { l: 'भावना',      v: 88, c: '#FF2D8B' },
+      { l: 'स्पष्टता',  v: 97, c: '#A8FF3C' },
+      { l: 'CTA पावर',  v: 92, c: '#FFB800' },
+    ],
+    s3Title: 'क्रॉसपोस्ट',
+    cpDesc: 'स्क्रिप्ट हर जगह post हो गई ✓',
+    cpNote: 'एक क्लिक। हर प्लेटफॉर्म।',
+    s4Title: 'ट्रेंडिंग अभी',
+    trends: [
+      { tag: '#MorningRoutine', views: '2.4M व्यूज़', delta: '+38%', i: 1, c: '#FF2D8B', delay: '0.3s' },
+      { tag: '#FitnessIndia',   views: '1.8M व्यूज़', delta: '+21%', i: 2, c: '#00D4FF', delay: '0.7s' },
+      { tag: '#AILifestyle',    views: '987K व्यूज़',  delta: '+57%', i: 3, c: '#A8FF3C', delay: '1.1s' },
+      { tag: '#5AMClub',        views: '741K व्यूज़',  delta: '+14%', i: 4, c: '#FFB800', delay: '1.5s' },
+    ],
+    s5Title: 'क्रिएटर एडवाइज़र',
+    q1: 'Reels पर जल्दी grow कैसे करूं?',
+    a1: 'रोज़ सुबह 7–9 बजे post करो। Trending audio use करो। Hooks में bold claim या question से शुरू करो। 💡',
+    q2: 'कौन से hashtags?',
+    labels: ['स्क्रिप्ट स्टूडियो', 'हुक स्कोर', 'क्रॉसपोस्ट', 'ट्रेंडिंग', 'क्रिएटर एडवाइज़र'],
+  },
+}
+
 function AppPhone() {
+  const { lang } = useLang()
+  const d = DEMO[lang] || DEMO.en
+
   /* 25 s total, 5 s per screen
      Each screen: fade-in 0.4s → hold 3.8s → fade-out 0.4s → invisible 20s
      As % of 25s:  0→1.6, 1.6→16.8, 16.8→18.4, 18.4→100 */
@@ -61,32 +130,32 @@ function AppPhone() {
           <div className="ap-scene ap-s1">
             <div className="ap-hdr" style={{ '--hc': '#00D4FF' }}>
               <span className="ap-hdr-icon">✍</span>
-              <span className="ap-hdr-title">Script Studio</span>
+              <span className="ap-hdr-title">{d.s1Title}</span>
               <span className="ap-live-pill"><span className="ap-live-dot" />LIVE</span>
             </div>
 
-            <div className="ap-field-lbl">Topic</div>
+            <div className="ap-field-lbl">{d.topicLbl}</div>
             <div className="ap-input-row">
-              <span className="ap-typed-text">Morning fitness routine</span>
+              <span className="ap-typed-text">{d.topic}</span>
               <span className="ap-cursor" />
             </div>
 
-            <div className="ap-field-lbl" style={{ marginTop: 10 }}>Hook</div>
+            <div className="ap-field-lbl" style={{ marginTop: 10 }}>{d.hookLbl}</div>
             <div className="ap-script-line ap-sl-hook" style={{ animationDelay: '1.2s' }}>
               <span className="ap-tag" style={{ '--tc': '#00D4FF' }}>hook</span>
-              Most beginners quit the gym in week 2.
+              {d.hook}
             </div>
 
-            <div className="ap-field-lbl" style={{ marginTop: 8 }}>Body</div>
+            <div className="ap-field-lbl" style={{ marginTop: 8 }}>{d.bodyLbl}</div>
             <div className="ap-script-line" style={{ animationDelay: '1.8s' }}>
               <span className="ap-tag" style={{ '--tc': '#A855F7' }}>body</span>
-              Here's the one habit that kept me consistent for 2 years straight.
+              {d.body}
             </div>
 
-            <div className="ap-field-lbl" style={{ marginTop: 8 }}>CTA</div>
+            <div className="ap-field-lbl" style={{ marginTop: 8 }}>{d.ctaLbl}</div>
             <div className="ap-script-line ap-sl-cta" style={{ animationDelay: '2.4s' }}>
               <span className="ap-tag" style={{ '--tc': '#FF2D8B' }}>cta</span>
-              Follow for part 2 🔥
+              {d.cta}
             </div>
           </div>
 
@@ -94,7 +163,7 @@ function AppPhone() {
           <div className="ap-scene ap-s2">
             <div className="ap-hdr" style={{ '--hc': '#A8FF3C' }}>
               <span className="ap-hdr-icon">🎯</span>
-              <span className="ap-hdr-title">Hook Score</span>
+              <span className="ap-hdr-title">{d.s2Title}</span>
               <span className="ap-badge" style={{ '--bc': '#A8FF3C' }}>AI Rating</span>
             </div>
 
@@ -111,17 +180,12 @@ function AppPhone() {
                 <path className="ap-gauge-fill" d="M 10 60 A 50 50 0 0 1 110 60" stroke="url(#gaugeG)" strokeWidth="7" fill="none" strokeLinecap="round"/>
               </svg>
               <div className="ap-score-num">94</div>
-              <div className="ap-score-sub">Viral Potential</div>
+              <div className="ap-score-sub">{d.viralPotential}</div>
             </div>
 
             <div className="ap-bars">
-              {[
-                { l: 'Curiosity', v: 96, c: '#00D4FF' },
-                { l: 'Emotion',   v: 88, c: '#FF2D8B' },
-                { l: 'Clarity',   v: 97, c: '#A8FF3C' },
-                { l: 'CTA Power', v: 92, c: '#FFB800' },
-              ].map((b, i) => (
-                <div key={b.l} className="ap-bar-row" style={{ animationDelay: `${0.4 + i * 0.15}s` }}>
+              {d.bars.map((b, i) => (
+                <div key={i} className="ap-bar-row" style={{ animationDelay: `${0.4 + i * 0.15}s` }}>
                   <span className="ap-bar-lbl">{b.l}</span>
                   <div className="ap-bar-track">
                     <div className="ap-bar-fill" style={{ '--bw': b.v + '%', '--bc': b.c, animationDelay: `${0.6 + i * 0.15}s` }} />
@@ -136,11 +200,11 @@ function AppPhone() {
           <div className="ap-scene ap-s3">
             <div className="ap-hdr" style={{ '--hc': '#FF2D8B' }}>
               <span className="ap-hdr-icon">⇄</span>
-              <span className="ap-hdr-title">Crosspost</span>
+              <span className="ap-hdr-title">{d.s3Title}</span>
               <span className="ap-badge" style={{ '--bc': '#FF2D8B' }}>4 platforms</span>
             </div>
 
-            <div className="ap-cp-desc">Script adapted &amp; posted everywhere ✓</div>
+            <div className="ap-cp-desc">{d.cpDesc}</div>
 
             <div className="ap-cp-platforms">
               {[
@@ -157,24 +221,19 @@ function AppPhone() {
               ))}
             </div>
 
-            <div className="ap-cp-note">One click. Every platform.</div>
+            <div className="ap-cp-note">{d.cpNote}</div>
           </div>
 
           {/* ── Screen 4: Trending ── */}
           <div className="ap-scene ap-s4">
             <div className="ap-hdr" style={{ '--hc': '#FFB800' }}>
               <span className="ap-hdr-icon">📈</span>
-              <span className="ap-hdr-title">Trending Now</span>
+              <span className="ap-hdr-title">{d.s4Title}</span>
               <span className="ap-live-pill ap-live-amber"><span className="ap-live-dot ap-live-dot-a" />LIVE</span>
             </div>
 
             <div className="ap-trends">
-              {[
-                { tag: '#MorningRoutine', views: '2.4M views',  delta: '+38%', i: 1, c: '#FF2D8B', delay: '0.3s' },
-                { tag: '#FitnessIndia',   views: '1.8M views',  delta: '+21%', i: 2, c: '#00D4FF', delay: '0.7s' },
-                { tag: '#AILifestyle',    views: '987K views',   delta: '+57%', i: 3, c: '#A8FF3C', delay: '1.1s' },
-                { tag: '#5AMClub',        views: '741K views',   delta: '+14%', i: 4, c: '#FFB800', delay: '1.5s' },
-              ].map(t => (
+              {d.trends.map(t => (
                 <div key={t.tag} className="ap-trend-row" style={{ animationDelay: t.delay }}>
                   <span className="ap-trend-rank" style={{ color: t.c }}>{t.i}</span>
                   <div className="ap-trend-info">
@@ -191,19 +250,19 @@ function AppPhone() {
           <div className="ap-scene ap-s5">
             <div className="ap-hdr" style={{ '--hc': '#A855F7' }}>
               <span className="ap-hdr-icon">🤖</span>
-              <span className="ap-hdr-title">Creator Advisor</span>
+              <span className="ap-hdr-title">{d.s5Title}</span>
               <span className="ap-badge" style={{ '--bc': '#A855F7' }}>24/7</span>
             </div>
 
             <div className="ap-chat">
               <div className="ap-msg ap-msg-u" style={{ animationDelay: '0.2s' }}>
-                How do I grow faster on Reels?
+                {d.q1}
               </div>
               <div className="ap-msg ap-msg-ai" style={{ animationDelay: '0.9s' }}>
-                Post between 7–9 AM daily. Use trending audio. Your hooks need more pattern interrupts — start with a bold claim or question. 💡
+                {d.a1}
               </div>
               <div className="ap-msg ap-msg-u" style={{ animationDelay: '2.0s' }}>
-                Which hashtags?
+                {d.q2}
               </div>
               <div className="ap-typing" style={{ animationDelay: '2.6s' }}>
                 <span /><span /><span />
@@ -217,21 +276,21 @@ function AppPhone() {
       {/* ── Feature indicator dots ────────────────────────────── */}
       <div className="ap-dots">
         {[1,2,3,4,5].map(n => (
-          <div key={n} className={`ap-dot ap-dot-${n}`} title={['Script','Score','Crosspost','Trending','Coach'][n-1]} />
+          <div key={n} className={`ap-dot ap-dot-${n}`} title={d.labels[n-1]} />
         ))}
       </div>
 
       {/* ── Feature labels cycling ────────────────────────────── */}
       <div className="ap-label-wrap">
         {[
-          { n:1, text:'Script Studio',  c:'#00D4FF' },
-          { n:2, text:'Hook Score',     c:'#A8FF3C' },
-          { n:3, text:'Crosspost',      c:'#FF2D8B' },
-          { n:4, text:'Trending',       c:'#FFB800' },
-          { n:5, text:'Creator Advisor', c:'#A855F7' },
-        ].map(f => (
+          { n:1, c:'#00D4FF' },
+          { n:2, c:'#A8FF3C' },
+          { n:3, c:'#FF2D8B' },
+          { n:4, c:'#FFB800' },
+          { n:5, c:'#A855F7' },
+        ].map((f, i) => (
           <div key={f.n} className={`ap-label ap-label-${f.n}`} style={{ '--lc': f.c }}>
-            {f.text}
+            {d.labels[i]}
           </div>
         ))}
       </div>
