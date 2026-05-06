@@ -248,13 +248,8 @@ function AppPhone() {
       {/* RIGHT SIDE */}
       <div className="vb vb-heart"   aria-hidden>❤️</div>
       <div className="vb vb-fire"    aria-hidden>🔥</div>
-<div className="vb vb-share"   aria-hidden>
-        <span className="vb-share-icon">↗</span>
-        <span className="vb-share-txt">Share</span>
-        <span className="vb-share-cnt">2.4K</span>
-      </div>
 
-      {/* Rising hearts — right edge of phone */}
+{/* Rising hearts — right edge of phone */}
       <div className="vb vb-rise vb-rise-1" aria-hidden>❤️</div>
       <div className="vb vb-rise vb-rise-2" aria-hidden>🧡</div>
       <div className="vb vb-rise vb-rise-3" aria-hidden>❤️</div>
@@ -909,24 +904,7 @@ export default function Landing() {
           animation: vbFireSway 2.4s ease-in-out infinite;
         }
 
-/* ── Share chip ─────────────────────────────────────── */
-        .vb-share {
-          right: 4px; top: 370px;
-          display: flex; align-items: center; gap: 5px;
-          background: rgba(8,10,30,0.84);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          border: 1px solid rgba(0,212,255,0.28);
-          border-radius: 99px; padding: 6px 13px;
-          font-size: 0.68rem;
-          box-shadow: 0 5px 22px rgba(0,0,0,0.45), 0 0 16px rgba(0,212,255,0.14);
-          animation: vbDrift 5.5s ease-in-out 1.2s infinite;
-        }
-        .vb-share-icon { color: #00D4FF; font-size: 0.85rem; font-style: normal; font-weight: 900; }
-        .vb-share-txt  { color: rgba(255,255,255,0.88); font-weight: 800; letter-spacing: 0.01em; }
-        .vb-share-cnt  { color: rgba(255,255,255,0.38); font-family: var(--font-mono,monospace); font-size: 0.58rem; }
-
-        /* ── Rising hearts ──────────────────────────────────── */
+/* ── Rising hearts ──────────────────────────────────── */
         /* staggered sizes + slight x-jitter so they don't stack */
         .vb-rise { animation: vbRise 3.4s ease-out infinite; filter: drop-shadow(0 2px 6px rgba(255,45,139,0.4)); }
         .vb-rise-1 { right: 24px; top: 400px; font-size: 1.35rem; animation-delay: 0.0s; }
