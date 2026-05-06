@@ -245,17 +245,10 @@ function AppPhone() {
       <div className="vb vb-thumb"   aria-hidden>👍</div>
       <div className="vb vb-eyes"    aria-hidden>👀</div>
       <div className="vb vb-comment" aria-hidden>💬</div>
-      <div className="vb vb-pill vb-pill-likes" aria-hidden>
-        <span>❤️</span><span className="vb-pill-num">847K</span>
-      </div>
-
       {/* RIGHT SIDE */}
       <div className="vb vb-heart"   aria-hidden>❤️</div>
       <div className="vb vb-fire"    aria-hidden>🔥</div>
-      <div className="vb vb-pill vb-pill-views" aria-hidden>
-        <span>👁</span><span className="vb-pill-num">2.4M</span>
-      </div>
-      <div className="vb vb-share"   aria-hidden>
+<div className="vb vb-share"   aria-hidden>
         <span className="vb-share-icon">↗</span>
         <span className="vb-share-txt">Share</span>
         <span className="vb-share-cnt">2.4K</span>
@@ -916,39 +909,7 @@ export default function Landing() {
           animation: vbFireSway 2.4s ease-in-out infinite;
         }
 
-        /* ── Count pills ────────────────────────────────────── */
-        .vb-pill {
-          display: flex; align-items: center; gap: 5px;
-          background: rgba(8,10,30,0.84);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          border: 1px solid rgba(255,255,255,0.11);
-          border-radius: 99px;
-          padding: 5px 12px;
-          font-size: 0.68rem;
-          box-shadow: 0 6px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
-          animation: vbBobSlow 6s ease-in-out infinite, vbPopIn 0.55s cubic-bezier(0.34,1.6,0.64,1) 0.4s both;
-        }
-        .vb-pill-num { font-weight: 800; color: rgba(255,255,255,0.94); font-family: var(--font-mono,monospace); letter-spacing: -0.02em; }
-        /* likes pill: bigger, tilted, cyan glow */
-        .vb-pill-likes {
-          left: -10px; top: 210px;
-          transform: rotate(-8deg);
-          font-size: 0.75rem;
-          border-color: rgba(0,212,255,0.18);
-          box-shadow: 0 6px 24px rgba(0,0,0,0.5), 0 0 16px rgba(0,212,255,0.14), inset 0 1px 0 rgba(255,255,255,0.06);
-          animation-delay: 0.2s, 0.4s;
-        }
-        /* views pill: normal size, slight tilt other way */
-        .vb-pill-views {
-          right: -10px; top: 266px;
-          transform: rotate(6deg);
-          font-size: 0.63rem;
-          opacity: 0.88;
-          animation-delay: 0.9s, 0.7s;
-        }
-
-        /* ── Share chip ─────────────────────────────────────── */
+/* ── Share chip ─────────────────────────────────────── */
         .vb-share {
           right: 4px; top: 370px;
           display: flex; align-items: center; gap: 5px;
