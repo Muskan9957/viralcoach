@@ -99,7 +99,7 @@ export default function Auth() {
             {mode === 'login' ? 'Welcome back' : 'Get started free'}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 24 }}>
-            {mode === 'login' ? 'Sign in to your ViralCoach studio' : 'No credit card required'}
+            {mode === 'login' ? 'Sign in to your Nuovve studio' : 'No credit card required'}
           </p>
 
           {/* Social buttons */}

@@ -80,11 +80,11 @@ export default function PrivacyPolicy() {
           marginBottom: 40,
           fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.7,
         }}>
-          This Privacy Policy explains how <strong style={{ color: 'var(--text)' }}>Anahat Aura LLP</strong> ("we", "our", "us") collects, uses, and protects your personal information when you use <strong style={{ color: 'var(--text)' }}>ViralCoach</strong> at <strong style={{ color: 'var(--text)' }}>anahatone.com</strong>. By using our service, you agree to the practices described in this policy.
+          This Privacy Policy explains how <strong style={{ color: 'var(--text)' }}>Anahat Aura LLP</strong> ("we", "our", "us") collects, uses, and protects your personal information when you use <strong style={{ color: 'var(--text)' }}>Nuovve</strong> at <strong style={{ color: 'var(--text)' }}>anahatone.com</strong>. By using our service, you agree to the practices described in this policy.
         </div>
 
         <Section title="1. Information We Collect">
-          <P>We collect the following types of information when you use ViralCoach:</P>
+          <P>We collect the following types of information when you use Nuovve:</P>
           <P><strong style={{ color: 'var(--text)' }}>Account Information</strong></P>
           <Ul items={[
             'Name and email address when you register',
@@ -113,7 +113,7 @@ export default function PrivacyPolicy() {
         <Section title="2. How We Use Your Information">
           <P>We use the information we collect to:</P>
           <Ul items={[
-            'Create and manage your ViralCoach account',
+            'Create and manage your Nuovve account',
             'Provide AI-generated scripts, hook scores, and content recommendations',
             'Process payments and manage your subscription plan',
             'Send transactional emails (account verification, password reset, billing)',
@@ -138,7 +138,7 @@ export default function PrivacyPolicy() {
         </Section>
 
         <Section title="4. Cookies and Tracking">
-          <P>ViralCoach uses minimal cookies and local storage for:</P>
+          <P>Nuovve uses minimal cookies and local storage for:</P>
           <Ul items={[
             'Keeping you logged in (JWT token stored in localStorage)',
             'Remembering your onboarding status and language preference',
@@ -147,7 +147,7 @@ export default function PrivacyPolicy() {
         </Section>
 
         <Section title="5. Third-Party Services">
-          <P>We use the following third-party services to operate ViralCoach:</P>
+          <P>We use the following third-party services to operate Nuovve:</P>
           <Ul items={[
             'Anthropic (Claude API) — powers AI script generation, hook scoring, and AI Coach',
             'Razorpay — payment processing and subscription management',
@@ -183,11 +183,11 @@ export default function PrivacyPolicy() {
         </Section>
 
         <Section title="8. Children's Privacy">
-          <P>ViralCoach is not intended for children under the age of 13. We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us and we will delete it immediately.</P>
+          <P>Nuovve is not intended for children under the age of 13. We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us and we will delete it immediately.</P>
         </Section>
 
         <Section title="9. Changes to This Policy">
-          <P>We may update this Privacy Policy from time to time. When we do, we will update the "Last updated" date at the top of this page. For significant changes, we will notify you by email. Continued use of ViralCoach after changes are posted constitutes acceptance of the updated policy.</P>
+          <P>We may update this Privacy Policy from time to time. When we do, we will update the "Last updated" date at the top of this page. For significant changes, we will notify you by email. Continued use of Nuovve after changes are posted constitutes acceptance of the updated policy.</P>
         </Section>
 
         <Section title="10. Contact Us">
@@ -214,7 +214,7 @@ export default function PrivacyPolicy() {
         flexWrap: 'wrap', gap: 12, background: 'var(--surface)',
         fontSize: '0.8rem', color: 'var(--text-faint)',
       }}>
-        <span>© Anahat Aura LLP · ViralCoach</span>
+        <span>© Anahat Aura LLP · Nuovve</span>
         <div style={{ display: 'flex', gap: 20 }}>
           <Link to="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Privacy Policy</Link>
           <Link to="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none' }}>Terms of Service</Link>

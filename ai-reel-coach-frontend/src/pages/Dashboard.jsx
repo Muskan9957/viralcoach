@@ -274,7 +274,7 @@ function CreatorScoreCard({ score }) {
 
   const shareScore = async () => {
     try {
-      await navigator.clipboard.writeText(`My ViralCoach Creator Score: ${val} — ${level || 'Rising Creator'} 🚀`)
+      await navigator.clipboard.writeText(`My Nuovve Creator Score: ${val} — ${level || 'Rising Creator'} 🚀`)
       setCopied(true); setTimeout(() => setCopied(false), 2000)
     } catch {}
   }

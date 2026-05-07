@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ViralCoach Logo Concepts</title>
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#080810;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    color:white;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:2px;
+    min-height:100vh;
+  }
+  .concept {
+    background:#0C0C1A;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:28px 20px 36px;
+    gap:22px;
+    border-right:1px solid rgba(255,255,255,0.05);
+  }
+  .concept:last-child { border-right:none; }
+  .ctitle {
+    font-size:9px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.22);
+    text-align:center;
+  }
+  .swatch {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:7px;
+    width:100%;
+  }
+  .tag { font-size:8px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.14); }
+  .dark  { background:#0E0E1C; padding:16px 20px; border-radius:10px; width:100%; display:flex; justify-content:center; }
+  .light { background:#F0F0F8; padding:16px 20px; border-radius:10px; width:100%; display:flex; justify-content:center; }
+  .icon-wrap { background:#131325; padding:14px; border-radius:10px; }
+  .divline { width:80%; height:1px; background:rgba(255,255,255,0.06); }
+</style>
+</head>
+<body>
+
+<div class="concept" id="col-a">
+  <div class="ctitle">A — Sparkle Mark<br><span style="opacity:.5">gold · orange · hot pink</span></div>
+  <div class="swatch"><div class="tag">dark bg</div><div class="dark" id="a1"></div></div>
+  <div class="swatch"><div class="tag">light bg</div><div class="light" id="a2"></div></div>
+  <div class="divline"></div>
+  <div class="swatch"><div class="tag">medium</div><div class="dark" id="a3"></div></div>
+  <div class="swatch"><div class="tag">nav 32px</div><div class="dark" id="a4"></div></div>
+  <div class="swatch"><div class="tag">icon only</div><div class="icon-wrap" id="a5"></div></div>
+</div>
+
+<div class="concept" id="col-b">
+  <div class="ctitle">B — Signal Bars<br><span style="opacity:.5">electric lime · cyan</span></div>
+  <div class="swatch"><div class="tag">dark bg</div><div class="dark" id="b1"></div></div>
+  <div class="swatch"><div class="tag">light bg</div><div class="light" id="b2"></div></div>
+  <div class="divline"></div>
+  <div class="swatch"><div class="tag">medium</div><div class="dark" id="b3"></div></div>
+  <div class="swatch"><div class="tag">nav 32px</div><div class="dark" id="b4"></div></div>
+  <div class="swatch"><div class="tag">icon only</div><div class="icon-wrap" id="b5"></div></div>
+</div>
+
+<div class="concept" id="col-c">
+  <div class="ctitle">C — Flame Play<br><span style="opacity:.5">coral · rose · amber</span></div>
+  <div class="swatch"><div class="tag">dark bg</div><div class="dark" id="c1"></div></div>
+  <div class="swatch"><div class="tag">light bg</div><div class="light" id="c2"></div></div>
+  <div class="divline"></div>
+  <div class="swatch"><div class="tag">medium</div><div class="dark" id="c3"></div></div>
+  <div class="swatch"><div class="tag">nav 32px</div><div class="dark" id="c4"></div></div>
+  <div class="swatch"><div class="tag">icon only</div><div class="icon-wrap" id="c5"></div></div>
+</div>
+
+<script>
+function conceptA(sz,word,light){
+  const id='a'+(Math.random()*1e6|0)
+  const cx=sz/2,cy=sz/2,vR=sz*.47,hR=sz*.36
+  const p=`M${cx} ${cy-vR} Q${cx} ${cy} ${cx+hR} ${cy} Q${cx} ${cy} ${cx} ${cy+vR} Q${cx} ${cy} ${cx-hR} ${cy} Q${cx} ${cy} ${cx} ${cy-vR}Z`
+  const g=sz*.14,mut=light?'rgba(10,10,20,.4)':'rgba(255,255,255,.45)'
+  const svg=`<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}" fill="none"
+    style="flex-shrink:0;filter:drop-shadow(0 0 ${g}px #FF5500)drop-shadow(0 0 ${g*.4}px #FF006E)">
+    <defs><linearGradient id="${id}" x1="${cx}" y1="0" x2="${cx}" y2="${sz}" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFD700"/><stop offset="48%" stop-color="#FF4D00"/><stop offset="100%" stop-color="#FF006E"/>
+    </linearGradient></defs>
+    <path d="${p}" fill="url(#${id})"/></svg>`
+  if(!word)return svg
+  const fV=Math.max(sz*.60,14),fC=Math.max(sz*.30,8),gap=Math.max(sz*.18,5)
+  return`<div style="display:flex;align-items:center;gap:${gap}px">${svg}
+    <div style="display:flex;align-items:baseline;gap:2px;line-height:1">
+      <b style="font-family:system-ui;font-size:${fV}px;font-weight:900;letter-spacing:-0.02em;
+        background:linear-gradient(135deg,#FFD700,#FF4D00 50%,#FF006E);
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">VIRAL</b>
+      <span style="font-family:system-ui;font-size:${fC*1.2}px;font-weight:300;color:${mut};letter-spacing:.04em">coach</span>
+    </div></div>`
+}
+
+function conceptB(sz,word,light){
+  const id='b'+(Math.random()*1e6|0)
+  const bw=sz*.13,gap=sz*.07,r=bw*.5
+  const hs=[0.28,0.50,0.72,1.0],totW=4*bw+3*gap,x0=(sz-totW)/2
+  const gl=sz*.10,mut=light?'rgba(10,10,20,.4)':'rgba(255,255,255,.45)'
+  let bars=''
+  hs.forEach((h,i)=>{
+    const bh=sz*.46*h,bx=x0+i*(bw+gap),by=sz*.92-bh
+    bars+=`<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="${r.toFixed(1)}" fill="url(#${id})"/>`
+  })
+  const svg=`<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}" fill="none"
+    style="flex-shrink:0;filter:drop-shadow(0 0 ${gl}px #00FF99)drop-shadow(0 0 ${gl*.3}px #AAFF00)">
+    <defs><linearGradient id="${id}" x1="0" y1="${sz}" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00FFAA"/><stop offset="100%" stop-color="#AAFF00"/>
+    </linearGradient></defs>${bars}</svg>`
+  if(!word)return svg
+  const fV=Math.max(sz*.58,14),fC=Math.max(sz*.30,8),g=Math.max(sz*.18,5)
+  return`<div style="display:flex;align-items:center;gap:${g}px">${svg}
+    <div style="display:flex;align-items:baseline;gap:1px;line-height:1">
+      <b style="font-family:system-ui;font-size:${fV}px;font-weight:900;letter-spacing:-0.025em;
+        background:linear-gradient(135deg,#AAFF00,#00FFCC);
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Viral</b>
+      <span style="font-family:system-ui;font-size:${fC*1.2}px;font-weight:300;color:${mut};letter-spacing:.03em">Coach</span>
+    </div></div>`
+}
+
+function conceptC(sz,word,light){
+  const id='c'+(Math.random()*1e6|0)
+  const cx=sz/2,cy=sz/2,r=sz*.44
+  const p1=[cx-r*.58,cy-r*.76],p2=[cx-r*.58,cy+r*.76],p3=[cx+r*.84,cy]
+  const tri=p1.join(',')+'  '+p2.join(',')+'  '+p3.join(',')
+  const fw=sz*.20,fCx=cx+r*.05
+  const fBase=cy+r*.30,fTip=cy-r*.48,fd=sz*.12
+  const flame=`M${fCx} ${fTip} C${fCx+fw*.7} ${fTip+(fBase-fTip)*.35},${fCx+fw} ${fTip+(fBase-fTip)*.68},${fCx+fw*.5} ${fBase} C${fCx+fw*.18} ${fBase+fd},${fCx-fw*.18} ${fBase+fd},${fCx-fw*.5} ${fBase} C${fCx-fw} ${fTip+(fBase-fTip)*.68},${fCx-fw*.7} ${fTip+(fBase-fTip)*.35},${fCx} ${fTip}Z`
+  const gl=sz*.13,mut=light?'rgba(10,10,20,.4)':'rgba(255,255,255,.45)'
+  const svg=`<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}" fill="none"
+    style="flex-shrink:0;filter:drop-shadow(0 0 ${gl}px #FF3A2D)drop-shadow(0 0 ${gl*.4}px #FF1A6E)">
+    <defs>
+      <linearGradient id="${id}-t" x1="0" y1="0" x2="${sz}" y2="${sz}" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#FF1A6E"/><stop offset="100%" stop-color="#FF7A3D"/>
+      </linearGradient>
+      <linearGradient id="${id}-f" x1="${fCx}" y1="${fTip}" x2="${fCx}" y2="${fBase}" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#FFE86A"/><stop offset="55%" stop-color="#FF8C00"/><stop offset="100%" stop-color="#FF3A2D"/>
+      </linearGradient>
+      <mask id="${id}-m">
+        <polygon points="${tri}" fill="white"/>
+        <path d="${flame}" fill="black"/>
+      </mask>
+    </defs>
+    <polygon points="${tri}" fill="url(#${id}-t)" mask="url(#${id}-m)"/>
+    <path d="${flame}" fill="url(#${id}-f)" opacity="0.95"/>
+  </svg>`
+  if(!word)return svg
+  const fV=Math.max(sz*.58,14),fC=Math.max(sz*.30,8),g=Math.max(sz*.18,5)
+  return`<div style="display:flex;align-items:center;gap:${g}px">${svg}
+    <div style="display:flex;align-items:baseline;gap:1px;line-height:1">
+      <b style="font-family:system-ui;font-size:${fV}px;font-weight:900;letter-spacing:-0.025em;
+        background:linear-gradient(135deg,#FF7A3D,#FF1A6E);
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Viral</b>
+      <span style="font-family:system-ui;font-size:${fC*1.2}px;font-weight:300;color:${mut};letter-spacing:.03em">Coach</span>
+    </div></div>`
+}
+
+document.getElementById('a1').innerHTML=conceptA(48,true,false)
+document.getElementById('a2').innerHTML=conceptA(48,true,true)
+document.getElementById('a3').innerHTML=conceptA(38,true,false)
+document.getElementById('a4').innerHTML=conceptA(30,true,false)
+document.getElementById('a5').innerHTML=conceptA(44,false,false)
+
+document.getElementById('b1').innerHTML=conceptB(48,true,false)
+document.getElementById('b2').innerHTML=conceptB(48,true,true)
+document.getElementById('b3').innerHTML=conceptB(38,true,false)
+document.getElementById('b4').innerHTML=conceptB(30,true,false)
+document.getElementById('b5').innerHTML=conceptB(44,false,false)
+
+document.getElementById('c1').innerHTML=conceptC(48,true,false)
+document.getElementById('c2').innerHTML=conceptC(48,true,true)
+document.getElementById('c3').innerHTML=conceptC(38,true,false)
+document.getElementById('c4').innerHTML=conceptC(30,true,false)
+document.getElementById('c5').innerHTML=conceptC(44,false,false)
+</script>
+</body>
+</html>

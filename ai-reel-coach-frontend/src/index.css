@@ -11,7 +11,7 @@
   --border:      rgba(100,140,255,0.18);
   --border-bright: rgba(100,140,255,0.32);
 
-  /* ── Brand Colors (ViralCoach: cyan + purple) ── */
+  /* ── Brand Colors (Nuovve: cyan + purple) ── */
   --accent:      #00C8FF;   /* electric cyan — primary */
   --accent2:     #7B5CF0;   /* purple — secondary */
   --accent3:     #4DD9FF;   /* lighter cyan */
@@ -301,7 +301,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Cosmic navy mesh background (ViralCoach theme) ────────────── */
+/* ─── Cosmic navy mesh background (Nuovve theme) ────────────────── */
 body::before {
   content: '';
   position: fixed;

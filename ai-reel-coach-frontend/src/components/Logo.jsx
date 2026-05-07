@@ -1,5 +1,5 @@
 /**
- * ViralCoach Logo
+ * Nuovve Logo
  *
  * Colours come entirely from CSS variables (--logo-v1, --logo-v2, --logo-h1,
  * --logo-shadow) defined in index.css for both dark and light themes.
@@ -12,9 +12,9 @@
  *   body          → --logo-v2  (violet / purple)
  *   play ▶        → white 70%
  *
- * Wordmark : "Viral" / "coach" stacked in Caveat
- *   "Viral" → --logo-v1
- *   "coach" → --logo-v2
+ * Wordmark : "Nuovve" in Caveat
+ *   "Nuov" → --logo-v1
+ *   "ve"   → --logo-v2
  */
 import { useState } from 'react'
 
@@ -102,25 +102,17 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
 
       {/* ── Wordmark ─────────────────────────────────────── */}
       {showWordmark && (
-        <div style={{ lineHeight: 1.1, userSelect: 'none' }}>
+        <div style={{ lineHeight: 1, userSelect: 'none' }}>
           <div style={{
             fontFamily:    '"Caveat", cursive',
             fontWeight:    700,
-            fontSize:      Math.max(size * 0.50, 16),
-            color:         'var(--logo-v1)',
+            fontSize:      Math.max(size * 0.56, 18),
             letterSpacing: '0.01em',
+            display:       'flex',
+            alignItems:    'baseline',
           }}>
-            Viral
-          </div>
-          <div style={{
-            fontFamily:    '"Caveat", cursive',
-            fontWeight:    600,
-            fontSize:      Math.max(size * 0.46, 15),
-            color:         'var(--logo-v2)',
-            letterSpacing: '0.01em',
-            marginTop:     -2,
-          }}>
-            coach
+            <span style={{ color: 'var(--logo-v1)' }}>Nuov</span>
+            <span style={{ color: 'var(--logo-v2)' }}>ve</span>
           </div>
         </div>
       )}

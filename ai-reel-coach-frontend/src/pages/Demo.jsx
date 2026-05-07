@@ -230,7 +230,7 @@ export default function Demo() {
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 40px', background: 'rgba(6,4,14,0.85)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg,#00E5FF,#7B5CF0)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', boxShadow: '0 0 16px rgba(0,200,255,0.4)' }}>▶</div>
-          <span style={{ fontFamily: 'var(--font-head)', fontWeight: 900, fontSize: '1.1rem', background: 'linear-gradient(135deg,#00E5FF,#7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '-0.03em' }}>ViralCoach</span>
+          <span style={{ fontFamily: 'var(--font-head)', fontWeight: 900, fontSize: '1.1rem', background: 'linear-gradient(135deg,#00E5FF,#7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', letterSpacing: '-0.03em' }}>Nuovve</span>
         </div>
         <button onClick={() => navigate('/auth')} style={{ background: 'linear-gradient(135deg,#00E5FF,#7B5CF0)', border: 'none', borderRadius: 10, padding: '9px 22px', color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'var(--font-body)', boxShadow: '0 4px 16px rgba(0,200,255,0.35)' }}>
           Get Started Free →
