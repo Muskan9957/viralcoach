@@ -94,17 +94,11 @@
 
 /* ─── Logo mark ──────────────────────────────────────────────────── */
 
-/* Dark mode: strong cyan + violet neon glow (matches reference dark version) */
-.vc-logo-mark {
-  filter:     drop-shadow(0 0 12px rgba(0, 200, 255, 0.75))
-              drop-shadow(0 0  6px rgba(140, 80, 255, 0.55))
-              drop-shadow(0 0  3px rgba(255, 72,  32, 0.20));
-  transition: filter 0.3s ease;
-}
-
-/* Light mode: soft shadow only — no neon (matches reference light version) */
-[data-theme="light"] .vc-logo-mark {
-  filter: drop-shadow(0 3px 10px rgba(59, 85, 240, 0.22));
+/* Light mode: wordmark switches to deep navy (overrides inline gradient) */
+[data-theme="light"] .nuovve-wordmark {
+  background:           linear-gradient(100deg, #0F1535 0%, #2A3566 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip:      text !important;
 }
 
 /*
