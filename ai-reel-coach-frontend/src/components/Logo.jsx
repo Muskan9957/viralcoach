@@ -1,13 +1,9 @@
 /**
  * Nuovve Logo
  *
- * Icon   : Clapperboard (original purple/cyan design)
- *   boards  → --logo-v1  (cyan  / blue)
- *   body    → --logo-v2  (violet / purple)
- *   play ▶  → white 70%
- *
- * Wordmark: "NUOVVE" — Plus Jakarta Sans 900, uppercase, geometric
- *   White on dark · Navy (#0F1535) on light via .nuovve-wordmark class
+ * Icon     : Clapperboard (purple/cyan)
+ * Wordmark : Bricolage Grotesque 800 — gradient cyan → purple → pink
+ *            (mirrors icon colours, Instagram-ish energy)
  */
 import { useState } from 'react'
 
@@ -18,8 +14,8 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
   const cLo = `${uid}-cl`
   const cUp = `${uid}-cu`
 
-  const wordSize = Math.max(size * 0.72, 20)
-  const gap      = Math.max(size * 0.22, 7)
+  const wordSize = Math.max(size * 0.76, 22)
+  const gap      = Math.max(size * 0.20, 7)
 
   return (
     <div
@@ -86,16 +82,18 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
       {/* ── Wordmark ───────────────────────────────────────────── */}
       {showWordmark && (
         <span
-          className="nuovve-wordmark"
           style={{
-            fontFamily:    '"Plus Jakarta Sans", sans-serif',
-            fontWeight:    900,
-            fontSize:      `${wordSize}px`,
-            lineHeight:    1,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            color:         '#FFFFFF',
-            whiteSpace:    'nowrap',
+            fontFamily:             '"Bricolage Grotesque", sans-serif',
+            fontWeight:             800,
+            fontSize:               `${wordSize}px`,
+            lineHeight:             1,
+            letterSpacing:          '0.03em',
+            textTransform:          'uppercase',
+            whiteSpace:             'nowrap',
+            background:             'linear-gradient(110deg, #00CFFF 0%, #9060FF 48%, #F040A8 100%)',
+            WebkitBackgroundClip:   'text',
+            WebkitTextFillColor:    'transparent',
+            backgroundClip:         'text',
           }}
         >
           Nuovve
