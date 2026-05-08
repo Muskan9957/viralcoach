@@ -1,25 +1,20 @@
 /**
- * Nuovve Logo — replicates the three-pill icon + bold uppercase wordmark
+ * Nuovve Logo
  *
- * Icon  : Three overlapping capsule/pill shapes — orange, pink, blue
- *         Layered: orange (back) → blue (mid) → pink (front)
- *         Colors are vivid and work on both dark and light backgrounds
+ * Icon     : Three overlapping capsule/pill shapes
+ *            Built as SVG lines with round caps — the simplest and most
+ *            reliable way to draw a pill in SVG (no transforms, no clip paths).
+ *            Orange (back) → Blue (mid) → Pink (front)
  *
- * Wordmark : "NUOVVE" in Plus Jakarta Sans Black (900)
- *   dark  mode → warm gold  #C9A844  (readable on dark navy/black)
- *   light mode → deep navy  #0F1535  (readable on white/light)
- *   Controlled via --logo-word CSS variable (defined in index.css)
+ * Wordmark : "NUOVVE" — Plus Jakarta Sans 900, uppercase
+ *            --logo-word: gold on dark (#C9A844), navy on light (#0F1535)
  */
-import { useState } from 'react'
 
 export default function Logo({ size = 40, showWordmark = true, className = '' }) {
-  const [uid] = useState(() => `nv${Math.random().toString(36).slice(2, 7)}`)
-
-  // Icon viewBox is 66×54 — preserve that aspect ratio
-  const iconH = size
-  const iconW = Math.round(size * (66 / 54))
+  const iconH    = size
+  const iconW    = Math.round(size * 1.35)   // viewBox is 68×50 → ratio 1.36
   const wordSize = Math.max(size * 0.76, 24)
-  const gap = Math.max(size * 0.22, 7)
+  const gap      = Math.max(size * 0.20, 7)
 
   return (
     <div
@@ -29,67 +24,79 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
         alignItems: 'center',
         gap,
         userSelect: 'none',
+        flexShrink: 0,
       }}
     >
-      {/* ── Three-pill icon ───────────────────────────────────────── */}
+      {/* ── Pill icon ──────────────────────────────────────────────
+          Each pill = <line> with strokeLinecap="round".
+          A line from A to B with stroke-width W draws a capsule shape
+          exactly — no rotation math, no clipping, works in all browsers.
+
+          Layering (painter's order = back to front):
+            1. Orange  — bottom-left → upper-right  (~−45°)
+            2. Blue    — center-left → upper-right  (~+28°)
+            3. Pink    — left-center → right-center (~−10°, horizontal)
+      ─────────────────────────────────────────────────────────── */}
       <svg
         width={iconW}
         height={iconH}
-        viewBox="0 0 66 54"
+        viewBox="0 0 68 50"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ flexShrink: 0, overflow: 'visible' }}
+        style={{ flexShrink: 0, display: 'block' }}
         aria-hidden="true"
       >
-        <defs>
-          {/* Subtle highlight strips for 3-D pill depth */}
-          <linearGradient id={`${uid}-go`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="rgba(255,255,255,0.30)" />
-            <stop offset="50%"  stopColor="rgba(255,255,255,0.00)" />
-          </linearGradient>
-          <linearGradient id={`${uid}-gp`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="rgba(255,255,255,0.28)" />
-            <stop offset="50%"  stopColor="rgba(255,255,255,0.00)" />
-          </linearGradient>
-          <linearGradient id={`${uid}-gb`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="rgba(255,255,255,0.28)" />
-            <stop offset="50%"  stopColor="rgba(255,255,255,0.00)" />
-          </linearGradient>
-        </defs>
+        {/* 1 — Orange pill  (back layer) */}
+        <line
+          x1="4"  y1="43"
+          x2="37" y2="7"
+          stroke="#F7931E"
+          strokeWidth="13"
+          strokeLinecap="round"
+        />
+        {/* highlight strip */}
+        <line
+          x1="4"  y1="43"
+          x2="37" y2="7"
+          stroke="rgba(255,255,255,0.22)"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
 
-        {/* ── Layer 1 — Orange pill (back) ───────────────────── */}
-        {/* Long axis: bottom-left → upper-right, ~−42° */}
-        <g transform="rotate(-42, 20, 35)">
-          <rect x="0" y="28" width="40" height="14" rx="7"
-            fill="#F7931E" />
-          <rect x="0" y="28" width="40" height="14" rx="7"
-            fill={`url(#${uid}-go)`} />
-        </g>
+        {/* 2 — Blue / cyan pill  (middle layer) */}
+        <line
+          x1="18" y1="7"
+          x2="63" y2="31"
+          stroke="#00B8D9"
+          strokeWidth="12"
+          strokeLinecap="round"
+        />
+        <line
+          x1="18" y1="7"
+          x2="63" y2="31"
+          stroke="rgba(255,255,255,0.20)"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
 
-        {/* ── Layer 2 — Blue/cyan pill (middle) ─────────────── */}
-        {/* Long axis: lower-left → upper-right, ~+32° */}
-        <g transform="rotate(32, 40, 21)">
-          <rect x="20" y="14" width="40" height="14" rx="7"
-            fill="#00B8D9" />
-          <rect x="20" y="14" width="40" height="14" rx="7"
-            fill={`url(#${uid}-gb)`} />
-        </g>
-
-        {/* ── Layer 3 — Pink/magenta pill (front) ───────────── */}
-        {/* Long axis: roughly horizontal, slight ~−10° tilt */}
-        <g transform="rotate(-10, 28, 27)">
-          <rect x="6" y="20" width="44" height="14" rx="7"
-            fill="#E91E8C" />
-          <rect x="6" y="20" width="44" height="14" rx="7"
-            fill={`url(#${uid}-gp)`} />
-        </g>
+        {/* 3 — Pink / magenta pill  (front layer) */}
+        <line
+          x1="6"  y1="32"
+          x2="58" y2="22"
+          stroke="#E91E8C"
+          strokeWidth="14"
+          strokeLinecap="round"
+        />
+        <line
+          x1="6"  y1="32"
+          x2="58" y2="22"
+          stroke="rgba(255,255,255,0.22)"
+          strokeWidth="5"
+          strokeLinecap="round"
+        />
       </svg>
 
-      {/* ── Wordmark — NUOVVE ─────────────────────────────────────
-          Plus Jakarta Sans 900, uppercase.
-          --logo-word switches between gold (dark) and navy (light)
-          via index.css variables — no JS theme detection needed.
-      ────────────────────────────────────────────────────────── */}
+      {/* ── Wordmark ─────────────────────────────────────────────── */}
       {showWordmark && (
         <span
           style={{
@@ -99,7 +106,8 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
             lineHeight:    1,
             letterSpacing: '-0.03em',
             textTransform: 'uppercase',
-            color:         'var(--logo-word)',
+            color:         'var(--logo-word, #C9A844)',
+            whiteSpace:    'nowrap',
           }}
         >
           Nuovve
