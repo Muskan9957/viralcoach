@@ -1,25 +1,25 @@
 /**
- * Nuovve Logo — three overlapping pill shapes + wordmark
+ * Nuovve Logo
  *
- * Icon: 3 long pills fanning from a central overlap zone
- *   ViewBox 62×54  (ratio 1.148 → iconW = size * 1.148)
+ * Icon   : Clapperboard (original purple/cyan design)
+ *   boards  → --logo-v1  (cyan  / blue)
+ *   body    → --logo-v2  (violet / purple)
+ *   play ▶  → white 70%
  *
- *   Orange  #F7931E  back   (8,47)→(50,3)   ~46° steep up-right
- *   Blue    #29B6F6  mid   (10,10)→(55,34)  ~28° down-right
- *   Pink    #F03852  front  (6,40)→(50,11)  ~33° up-right  [thickest]
- *
- *   All three cross near (30,23) creating a tight central overlap.
- *
- * Wordmark: "NUOVVE" — white on dark, navy on light
- *   Plus Jakarta Sans 900, uppercase, slight tracking
+ * Wordmark: "NUOVVE" — Plus Jakarta Sans 900, uppercase, geometric
+ *   White on dark · Navy (#0F1535) on light via .nuovve-wordmark class
  */
+import { useState } from 'react'
 
 export default function Logo({ size = 40, showWordmark = true, className = '' }) {
-  // Icon aspect: viewBox 62×54 → ratio ≈ 1.148
-  const iconH    = size
-  const iconW    = Math.round(size * 1.148)
-  const wordSize = Math.max(size * 0.80, 24)
-  const gap      = Math.max(size * 0.20, 7)
+  const [uid] = useState(() => `vc${Math.random().toString(36).slice(2, 7)}`)
+
+  const sP  = `${uid}-sp`
+  const cLo = `${uid}-cl`
+  const cUp = `${uid}-cu`
+
+  const wordSize = Math.max(size * 0.72, 20)
+  const gap      = Math.max(size * 0.22, 7)
 
   return (
     <div
@@ -32,55 +32,58 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
         flexShrink: 0,
       }}
     >
-      {/* ── Icon: three long pills fanning from a central overlap ────
-          ViewBox 62×54. Painter order: orange (back), blue, pink (front).
-
-          Orange:  (8,47) → (50,3)   steep up-right  ~46°
-          Blue:   (10,10) → (55,34)  down-right       ~28°
-          Pink:    (6,40) → (50,11)  up-right         ~33°  [thickest, front]
-
-          All three intersect near (30, 23) — tight central overlap zone.
-      ─────────────────────────────────────────────────────────────── */}
+      {/* ── Clapperboard icon ──────────────────────────────────── */}
       <svg
-        width={iconW}
-        height={iconH}
-        viewBox="0 0 62 54"
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ display: 'block', flexShrink: 0 }}
+        style={{ flexShrink: 0, overflow: 'visible' }}
         aria-hidden="true"
       >
-        {/* Orange — back, steep diagonal */}
-        <line
-          x1="8"  y1="47"
-          x2="50" y2="3"
-          stroke="#F7931E"
-          strokeWidth="12"
-          strokeLinecap="round"
-        />
+        <defs>
+          <pattern
+            id={sP}
+            x="0" y="0" width="14" height="14"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(-48)"
+          >
+            <rect x="0" y="0" width="7" height="14" fill="rgba(0,0,0,0.26)" />
+            <rect x="7" y="0" width="7" height="14" fill="rgba(255,255,255,0.09)" />
+          </pattern>
+          <clipPath id={cLo}>
+            <rect x="5" y="32" width="90" height="14" />
+          </clipPath>
+          <clipPath id={cUp}>
+            <path d="M 5 32 L 95 19 L 95 9 L 5 22 Z" />
+          </clipPath>
+        </defs>
 
-        {/* Blue — middle, going right and slightly down */}
-        <line
-          x1="10" y1="10"
-          x2="55" y2="34"
-          stroke="#29B6F6"
-          strokeWidth="11"
-          strokeLinecap="round"
-        />
+        {/* Body — purple */}
+        <rect x="5" y="44" width="90" height="52" rx="5" fill="var(--logo-v2)" />
+        <rect x="5" y="44" width="90" height="7"  rx="5" fill="rgba(255,255,255,0.18)" />
 
-        {/* Pink/coral — front, thickest, moderate up-right angle */}
-        <line
-          x1="6"  y1="40"
-          x2="50" y2="11"
-          stroke="#F03852"
-          strokeWidth="16"
-          strokeLinecap="round"
-        />
+        {/* Lower clapper bar — cyan */}
+        <rect x="5" y="32" width="90" height="14" rx="2" fill="var(--logo-v1)" />
+        <rect x="5" y="32" width="90" height="14" fill={`url(#${sP})`} clipPath={`url(#${cLo})`} />
+        <rect x="5" y="32" width="90" height="5"  rx="2" fill="rgba(255,255,255,0.22)" />
+        <line x1="5" y1="46" x2="95" y2="46" stroke="rgba(0,0,0,0.18)" strokeWidth="1" />
+
+        {/* Upper clapper board — angled, cyan */}
+        <path d="M 5 32 L 95 19 L 95 9 L 5 22 Z" fill="var(--logo-v1)" />
+        <path d="M 5 32 L 95 19 L 95 9 L 5 22 Z" fill={`url(#${sP})`} clipPath={`url(#${cUp})`} />
+        <path d="M 5 22 L 95 9 L 95 12 L 5 25 Z" fill="rgba(255,255,255,0.20)" />
+
+        {/* Hinge pin */}
+        <circle cx="10" cy="27" r="3.5" fill="var(--logo-shadow)" />
+        <circle cx="10" cy="27" r="2"   fill="var(--logo-h1)" opacity="0.9" />
+
+        {/* Play ▶ */}
+        <path d="M 35 57 L 35 80 L 68 68.5 Z" fill="rgba(255,255,255,0.70)" />
       </svg>
 
-      {/* ── Wordmark ─────────────────────────────────────────────────
-          White on dark (default). Light-mode override via CSS class.
-      ────────────────────────────────────────────────────────────── */}
+      {/* ── Wordmark ───────────────────────────────────────────── */}
       {showWordmark && (
         <span
           className="nuovve-wordmark"
@@ -89,7 +92,7 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
             fontWeight:    900,
             fontSize:      `${wordSize}px`,
             lineHeight:    1,
-            letterSpacing: '0.04em',
+            letterSpacing: '0.06em',
             textTransform: 'uppercase',
             color:         '#FFFFFF',
             whiteSpace:    'nowrap',
