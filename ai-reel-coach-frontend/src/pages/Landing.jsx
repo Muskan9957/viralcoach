@@ -543,7 +543,7 @@ export default function Landing() {
         .lp-auth-col {
           position: relative; z-index: 1;
           display: flex; flex-direction: column;
-          justify-content: flex-end;
+          align-items: flex-end;
           animation: fadeUp 0.5s 0.14s cubic-bezier(0.22,1,0.36,1) both;
         }
         .lp-tagline {
@@ -574,7 +574,9 @@ export default function Landing() {
           border-radius: 20px;
           padding: 28px;
           box-shadow: var(--shadow-glass);
+          width: 360px;
         }
+        .lp-tagline { width: 360px; }
 
         @keyframes fadeUp {
           from { opacity:0; transform:translateY(20px); }
