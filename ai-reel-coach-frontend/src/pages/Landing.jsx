@@ -545,23 +545,25 @@ export default function Landing() {
         /* ── Middle tagline ──────────────────────────────────────── */
         .lp-middle {
           position:relative; z-index:1;
-          display:flex; flex-direction:column; align-items:center;
-          text-align:center;
+          display:flex; flex-direction:column; align-items:flex-start;
+          align-self: flex-start;
+          padding-top: 72px;
           animation: fadeUp 0.5s 0.10s cubic-bezier(0.22,1,0.36,1) both;
         }
         .lp-words-row1 {
-          display:flex; justify-content:space-between; width:100%;
-          font-family:var(--font-head); font-weight:900;
-          font-size:clamp(1.6rem,2.6vw,2.8rem);
-          letter-spacing:-0.03em; line-height:1.1;
+          display:flex; justify-content:flex-start; gap:10px;
+          font-family:var(--font-head); font-weight:800;
+          font-size:clamp(1rem,1.4vw,1.3rem);
+          letter-spacing:-0.01em; line-height:1.2;
           color:var(--text);
         }
         .lp-words-row2 {
-          width:100%; text-align:center;
-          font-family:var(--font-head); font-weight:900;
-          font-size:clamp(1.6rem,2.6vw,2.8rem);
-          letter-spacing:-0.03em; line-height:1.2;
-          margin-top:4px; margin-bottom:16px;
+          text-align:left;
+          font-family:var(--font-head); font-weight:800;
+          font-size:clamp(1rem,1.4vw,1.3rem);
+          letter-spacing:-0.01em; line-height:1.2;
+          margin-top:2px; margin-bottom:12px;
+          padding-left: 8px;
         }
         .lp-grad {
           background:linear-gradient(135deg,#00D4FF 0%,#FF2D8B 55%,#FFB800 100%);
@@ -570,7 +572,7 @@ export default function Landing() {
           filter:drop-shadow(0 0 32px rgba(255,45,139,0.26));
         }
         .lp-sub {
-          font-size:clamp(0.82rem,1.1vw,0.92rem); color:var(--text-muted);
+          font-size:clamp(0.78rem,1vw,0.88rem); color:var(--text-muted);
           line-height:1.65; margin:0;
         }
 
