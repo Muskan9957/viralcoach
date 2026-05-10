@@ -335,7 +335,6 @@ export default function Landing() {
           <div className="lp-words-row2">
             <span className="lp-grad">Go Viral.</span>
           </div>
-          <p className="lp-sub">AI-powered content studio for creators. Generate viral scripts in seconds, score your hooks, and grow with data.</p>
         </div>
 
         {/* Bottom row */}
