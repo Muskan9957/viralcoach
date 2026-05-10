@@ -551,19 +551,19 @@ export default function Landing() {
           animation: fadeUp 0.5s 0.10s cubic-bezier(0.22,1,0.36,1) both;
         }
         .lp-words-row1 {
-          display:flex; justify-content:flex-start; gap:10px;
+          display:flex; justify-content:flex-start; gap:12px;
           font-family:var(--font-head); font-weight:800;
-          font-size:clamp(1rem,1.4vw,1.3rem);
-          letter-spacing:-0.01em; line-height:1.2;
+          font-size:clamp(1.3rem,1.8vw,1.9rem);
+          letter-spacing:-0.02em; line-height:1.2;
           color:var(--text);
         }
         .lp-words-row2 {
           text-align:left;
           font-family:var(--font-head); font-weight:800;
-          font-size:clamp(1rem,1.4vw,1.3rem);
-          letter-spacing:-0.01em; line-height:1.2;
-          margin-top:2px; margin-bottom:12px;
-          padding-left: 8px;
+          font-size:clamp(1.3rem,1.8vw,1.9rem);
+          letter-spacing:-0.02em; line-height:1.2;
+          margin-top:2px; margin-bottom:14px;
+          padding-left: 44px;
         }
         .lp-grad {
           background:linear-gradient(135deg,#00D4FF 0%,#FF2D8B 55%,#FFB800 100%);
