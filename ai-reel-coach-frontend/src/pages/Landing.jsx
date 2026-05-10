@@ -572,11 +572,11 @@ export default function Landing() {
           backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
           border: 1px solid var(--border-bright);
           border-radius: 20px;
-          padding: 32px;
+          padding: 28px;
           box-shadow: var(--shadow-glass);
-          width: 100%;
+          width: 360px;
         }
-        .lp-tagline { width: 100%; }
+        .lp-tagline { width: 360px; }
 
         @keyframes fadeUp {
           from { opacity:0; transform:translateY(20px); }
