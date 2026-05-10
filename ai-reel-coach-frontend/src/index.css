@@ -11,7 +11,7 @@
   --border:      rgba(100,140,255,0.18);
   --border-bright: rgba(100,140,255,0.32);
 
-  /* ── Brand Colors (Nuovve: cyan + purple) ── */
+  /* ── Brand Colors (Nuove: cyan + purple) ── */
   --accent:      #00C8FF;   /* electric cyan — primary */
   --accent2:     #7B5CF0;   /* purple — secondary */
   --accent3:     #4DD9FF;   /* lighter cyan */
@@ -95,7 +95,7 @@
 /* ─── Logo mark ──────────────────────────────────────────────────── */
 
 /* Light mode: wordmark switches to deep navy */
-[data-theme="light"] .nuovve-wordmark {
+[data-theme="light"] .nuove-wordmark {
   color: #0F1535 !important;
 }
 
@@ -295,7 +295,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Cosmic navy mesh background (Nuovve theme) ────────────────── */
+/* ─── Cosmic navy mesh background (Nuove theme) ────────────────── */
 body::before {
   content: '';
   position: fixed;

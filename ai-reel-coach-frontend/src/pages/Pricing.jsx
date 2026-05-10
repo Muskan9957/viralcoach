@@ -146,7 +146,7 @@ export default function Pricing() {
       const options = {
         key             : data.keyId,
         subscription_id : data.subscriptionId,
-        name            : 'Nuovve',
+        name            : 'Nuove',
         description     : `${plan.name} Plan — ₹${plan.priceM}/month`,
         image           : '/logo.png',
         prefill         : {

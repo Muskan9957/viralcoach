@@ -1,5 +1,5 @@
 /**
- * Nuovve Logo
+ * Nuove Logo
  *
  * Icon     : Clapperboard (purple/cyan)
  * Wordmark : Bricolage Grotesque 800 — animated shimmer gradient,
@@ -83,18 +83,21 @@ export default function Logo({ size = 40, showWordmark = true, className = '' })
       {/* ── Wordmark ───────────────────────────────────────────── */}
       {showWordmark && (
         <span
-          className="nuovve-wordmark"
+          className="nuove-wordmark"
           style={{
-            fontFamily:    '"Dancing Script", cursive',
-            fontWeight:    700,
-            fontSize:      `${wordSize}px`,
-            lineHeight:    1,
-            letterSpacing: '0.02em',
-            color:         '#FFFFFF',
-            whiteSpace:    'nowrap',
+            fontFamily:           '"Dancing Script", cursive',
+            fontWeight:           700,
+            fontSize:             `${wordSize}px`,
+            lineHeight:           1,
+            letterSpacing:        '0.02em',
+            whiteSpace:           'nowrap',
+            background:           'linear-gradient(135deg, #00D4FF 0%, #FF2D8B 50%, #FFB800 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor:  'transparent',
+            backgroundClip:       'text',
           }}
         >
-          Nuovve
+          Nuove
         </span>
       )}
     </div>
