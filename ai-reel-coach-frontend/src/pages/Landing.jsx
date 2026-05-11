@@ -969,19 +969,23 @@ export default function Landing() {
           font-weight: 600;
         }
 
-        /* Feature label — keep vibrant colours from --lc, add contrast */
+        /* Feature label — dark pill so vibrant colors stay readable */
         [data-theme="light"] .ap-label {
-          font-weight: 900;
-          text-shadow:
-            0 1px 2px rgba(15,21,53,0.30),
-            0 0 14px rgba(255,255,255,0.65);
+          background: linear-gradient(160deg, #0E1428 0%, #07091E 100%);
+          border: 1px solid rgba(255,255,255,0.10);
+          border-radius: 99px;
+          padding: 0 16px;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          box-shadow:
+            0 6px 18px rgba(15,21,53,0.22),
+            0 0 0 1px rgba(0,0,0,0.04),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+          text-shadow: 0 0 10px var(--lc);
         }
-        /* Mobile pill: light background but keep colored text */
-        @media (max-width: 480px) {
-          [data-theme="light"] .ap-label {
-            background: rgba(255,255,255,0.92);
-            border: 1px solid rgba(80,100,200,0.20);
-          }
+        [data-theme="light"] .ap-label-wrap {
+          height: 32px;
+          width: 200px;
         }
 
       `}</style>
