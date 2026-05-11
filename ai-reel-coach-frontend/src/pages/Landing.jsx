@@ -799,15 +799,19 @@ export default function Landing() {
           background: radial-gradient(ellipse, rgba(255,45,139,0.14) 0%, transparent 65%);
         }
 
-        /* Phone shell stays DARK in light mode — like a real device */
+        /* Phone shell — grey frame in light mode (like graphite iPhone) */
         [data-theme="light"] .ap-phone {
-          background: #050710;
+          background: linear-gradient(160deg, #4E5562 0%, #3A4150 100%);
           box-shadow:
-            0 32px 72px rgba(0,0,0,0.32),
-            0 0 0 1.5px rgba(0,0,0,0.35),
-            0 0 60px rgba(0,160,255,0.10),
-            0 0 40px rgba(255,45,139,0.08),
-            inset 0 0 0 1px rgba(255,255,255,0.06);
+            0 30px 60px rgba(40,55,85,0.28),
+            0 0 0 1.5px rgba(255,255,255,0.18),
+            0 0 50px rgba(0,160,255,0.08),
+            0 0 40px rgba(255,45,139,0.06),
+            inset 0 1px 0 rgba(255,255,255,0.18),
+            inset 0 0 0 1px rgba(0,0,0,0.20);
+        }
+        [data-theme="light"] .ap-island {
+          background: #1A1F2A;
         }
 
         /* Phone SCREEN — bright app UI in light mode */
@@ -919,11 +923,59 @@ export default function Landing() {
         /* Auth card — crisp white, strong shadow for contrast */
         [data-theme="light"] .lp-auth-card {
           background: #FFFFFF;
-          border: 1px solid rgba(80,100,200,0.16);
+          border: 1px solid rgba(80,100,200,0.20);
           box-shadow:
-            0 12px 48px rgba(30,50,120,0.16),
-            0 2px 8px rgba(30,50,120,0.08),
+            0 16px 56px rgba(30,50,120,0.18),
+            0 4px 12px rgba(30,50,120,0.10),
             0 1px 0 rgba(255,255,255,1) inset;
+        }
+
+        /* Auth card content contrast — bolder, darker labels */
+        [data-theme="light"] .lp-auth-card .field label {
+          color: #0A0F2E;
+          font-weight: 800;
+        }
+        [data-theme="light"] .lp-auth-card .input {
+          border: 1.5px solid rgba(80,100,200,0.28);
+          color: #0A0F2E;
+          font-weight: 500;
+        }
+        [data-theme="light"] .lp-auth-card .input::placeholder {
+          color: #6878A8;
+          opacity: 1;
+        }
+
+        /* Wordmark — solid deep navy for light mode (gradient invisible on light bg) */
+        [data-theme="light"] .nuove-wordmark {
+          background: none !important;
+          -webkit-text-fill-color: #0F1535 !important;
+          color: #0F1535 !important;
+          filter: none;
+        }
+
+        /* Navbar text contrast */
+        [data-theme="light"] .lp-nav {
+          box-shadow: 0 2px 14px rgba(30,50,120,0.06);
+        }
+
+        /* Footer in light mode */
+        [data-theme="light"] footer {
+          background: #FAFBFF !important;
+          border-top-color: rgba(80,100,200,0.14) !important;
+        }
+        [data-theme="light"] footer a,
+        [data-theme="light"] footer div {
+          color: #2A3458 !important;
+          font-weight: 600;
+        }
+
+        /* Auth card body text — toggle, fine print, OR */
+        [data-theme="light"] .lp-auth-card p {
+          color: #2A3458 !important;
+        }
+        [data-theme="light"] .lp-auth-col > p {
+          color: #2A3458 !important;
+          font-weight: 600;
         }
 
         /* Feature label pill on mobile */
