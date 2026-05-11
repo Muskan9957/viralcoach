@@ -910,8 +910,12 @@ export default function Landing() {
         }
         [data-theme="light"] .ap-typing span { background: rgba(15,21,53,0.55); }
 
-        /* Indicator dot inactive — visible on light */
-        [data-theme="light"] .ap-dot { background: rgba(15,21,53,0.22); }
+        /* Indicator dots — keep vibrant colours in light mode too */
+        [data-theme="light"] .ap-dot-1 { background: #00D4FF; }
+        [data-theme="light"] .ap-dot-2 { background: #A8FF3C; }
+        [data-theme="light"] .ap-dot-3 { background: #FF2D8B; }
+        [data-theme="light"] .ap-dot-4 { background: #FFB800; }
+        [data-theme="light"] .ap-dot-5 { background: #A855F7; }
 
         /* Auth card — crisp white, grey border matching phone */
         [data-theme="light"] .lp-auth-card {
