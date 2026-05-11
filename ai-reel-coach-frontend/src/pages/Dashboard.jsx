@@ -6,6 +6,7 @@ import { useLang } from '../i18n.jsx'
 import { useTextToSpeech } from '../components/VoiceAssistant'
 import { usePrefs } from '../hooks/usePrefs'
 import { getSavedRegion } from '../utils/detectRegion'
+import { useTheme } from '../context/ThemeContext'
 
 /* ─── Creator palette ────────────────────────────────────────────── */
 const C = {
@@ -17,6 +18,17 @@ const C = {
   violet: '#A855F7',
   teal:   '#00D4B1',
 }
+
+/* ─── Light-mode pastel card backgrounds ────────────────────────── */
+const PASTEL = {
+  sky:    'rgba(219,234,254,0.95)',
+  rose:   'rgba(252,231,243,0.95)',
+  mint:   'rgba(209,250,229,0.95)',
+  violet: 'rgba(237,233,254,0.95)',
+  amber:  'rgba(254,243,199,0.95)',
+  lime:   'rgba(220,252,231,0.95)',
+}
+const PASTEL_LIST = [PASTEL.sky, PASTEL.rose, PASTEL.mint, PASTEL.violet, PASTEL.amber, PASTEL.lime]
 
 const NICHE_META = {
   comedy:        { emoji: '😂', color: '#FF2D8B' },
@@ -65,6 +77,8 @@ const BRIEF_CACHE_KEY = 'arc_brief_cache'
 
 function TrendingBrief({ userName, niches = [] }) {
   const { t, lang } = useLang()
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
   const { speak, speaking, stopSpeaking } = useTextToSpeech()
   const [played, setPlayed] = useState(false)
   const primaryNiche = niches[0] || ''
@@ -116,9 +130,11 @@ function TrendingBrief({ userName, niches = [] }) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(0,160,255,0.07) 0%, var(--surface) 50%)',
-      border: '1px solid var(--border)',
-      borderTop: '2px solid rgba(0,160,255,0.22)',
+      background: isLight
+        ? `linear-gradient(145deg, ${PASTEL.rose} 0%, rgba(255,255,255,0.96) 100%)`
+        : 'linear-gradient(135deg, rgba(0,160,255,0.07) 0%, var(--surface) 50%)',
+      border: isLight ? '1px solid rgba(219,39,119,0.18)' : '1px solid var(--border)',
+      borderTop: isLight ? '2px solid rgba(219,39,119,0.30)' : '2px solid rgba(0,160,255,0.22)',
       borderRadius: 18,
       padding: '22px 26px',
       marginBottom: 24,
@@ -220,15 +236,17 @@ function TrendingBrief({ userName, niches = [] }) {
                   <div style={{
                     height: '100%',
                     padding: 14,
-                    background: 'var(--surface-card-deep)',
-                    border: '1px solid rgba(100,140,255,0.18)',
+                    background: isLight
+                      ? `linear-gradient(145deg, ${PASTEL_LIST[i % PASTEL_LIST.length]} 0%, rgba(255,255,255,0.98) 100%)`
+                      : 'var(--surface-card-deep)',
+                    border: isLight ? `1px solid ${color}30` : '1px solid rgba(100,140,255,0.18)',
                     borderLeft: `3px solid ${color}`,
                     borderRadius: 12,
                     boxShadow: 'var(--card-shadow)',
                     transition: 'transform 0.18s, border-color 0.18s, box-shadow 0.18s',
                   }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 32px rgba(0,0,0,0.65), 0 0 16px ${color}22`; e.currentTarget.style.borderColor = `${color}44`; e.currentTarget.style.borderLeftColor = color }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--card-shadow)'; e.currentTarget.style.borderColor = 'rgba(100,140,255,0.18)'; e.currentTarget.style.borderLeftColor = color }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 32px rgba(30,50,120,0.15), 0 0 16px ${color}22`; e.currentTarget.style.borderColor = `${color}44`; e.currentTarget.style.borderLeftColor = color }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--card-shadow)'; e.currentTarget.style.borderColor = isLight ? `${color}30` : 'rgba(100,140,255,0.18)'; e.currentTarget.style.borderLeftColor = color }}
                   >
                     <div style={{ fontSize: '0.62rem', fontFamily: 'var(--font-mono)', color, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700, marginBottom: 6 }}>
                       {trend.category}
@@ -260,6 +278,8 @@ function TrendingBrief({ userName, niches = [] }) {
 /* ─── Creator Score (horizontal) ─────────────────────────────────── */
 function CreatorScoreCard({ score }) {
   const { t } = useLang()
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
   const [copied, setCopied] = useState(false)
 
   if (!score) return null
@@ -282,9 +302,11 @@ function CreatorScoreCard({ score }) {
 
   return (
     <div style={{
-      background: `linear-gradient(135deg, ${C.cyan}10 0%, var(--surface) 52%, ${C.pink}07 100%)`,
-      border: '1px solid var(--border)',
-      borderTop: `2px solid ${C.cyan}44`,
+      background: isLight
+        ? `linear-gradient(145deg, ${PASTEL.violet} 0%, rgba(255,255,255,0.96) 100%)`
+        : `linear-gradient(135deg, ${C.cyan}10 0%, var(--surface) 52%, ${C.pink}07 100%)`,
+      border: isLight ? '1px solid rgba(109,40,217,0.20)' : '1px solid var(--border)',
+      borderTop: isLight ? '2px solid rgba(109,40,217,0.30)' : `2px solid ${C.cyan}44`,
       borderRadius: 18,
       padding: '22px 26px',
       marginBottom: 24,
@@ -365,9 +387,13 @@ function CreatorScoreCard({ score }) {
 
 /* ─── Stat tile ──────────────────────────────────────────────────── */
 function StatTile({ label, value, sub, color, progress }) {
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
   return (
     <div style={{
-      background: `linear-gradient(135deg, ${color}20 0%, var(--surface-card-deep) 58%)`,
+      background: isLight
+        ? `linear-gradient(145deg, ${color}28 0%, rgba(255,255,255,0.97) 65%)`
+        : `linear-gradient(135deg, ${color}20 0%, var(--surface-card-deep) 58%)`,
       border: `1px solid ${color}35`,
       borderLeft: `3px solid ${color}`,
       borderRadius: 14,
@@ -407,11 +433,15 @@ function StatTile({ label, value, sub, color, progress }) {
 
 /* ─── Quick action card ──────────────────────────────────────────── */
 function ActionCard({ to, icon, label, color }) {
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
   return (
     <Link to={to} style={{ textDecoration: 'none' }}>
       <div style={{
-        background: `linear-gradient(135deg, ${color}0E 0%, var(--surface) 60%)`,
-        border: `1px solid ${color}28`,
+        background: isLight
+          ? `linear-gradient(145deg, ${color}22 0%, rgba(255,255,255,0.97) 65%)`
+          : `linear-gradient(135deg, ${color}0E 0%, var(--surface) 60%)`,
+        border: `1px solid ${color}${isLight ? '35' : '28'}`,
         borderRadius: 12,
         padding: '13px 16px',
         display: 'flex', alignItems: 'center', gap: 11,
@@ -488,6 +518,8 @@ export default function Dashboard() {
       .finally(() => setLd(false))
   }, [])
 
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
   const limit  = { FREE: 5, STARTER: 50, PRO: '∞' }[user?.plan] || 5
   const used   = user?.generationsUsed || 0
   const pct    = limit === '∞' ? 100 : Math.round((used / limit) * 100)
@@ -599,8 +631,10 @@ export default function Dashboard() {
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 12,
           padding: '12px 18px',
-          background: `linear-gradient(135deg, ${C.amber}18 0%, var(--surface) 60%)`,
-          border: `1px solid ${C.amber}45`,
+          background: isLight
+            ? `linear-gradient(145deg, ${PASTEL.amber} 0%, rgba(255,255,255,0.97) 100%)`
+            : `linear-gradient(135deg, ${C.amber}18 0%, var(--surface) 60%)`,
+          border: isLight ? `1px solid rgba(217,119,6,0.28)` : `1px solid ${C.amber}45`,
           borderRadius: 14,
           marginBottom: 24,
         }}>
@@ -632,8 +666,10 @@ export default function Dashboard() {
                 <div key={i} title={meta.label} style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                   padding: '8px 12px',
-                  background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, var(--surface) 65%)',
-                  border: '1px solid rgba(168,85,247,0.22)',
+                  background: isLight
+                    ? `linear-gradient(145deg, ${PASTEL_LIST[i % PASTEL_LIST.length]} 0%, rgba(255,255,255,0.97) 100%)`
+                    : 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, var(--surface) 65%)',
+                  border: isLight ? `1px solid rgba(109,40,217,0.20)` : '1px solid rgba(168,85,247,0.22)',
                   borderRadius: 10, flexShrink: 0, minWidth: 84,
                 }}>
                   <span style={{ fontSize: '1.3rem' }}>{meta.emoji}</span>
@@ -652,8 +688,10 @@ export default function Dashboard() {
       {user?.plan === 'FREE' && (
         <div style={{
           marginTop: 32,
-          background: `linear-gradient(135deg, ${C.cyan}12 0%, var(--surface) 40%, ${C.pink}10 100%)`,
-          border: `1px solid ${C.pink}44`,
+          background: isLight
+            ? `linear-gradient(145deg, ${PASTEL.sky} 0%, ${PASTEL.rose} 100%)`
+            : `linear-gradient(135deg, ${C.cyan}12 0%, var(--surface) 40%, ${C.pink}10 100%)`,
+          border: isLight ? '1px solid rgba(2,132,199,0.22)' : `1px solid ${C.pink}44`,
           borderRadius: 16,
           padding: '20px 24px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
