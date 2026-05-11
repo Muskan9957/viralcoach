@@ -4,6 +4,7 @@ import Logo from '../components/Logo'
 import { useLang } from '../i18n.jsx'
 import { useAuth } from '../store'
 import { useToast } from '../components/Toast'
+import ThemeToggle from '../components/ThemeToggle'
 
 /* ─── Language flip ──────────────────────────────────────────────── */
 function LangFlip() {
@@ -316,6 +317,7 @@ export default function Landing() {
         <Logo size={36} showWordmark />
         <div className="lp-nav-actions">
           <LangFlip />
+          <ThemeToggle size="sm" />
         </div>
       </nav>
 
