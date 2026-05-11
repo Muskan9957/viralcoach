@@ -969,19 +969,18 @@ export default function Landing() {
           font-weight: 600;
         }
 
-        /* Feature label — dark pill so vibrant colors stay readable */
+        /* Feature label — text outline so vibrant colors stay readable in light mode */
         [data-theme="light"] .ap-label {
-          background: linear-gradient(160deg, #0E1428 0%, #07091E 100%);
-          border: 1px solid rgba(255,255,255,0.10);
-          border-radius: 99px;
-          padding: 0 16px;
-          font-weight: 800;
-          letter-spacing: 0.1em;
-          box-shadow:
-            0 6px 18px rgba(15,21,53,0.22),
-            0 0 0 1px rgba(0,0,0,0.04),
-            inset 0 1px 0 rgba(255,255,255,0.08);
-          text-shadow: 0 0 10px var(--lc);
+          background: none;
+          border: none;
+          border-radius: 0;
+          padding: 0;
+          box-shadow: none;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          -webkit-text-stroke: 1.5px rgba(10,14,40,0.65);
+          paint-order: stroke fill;
+          text-shadow: none;
         }
         [data-theme="light"] .ap-label-wrap {
           height: 32px;
