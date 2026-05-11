@@ -116,8 +116,9 @@ function TrendingBrief({ userName, niches = [] }) {
 
   return (
     <div style={{
-      background: 'var(--surface)',
+      background: 'linear-gradient(135deg, rgba(0,160,255,0.07) 0%, var(--surface) 50%)',
       border: '1px solid var(--border)',
+      borderTop: '2px solid rgba(0,160,255,0.22)',
       borderRadius: 18,
       padding: '22px 26px',
       marginBottom: 24,
@@ -281,8 +282,9 @@ function CreatorScoreCard({ score }) {
 
   return (
     <div style={{
-      background: 'var(--surface)',
+      background: `linear-gradient(135deg, ${C.cyan}10 0%, var(--surface) 52%, ${C.pink}07 100%)`,
       border: '1px solid var(--border)',
+      borderTop: `2px solid ${C.cyan}44`,
       borderRadius: 18,
       padding: '22px 26px',
       marginBottom: 24,
@@ -365,16 +367,16 @@ function CreatorScoreCard({ score }) {
 function StatTile({ label, value, sub, color, progress }) {
   return (
     <div style={{
-      background: 'var(--surface-card-deep)',
-      border: '1px solid rgba(100,140,255,0.20)',
+      background: `linear-gradient(135deg, ${color}20 0%, var(--surface-card-deep) 58%)`,
+      border: `1px solid ${color}35`,
       borderLeft: `3px solid ${color}`,
       borderRadius: 14,
       padding: '18px 20px',
-      boxShadow: 'var(--card-shadow)',
+      boxShadow: `var(--card-shadow), 0 0 0 0 ${color}00`,
       transition: 'transform 0.18s, border-color 0.18s, box-shadow 0.18s',
     }}
-      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 32px rgba(0,0,0,0.65), 0 0 20px ${color}22`; e.currentTarget.style.borderColor = `${color}44`; e.currentTarget.style.borderLeftColor = color }}
-      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--card-shadow)'; e.currentTarget.style.borderColor = 'rgba(100,140,255,0.20)'; e.currentTarget.style.borderLeftColor = color }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = `0 10px 36px rgba(30,50,120,0.14), 0 0 24px ${color}28`; e.currentTarget.style.borderColor = `${color}55`; e.currentTarget.style.borderLeftColor = color }}
+      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--card-shadow)'; e.currentTarget.style.borderColor = `${color}35`; e.currentTarget.style.borderLeftColor = color }}
     >
       <div style={{
         fontSize: '0.66rem', fontWeight: 700, textTransform: 'uppercase',
@@ -408,8 +410,8 @@ function ActionCard({ to, icon, label, color }) {
   return (
     <Link to={to} style={{ textDecoration: 'none' }}>
       <div style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
+        background: `linear-gradient(135deg, ${color}0E 0%, var(--surface) 60%)`,
+        border: `1px solid ${color}28`,
         borderRadius: 12,
         padding: '13px 16px',
         display: 'flex', alignItems: 'center', gap: 11,
@@ -418,12 +420,12 @@ function ActionCard({ to, icon, label, color }) {
       }}
         onMouseEnter={e => {
           e.currentTarget.style.borderColor = `${color}66`
-          e.currentTarget.style.background = `${color}0C`
+          e.currentTarget.style.background = `linear-gradient(135deg, ${color}20 0%, var(--surface) 60%)`
           e.currentTarget.style.transform = 'translateY(-2px)'
         }}
         onMouseLeave={e => {
-          e.currentTarget.style.borderColor = 'var(--border)'
-          e.currentTarget.style.background = 'var(--surface)'
+          e.currentTarget.style.borderColor = `${color}28`
+          e.currentTarget.style.background = `linear-gradient(135deg, ${color}0E 0%, var(--surface) 60%)`
           e.currentTarget.style.transform = 'translateY(0)'
         }}
       >
@@ -597,8 +599,8 @@ export default function Dashboard() {
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 12,
           padding: '12px 18px',
-          background: 'var(--surface)',
-          border: `1px solid ${C.amber}40`,
+          background: `linear-gradient(135deg, ${C.amber}18 0%, var(--surface) 60%)`,
+          border: `1px solid ${C.amber}45`,
           borderRadius: 14,
           marginBottom: 24,
         }}>
@@ -630,8 +632,8 @@ export default function Dashboard() {
                 <div key={i} title={meta.label} style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                   padding: '8px 12px',
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
+                  background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, var(--surface) 65%)',
+                  border: '1px solid rgba(168,85,247,0.22)',
                   borderRadius: 10, flexShrink: 0, minWidth: 84,
                 }}>
                   <span style={{ fontSize: '1.3rem' }}>{meta.emoji}</span>
@@ -650,8 +652,8 @@ export default function Dashboard() {
       {user?.plan === 'FREE' && (
         <div style={{
           marginTop: 32,
-          background: 'var(--surface)',
-          border: `1px solid ${C.pink}33`,
+          background: `linear-gradient(135deg, ${C.cyan}12 0%, var(--surface) 40%, ${C.pink}10 100%)`,
+          border: `1px solid ${C.pink}44`,
           borderRadius: 16,
           padding: '20px 24px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap',
