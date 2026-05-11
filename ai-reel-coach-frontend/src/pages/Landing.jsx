@@ -379,9 +379,9 @@ export default function Landing() {
 
             {/* OR divider */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
               <span style={{ fontSize: '0.72rem', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>or</span>
-              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             </div>
 
             {/* Email form */}
@@ -497,9 +497,9 @@ export default function Landing() {
         .lp-nav {
           display: flex; align-items: center; justify-content: space-between;
           padding: 12px 5%;
-          background: rgba(7,9,28,0.92);
+          background: var(--surface-nav);
           backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-          border-bottom: 1px solid rgba(255,255,255,0.06);
+          border-bottom: 1px solid var(--border-nav);
           position: sticky; top: 0; z-index: 100;
           gap: 10px;
         }
