@@ -328,6 +328,16 @@ export default function Landing() {
           <div className="lp-orb lp-orb-2" />
         </div>
 
+        {/* ── Tagline ──────────────────────────────────────────── */}
+        <div className="lp-heading">
+          <div className="lp-words-row1">
+            <span>Script.</span>
+            <span>Score.</span>
+            <span className="lp-grad">Go Viral.</span>
+          </div>
+          <p className="lp-sub">AI-powered content studio for creators who mean business.</p>
+        </div>
+
         {/* Bottom row */}
         <div className="lp-bottom-row">
 
