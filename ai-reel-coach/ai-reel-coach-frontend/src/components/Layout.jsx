@@ -188,7 +188,7 @@ export default function Layout({ children }) {
 
       {/* ── Desktop Sidebar ─────────────────────────────────────── */}
       {!isMobile && (
-        <aside style={styles.sidebar}>
+        <aside style={styles.sidebar} className="app-sidebar">
           {/* Logo */}
           <div style={styles.logoWrap}>
             <Logo size={36} showWordmark />
@@ -219,7 +219,7 @@ export default function Layout({ children }) {
                       {isActive && <div style={styles.navActiveBorder} />}
                       <span style={{
                         ...styles.navIconWrap,
-                        color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+                        color: isActive ? '#E1306C' : 'var(--text-muted)',
                       }}>
                         <Icon size={18} />
                       </span>
@@ -437,15 +437,15 @@ export default function Layout({ children }) {
                         <div style={{
                           display: 'flex', flexDirection: 'column', alignItems: 'center',
                           gap: 6, padding: '12px 8px', borderRadius: 14,
-                          background: isActive ? 'rgba(0,200,255,0.1)' : 'var(--surface2)',
-                          border: `1px solid ${isActive ? 'rgba(0,200,255,0.3)' : 'var(--border)'}`,
+                          background: isActive ? 'rgba(225,48,108,0.10)' : 'var(--surface2)',
+                          border: `1px solid ${isActive ? 'rgba(225,48,108,0.28)' : 'var(--border)'}`,
                         }}>
-                          <span style={{ color: isActive ? '#00C8FF' : 'var(--text-muted)' }}>
+                          <span style={{ color: isActive ? '#E1306C' : 'var(--text-muted)' }}>
                             <Icon size={22} />
                           </span>
                           <span style={{
                             fontSize: '0.68rem', fontWeight: 600, textAlign: 'center',
-                            color: isActive ? '#00C8FF' : 'var(--text-muted)',
+                            color: isActive ? '#E1306C' : 'var(--text-muted)',
                             lineHeight: 1.2,
                           }}>
                             {label}
@@ -461,7 +461,7 @@ export default function Layout({ children }) {
           </div>
 
           {/* Bottom tab bar */}
-          <nav className="bottom-nav" aria-label="Main navigation">
+          <nav className="bottom-nav app-bottom-nav" aria-label="Main navigation">
             {MOBILE_NAV_CONFIG.map(({ to, icon: Icon, labelKey }) => (
               <NavLink
                 key={to} to={to}
@@ -475,7 +475,7 @@ export default function Layout({ children }) {
                     <Icon size={22} />
                     <span
                       className="bottom-nav-label"
-                      style={isActive ? { background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+                      style={isActive ? { background: 'linear-gradient(135deg, #FCAF45, #E1306C 55%, #833AB4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
                     >
                       {t(labelKey)}
                     </span>
@@ -569,9 +569,9 @@ const styles = {
     letterSpacing: '-0.01em',
   },
   navItemActive: {
-    background: 'linear-gradient(135deg, rgba(0,200,255,0.13) 0%, rgba(123,92,240,0.07) 100%)',
+    background: 'linear-gradient(135deg, rgba(252,175,69,0.13) 0%, rgba(225,48,108,0.10) 55%, rgba(131,58,180,0.07) 100%)',
     fontWeight: '600',
-    boxShadow: 'inset 0 0 0 1px rgba(0,200,255,0.12)',
+    boxShadow: 'inset 0 0 0 1px rgba(225,48,108,0.20)',
   },
   navActiveBorder: {
     position: 'absolute',
@@ -581,8 +581,7 @@ const styles = {
     width: '3px',
     height: '22px',
     borderRadius: '0 4px 4px 0',
-    background: 'linear-gradient(180deg, #00E5FF, #00C8FF 50%, #7B5CF0)',
-    boxShadow: '0 0 8px rgba(0,200,255,0.6)',
+    background: 'linear-gradient(180deg, #FCAF45, #E1306C 50%, #833AB4)',
   },
   navIconWrap: {
     display: 'flex',
