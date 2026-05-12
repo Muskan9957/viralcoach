@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
+import { useLang } from '../i18n.jsx'
+import { usePrefs } from '../hooks/usePrefs'
 
 const CATEGORIES = ['All', 'Fitness', 'Finance', 'Food', 'Tech', 'Motivation', 'Relationships', 'Business', 'Health']
 const TYPES      = ['All', 'Question', 'Bold Claim', 'Story', 'Statistic', 'Controversy', 'How-To']
@@ -43,10 +45,18 @@ function HighlightedTemplate({ text }) {
 
 export default function HookLibrary() {
   const navigate = useNavigate()
+  const { t } = useLang()
+  const { primaryNiche } = usePrefs()
+
+  // Default to user's niche if it maps to a known category
+  const defaultCategory = CATEGORIES.map(c => c.toLowerCase()).includes(primaryNiche?.toLowerCase())
+    ? primaryNiche.charAt(0).toUpperCase() + primaryNiche.slice(1)
+    : 'All'
+
   const [templates, setTemplates] = useState([])
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState('')
-  const [category,  setCategory]  = useState('all')
+  const [category,  setCategory]  = useState(defaultCategory)
   const [type,      setType]      = useState('all')
   const [search,    setSearch]    = useState('')
   const [debSearch, setDebSearch] = useState('')
@@ -82,8 +92,20 @@ export default function HookLibrary() {
   return (
     <div className="page-enter">
       <div style={{ marginBottom: 24 }}>
-        <h1 className="page-title">Hook Library</h1>
-        <p className="page-sub">500+ proven hook templates. Click any to generate a script.</p>
+        <h1 className="page-title">{t('hooks_title')}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <p className="page-sub" style={{ margin: 0 }}>{t('hooks_sub')}</p>
+          {defaultCategory !== 'All' && category === defaultCategory && (
+            <span style={{
+              fontSize: '0.68rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+              padding: '3px 10px', borderRadius: 99,
+              background: 'rgba(0,201,167,0.1)', border: '1px solid rgba(0,201,167,0.3)',
+              color: '#00C9A7', letterSpacing: '0.05em',
+            }}>
+              ✓ filtered for your niche
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Filter bar */}
@@ -117,7 +139,7 @@ export default function HookLibrary() {
           className="input"
           style={{ flex: '2 1 200px' }}
           type="text"
-          placeholder="Search hooks..."
+          placeholder={t('hooks_search')}
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -147,9 +169,9 @@ export default function HookLibrary() {
       {!loading && templates.length === 0 && !error && (
         <div className="empty-state">
           <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔍</div>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 6 }}>No hooks found</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 6 }}>{t('hooks_empty')}</p>
           <p style={{ color: 'var(--text-faint)', fontSize: '0.82rem' }}>
-            Try adjusting the filters or search terms.
+            {t('hooks_empty_sub')}
           </p>
         </div>
       )}
@@ -180,7 +202,7 @@ export default function HookLibrary() {
                 {/* Example */}
                 {tmpl.example && (
                   <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-faint)', lineHeight: 1.55, fontStyle: 'italic' }}>
-                    e.g. {tmpl.example}
+                    {t('hooks_eg')} {tmpl.example}
                   </p>
                 )}
 
@@ -216,7 +238,7 @@ export default function HookLibrary() {
                     e.currentTarget.style.background = 'rgba(255,95,31,0.08)'
                   }}
                 >
-                  Use This Hook →
+                  {t('hooks_use')}
                 </button>
               </div>
             )

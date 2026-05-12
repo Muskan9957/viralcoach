@@ -3,6 +3,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../store'
 import { useLang } from '../i18n.jsx'
 import LanguageSelector from './LanguageSelector'
+import ThemeToggle from './ThemeToggle'
 import Logo from './Logo'
 
 /* ─── useIsMobile hook ───────────────────────────────────────────── */
@@ -31,6 +32,12 @@ const IconDashboard = ({ size = 22 }) => (
 const IconGenerate = ({ size = 22 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>
+  </svg>
+)
+
+const IconScripts = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>
   </svg>
 )
 
@@ -97,12 +104,12 @@ const CoachIcon = ({ size = 22 }) => (
   </svg>
 )
 
-const HookIcon = ({ size = 22 }) => (
+const VoiceIcon = ({ size = 22 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5z"/>
-    <path d="M12 17v2"/>
-    <path d="M8 21h8"/>
-    <path d="M9 14.5C6.5 15.5 4 18 4 21"/>
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+    <line x1="12" y1="19" x2="12" y2="23"/>
+    <line x1="8" y1="23" x2="16" y2="23"/>
   </svg>
 )
 
@@ -135,17 +142,17 @@ const ReelLogoIcon = () => (
 
 /* ─── Nav config with sections ───────────────────────────────────── */
 const NAV_CONFIG = [
-  { section: 'Studio' },
+  { section: 'Studio',   sectionClass: 'nav-section-studio'   },
   { to: '/dashboard',   icon: IconDashboard,   labelKey: 'nav_dashboard'   },
   { to: '/generate',    icon: IconGenerate,    labelKey: 'nav_generate'    },
-  { to: '/score',       icon: IconScore,       labelKey: 'nav_score'       },
+  { to: '/scripts',     icon: IconScripts,     labelKey: 'nav_scripts'     },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'       },
-  { section: 'Content' },
+  { to: '/creator-dna', icon: VoiceIcon,       labelKey: 'nav_my_voice'  },
+  { section: 'Content',  sectionClass: 'nav-section-content'  },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'    },
-  { to: '/remix',       icon: RemixIcon,       labelKey: 'nav_remix'       },
-  { to: '/hooks',       icon: HookIcon,        labelKey: 'nav_hooks'       },
+  { to: '/crosspost',   icon: RemixIcon,       labelKey: 'nav_remix'       },
   { to: '/templates',   icon: TemplateIcon,    labelKey: 'nav_templates'   },
-  { section: 'Insights' },
+  { section: 'Insights', sectionClass: 'nav-section-insights' },
   { to: '/trending',    icon: TrendIcon,       labelKey: 'nav_trending'    },
   { to: '/performance', icon: IconPerformance, labelKey: 'nav_performance' },
   { to: '/calendar',    icon: CalendarIcon,    labelKey: 'nav_calendar'    },
@@ -157,7 +164,6 @@ const MOBILE_NAV_CONFIG = [
   { to: '/generate',    icon: IconGenerate,    labelKey: 'nav_generate'  },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'     },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'  },
-  { to: '/hooks',       icon: HookIcon,        labelKey: 'nav_hooks'     },
 ]
 
 const planColors = { FREE: '#4A5C8A', STARTER: '#00C9A7', PRO: '#00C8FF' }
@@ -168,6 +174,7 @@ export default function Layout({ children }) {
   const { t }            = useLang()
   const navigate         = useNavigate()
   const isMobile         = useIsMobile()
+  const [moreOpen, setMoreOpen] = useState(false)
 
   const handleLogout = () => { logout(); navigate('/') }
   const location     = useLocation()
@@ -192,12 +199,12 @@ export default function Layout({ children }) {
             {NAV_CONFIG.map((item, idx) => {
               if (item.section) {
                 return (
-                  <div key={`section-${idx}`} className="nav-section-label">
+                  <div key={`section-${idx}`} className={`nav-section-label ${item.sectionClass}`}>
                     {item.section}
                   </div>
                 )
               }
-              const { to, icon: Icon, labelKey } = item
+              const { to, icon: Icon, labelKey, premium } = item
               return (
                 <NavLink
                   key={to}
@@ -216,9 +223,18 @@ export default function Layout({ children }) {
                       }}>
                         <Icon size={18} />
                       </span>
-                      <span style={{ color: isActive ? 'var(--text)' : 'var(--text-muted)' }}>
+                      <span style={{ color: isActive ? 'var(--text)' : 'var(--text-muted)', flex: 1 }}>
                         {t(labelKey)}
                       </span>
+                      {premium && (
+                        <span style={{
+                          fontSize: '0.6rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                          padding: '2px 6px', borderRadius: 99, lineHeight: 1,
+                          background: 'linear-gradient(135deg, rgba(0,200,255,0.18), rgba(160,110,255,0.18))',
+                          border: '1px solid rgba(0,200,255,0.25)',
+                          color: '#00C8FF', letterSpacing: '0.05em',
+                        }}>✦</span>
+                      )}
                     </>
                   )}
                 </NavLink>
@@ -239,8 +255,11 @@ export default function Layout({ children }) {
               ...styles.avatarCircle,
               boxShadow: location.pathname === '/profile' ? '0 0 16px rgba(0,200,255,0.5)' : '0 0 10px rgba(0,200,255,0.3)',
               border: location.pathname === '/profile' ? '2px solid var(--accent)' : '2px solid transparent',
+              overflow: 'hidden', padding: 0,
             }}>
-              {userInitial}
+              {user?.avatar
+                ? <img src={user.avatar} alt={userName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                : userInitial}
             </div>
             <div style={styles.userInfo}>
               <div style={styles.userName}>{userName}</div>
@@ -294,9 +313,12 @@ export default function Layout({ children }) {
             </button>
           )}
 
-          {/* Language Selector */}
-          <div style={{ padding: '8px 0', flexShrink: 0 }}>
-            <LanguageSelector compact />
+          {/* Language + Theme toggle row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', flexShrink: 0 }}>
+            <div style={{ flex: 1 }}>
+              <LanguageSelector compact />
+            </div>
+            <ThemeToggle size="sm" />
           </div>
 
           {/* Logout */}
@@ -329,14 +351,16 @@ export default function Layout({ children }) {
             <div style={styles.mobileLogoRow}>
               <Logo size={32} showWordmark />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <LanguageSelector compact />
               <div
-                style={styles.mobileAvatar}
+                style={{ ...styles.mobileAvatar, overflow: 'hidden', padding: 0 }}
                 title={userName}
                 onClick={() => navigate('/profile')}
               >
-                {userInitial}
+                {user?.avatar
+                  ? <img src={user.avatar} alt={userName} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                  : userInitial}
               </div>
             </div>
           </header>
@@ -350,31 +374,137 @@ export default function Layout({ children }) {
 
       {/* ── Mobile Bottom Navigation ─────────────────────────────── */}
       {isMobile && (
-        <nav className="bottom-nav" aria-label="Main navigation">
-          {MOBILE_NAV_CONFIG.map(({ to, icon: Icon, labelKey }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `bottom-nav-item${isActive ? ' active' : ''}`
-              }
-              aria-label={t(labelKey)}
+        <>
+          {/* More sheet backdrop */}
+          {moreOpen && (
+            <div
+              onClick={() => setMoreOpen(false)}
+              style={{
+                position: 'fixed', inset: 0, zIndex: 99,
+                background: 'rgba(0,0,0,0.45)',
+                backdropFilter: 'blur(4px)',
+              }}
+            />
+          )}
+
+          {/* More sheet */}
+          <div style={{
+            position: 'fixed', left: 0, right: 0, bottom: moreOpen ? 64 : '-100%',
+            zIndex: 100,
+            background: 'var(--surface-nav)',
+            borderTop: '1px solid var(--border-nav)',
+            borderRadius: '20px 20px 0 0',
+            padding: '20px 16px 12px',
+            transition: 'bottom 0.3s cubic-bezier(0.32,0.72,0,1)',
+            maxHeight: '70vh',
+            overflowY: 'auto',
+          }}>
+            {/* Handle */}
+            <div style={{ width: 36, height: 4, borderRadius: 99, background: 'var(--border)', margin: '0 auto 20px' }} />
+
+            {[
+              { section: 'Studio', items: [
+                { to: '/scripts',     icon: IconScripts,     label: t('nav_scripts')     },
+                { to: '/creator-dna', icon: VoiceIcon,       label: t('nav_my_voice')  },
+              ]},
+              { section: 'Content', items: [
+                { to: '/crosspost',   icon: RemixIcon,       label: t('nav_remix')       },
+                { to: '/templates',   icon: TemplateIcon,    label: t('nav_templates')   },
+              ]},
+              { section: 'Insights', items: [
+                { to: '/trending',    icon: TrendIcon,       label: t('nav_trending')    },
+                { to: '/performance', icon: IconPerformance, label: t('nav_performance') },
+                { to: '/calendar',    icon: CalendarIcon,    label: t('nav_calendar')    },
+              ]},
+            ].map(group => (
+              <div key={group.section} style={{ marginBottom: 20 }}>
+                <div style={{
+                  fontSize: '0.62rem', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                  color: 'var(--text-faint)', marginBottom: 10, paddingLeft: 4,
+                }}>
+                  {group.section}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                  {group.items.map(({ to, icon: Icon, label, premium }) => {
+                    const isActive = location.pathname === to
+                    return (
+                      <NavLink
+                        key={to} to={to}
+                        onClick={() => setMoreOpen(false)}
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <div style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center',
+                          gap: 6, padding: '12px 8px', borderRadius: 14,
+                          background: isActive ? 'rgba(0,200,255,0.1)' : 'var(--surface2)',
+                          border: `1px solid ${isActive ? 'rgba(0,200,255,0.3)' : 'var(--border)'}`,
+                        }}>
+                          <span style={{ color: isActive ? '#00C8FF' : 'var(--text-muted)' }}>
+                            <Icon size={22} />
+                          </span>
+                          <span style={{
+                            fontSize: '0.68rem', fontWeight: 600, textAlign: 'center',
+                            color: isActive ? '#00C8FF' : 'var(--text-muted)',
+                            lineHeight: 1.2,
+                          }}>
+                            {label}
+                            {premium && <span style={{ display: 'block', fontSize: '0.58rem', color: '#00C8FF', marginTop: 2 }}>✦</span>}
+                          </span>
+                        </div>
+                      </NavLink>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom tab bar */}
+          <nav className="bottom-nav" aria-label="Main navigation">
+            {MOBILE_NAV_CONFIG.map(({ to, icon: Icon, labelKey }) => (
+              <NavLink
+                key={to} to={to}
+                onClick={() => setMoreOpen(false)}
+                className={({ isActive }) => `bottom-nav-item${isActive ? ' active' : ''}`}
+                aria-label={t(labelKey)}
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className="nav-dot" />
+                    <Icon size={22} />
+                    <span
+                      className="bottom-nav-label"
+                      style={isActive ? { background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+                    >
+                      {t(labelKey)}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+
+            {/* More tab */}
+            <button
+              className={`bottom-nav-item${moreOpen ? ' active' : ''}`}
+              onClick={() => setMoreOpen(o => !o)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
-              {({ isActive }) => (
-                <>
-                  <div className="nav-dot" />
-                  <Icon size={22} />
-                  <span
-                    className="bottom-nav-label"
-                    style={isActive ? { background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
-                  >
-                    {t(labelKey)}
-                  </span>
-                </>
-              )}
-            </NavLink>
-          ))}
-        </nav>
+              <div className="nav-dot" />
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+                <circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+              </svg>
+              <span
+                className="bottom-nav-label"
+                style={moreOpen ? { background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : {}}
+              >
+                More
+              </span>
+            </button>
+          </nav>
+        </>
       )}
 
     </div>
@@ -393,11 +523,11 @@ const styles = {
   sidebar: {
     width: '240px',
     flexShrink: 0,
-    background: 'rgba(11,15,46,0.94)',
+    background: 'var(--surface-nav)',
     backdropFilter: 'blur(24px)',
     WebkitBackdropFilter: 'blur(24px)',
-    borderRight: '1px solid rgba(255,255,255,0.06)',
-    boxShadow: 'inset -1px 0 0 rgba(0,200,255,0.06)',
+    borderRight: '1px solid var(--border-nav)',
+    boxShadow: 'inset -1px 0 0 rgba(0,200,255,0.05)',
     display: 'flex',
     flexDirection: 'column',
     padding: '20px 14px',
@@ -410,10 +540,13 @@ const styles = {
   },
 
   logoWrap: {
-    padding: '6px 8px 20px',
-    borderBottom: '1px solid rgba(255,255,255,0.07)',
+    padding: '6px 0 20px',
+    borderBottom: '1px solid var(--border-nav)',
     marginBottom: '16px',
     flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
 
   nav: {
@@ -465,12 +598,12 @@ const styles = {
     alignItems: 'center',
     gap: '10px',
     padding: '12px',
-    background: 'rgba(23,32,80,0.6)',
+    background: 'var(--surface-userblock)',
     borderRadius: '12px',
     marginTop: '8px',
     marginBottom: '4px',
     flexShrink: 0,
-    border: '1px solid rgba(255,255,255,0.07)',
+    border: '1px solid var(--border-nav)',
     transition: 'all 0.18s ease',
   },
   avatarCircle: {
@@ -568,11 +701,11 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '12px 20px',
-    background: 'rgba(6,4,14,0.94)',
+    background: 'var(--surface-header)',
     backdropFilter: 'blur(24px)',
     WebkitBackdropFilter: 'blur(24px)',
-    borderBottom: '1px solid rgba(255,255,255,0.06)',
-    boxShadow: '0 1px 0 rgba(0,200,255,0.06)',
+    borderBottom: '1px solid var(--border-header)',
+    boxShadow: '0 1px 0 rgba(0,200,255,0.05)',
     minHeight: '56px',
   },
   mobileLogoRow: {

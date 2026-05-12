@@ -36,9 +36,23 @@ export const api = {
   openPortal:     ()      => req('POST', '/payments/portal'),
 
   // Scripts
-  generate:   (body) => req('POST', '/scripts/generate', body),
-  getScripts: ()     => req('GET',  '/scripts'),
-  getScript:  (id)   => req('GET',  `/scripts/${id}`),
+  // Calls the Vercel Edge Function — true streaming, no Railway buffering
+  generateStream: (body) => {
+    const token = getToken()
+    return fetch(`/api/generate-stream`, {
+      method : 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(body),
+    })
+  },
+  generate:      (body) => req('POST', '/scripts/generate', body),
+  retakeScript:  (body) => req('POST', '/scripts/retake', body),
+  refineScript:  (body) => req('POST', '/scripts/refine', body),
+  getScripts:    ()     => req('GET',  '/scripts'),
+  getScript:     (id)   => req('GET',  `/scripts/${id}`),
 
   // Hooks
   scoreHook:    (body) => req('POST', '/hooks/score', body),
@@ -58,7 +72,10 @@ export const api = {
 
   // Trending
   getTrending:  (niche, language) => req('GET', `/trending?niche=${niche}&language=${language}`),
-  getGreeting:  (region)          => req('GET', `/trending/greeting?region=${encodeURIComponent(region)}`),
+  getGreeting:  (region, language, niches = []) => {
+    const n = niches.length ? `&niches=${encodeURIComponent(niches.join(','))}` : ''
+    return req('GET', `/trending/greeting?region=${encodeURIComponent(region)}&language=${language || 'en'}${n}`)
+  },
 
   // Templates
   getTemplates:   (type) => req('GET',    `/templates${type ? `?type=${type}` : ''}`),
@@ -81,6 +98,8 @@ export const api = {
   coachChat: (body) => req('POST', '/coach/chat', body),
   getCoachHistory: () => req('GET', '/coach/history'),
 
+  hookAlternatives: (body) => req('POST', '/hooks/alternatives', body),
+
   // Hook Library
   getHookLibrary: (params) => req('GET', `/hooks/library?category=${params.category || 'all'}&type=${params.type || 'all'}&search=${encodeURIComponent(params.search || '')}`),
 
@@ -89,6 +108,25 @@ export const api = {
   updateLanguage:  (language) => req('PATCH', '/user/language', { language }),
   getBadges:       ()         => req('GET',   '/user/badges'),
   markOnboarded:   ()         => req('PATCH', '/user/onboarded'),
+  savePrefs:       (body)     => req('PATCH', '/user/prefs', body),
   generateAvatar:  (style)    => req('POST',  '/user/generate-avatar', { style }),
   saveAvatar:      (url)      => req('PATCH', '/user/avatar', { url }),
+
+  // Creator Voice (premium personalisation)
+  getVoiceProfile:    ()          => req('GET',    '/user/voice'),
+  analyzeVoice:       (samples)   => req('POST',   '/user/voice', { samples }),
+  deleteVoiceProfile: ()          => req('DELETE',  '/user/voice'),
+
+  // TTS — returns audio/mpeg blob (Google Neural2 Indian voice)
+  tts: (text, lang) => {
+    const token = getToken()
+    return fetch(`${BASE}/tts`, {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ text, lang }),
+    })
+  },
 }

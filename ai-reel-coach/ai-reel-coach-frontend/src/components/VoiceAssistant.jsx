@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react'
 import { useLang } from '../i18n.jsx'
+import { api } from '../api'
 
 // Language codes for Web Speech API
+// en → en-IN so browsers serve an Indian-English voice by default
 const LANG_CODES = {
-  en:       'en-US',
+  en:       'en-IN',
   es:       'es-ES',
   fr:       'fr-FR',
   pt:       'pt-BR',
@@ -13,51 +15,12 @@ const LANG_CODES = {
   ja:       'ja-JP',
   ko:       'ko-KR',
   hi:       'hi-IN',
-  hinglish: 'hi-IN',
 }
 
-// ─── Pick the best available voice ────────────────────────────────
-let cachedVoice = {}
 
-function getBestVoice(langCode) {
-  if (cachedVoice[langCode]) return cachedVoice[langCode]
-
-  const voices = window.speechSynthesis.getVoices()
-  if (!voices.length) return null
-
-  const matching = voices.filter(v =>
-    v.lang === langCode || v.lang.startsWith(langCode.split('-')[0])
-  )
-  if (!matching.length) return null
-
-  const google    = matching.find(v => v.name.includes('Google'))
-  if (google) { cachedVoice[langCode] = google; return google }
-
-  const microsoft = matching.find(v => v.name.includes('Microsoft'))
-  if (microsoft) { cachedVoice[langCode] = microsoft; return microsoft }
-
-  const female    = matching.find(v =>
-    /female|zira|heera|swara|priya|aditi|raveena/i.test(v.name)
-  )
-  if (female) { cachedVoice[langCode] = female; return female }
-
-  cachedVoice[langCode] = matching[0]
-  return matching[0]
-}
-
-// Reset cache when new voices load
-if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-  window.speechSynthesis.getVoices()
-  window.speechSynthesis.addEventListener('voiceschanged', () => {
-    cachedVoice = {}
-  })
-}
-
-// ─── Split text into small chunks Chrome can handle reliably ───────
-// Chrome's speechSynthesis breaks on long strings (>~200 chars).
-// We split at sentence boundaries and keep chunks short.
-function chunkText(text) {
-  // Split on sentence-ending punctuation including Hindi दण्ड ।
+// ─── Split text into sentence-sized chunks ────────────────────────
+// Google TTS handles up to ~190 chars per request reliably.
+function chunkText(text, maxLen = 190) {
   const sentences = text
     .replace(/([.!?।\n]+)\s*/g, '$1|||')
     .split('|||')
@@ -66,14 +29,13 @@ function chunkText(text) {
 
   const chunks = []
   for (const sentence of sentences) {
-    if (sentence.length <= 180) {
+    if (sentence.length <= maxLen) {
       chunks.push(sentence)
     } else {
-      // Further split long sentences on commas / semicolons
       const parts = sentence.split(/[,;]\s*/)
       let current = ''
       for (const part of parts) {
-        if (current && (current + ', ' + part).length > 180) {
+        if (current && (current + ', ' + part).length > maxLen) {
           chunks.push(current.trim())
           current = part
         } else {
@@ -86,104 +48,131 @@ function chunkText(text) {
   return chunks.filter(c => c.length > 0)
 }
 
-// ─── Text to Speech — chunked queue approach ─────────────────────
-// Fixes Chrome's ~15s cutoff and lag by speaking one sentence at a time.
+// ─── Text-to-Speech ───────────────────────────────────────────────
+// Primary:  backend /api/tts  →  Google Neural2 (real Indian voice, consistent
+//           across Chrome / Edge / Safari / iPhone — sounds the same everywhere)
+// Fallback: Web Speech API    →  OS voice (works offline / if key not set)
 export function useTextToSpeech() {
-  const { lang }       = useLang()
+  const { lang }                = useLang()
   const [speaking, setSpeaking] = useState(false)
-  const cancelledRef   = useRef(false)
-  const chunksRef      = useRef([])
-  const indexRef       = useRef(0)
+  const cancelRef               = useRef(false)
+  const audioRef                = useRef(null)
+  const chunksRef               = useRef([])
+  const idxRef                  = useRef(0)
 
-  const speakNextChunk = (langCode) => {
-    if (cancelledRef.current || indexRef.current >= chunksRef.current.length) {
-      setSpeaking(false)
-      return
+  // ── Stop whatever is currently playing ──────────────────────────
+  const stopAll = () => {
+    cancelRef.current = true
+    if (audioRef.current) {
+      audioRef.current.onended = null
+      audioRef.current.onerror = null
+      audioRef.current.pause()
+      if (audioRef.current._blobUrl) URL.revokeObjectURL(audioRef.current._blobUrl)
+      audioRef.current = null
     }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+  }
 
-    const text    = chunksRef.current[indexRef.current]
-    const voice   = getBestVoice(langCode)
-    const utt     = new SpeechSynthesisUtterance(text)
-
-    utt.lang   = langCode
-    utt.rate   = 1.0
-    utt.pitch  = 1.05
-    utt.volume = 1
-    if (voice) utt.voice = voice
-
-    utt.onend = () => {
-      if (!cancelledRef.current) {
-        indexRef.current++
-        speakNextChunk(langCode)
-      }
+  // ── Web Speech API fallback (chunked queue) ──────────────────────
+  const wsFallback = (langCode) => {
+    if (!('speechSynthesis' in window)) { setSpeaking(false); return }
+    if (cancelRef.current || idxRef.current >= chunksRef.current.length) {
+      setSpeaking(false); return
     }
-
+    const utt   = new SpeechSynthesisUtterance(chunksRef.current[idxRef.current])
+    const voices = window.speechSynthesis.getVoices()
+    const voice  = voices.find(v => v.lang === langCode)
+               || voices.find(v => v.lang.startsWith(langCode.split('-')[0]))
+    if (voice) { utt.voice = voice; utt.lang = voice.lang }
+    else        { utt.lang = langCode.startsWith('hi') ? 'hi-IN' : 'en-US' }
+    utt.rate = 1.05; utt.pitch = 1.0; utt.volume = 1.0
+    utt.onend   = () => { if (!cancelRef.current) { idxRef.current++; wsFallback(langCode) } }
     utt.onerror = (e) => {
-      // 'interrupted' fires when we cancel intentionally — ignore it
       if (e.error === 'interrupted' || e.error === 'canceled') return
-      setSpeaking(false)
+      if (!cancelRef.current) { idxRef.current++; wsFallback(langCode) }
     }
-
     window.speechSynthesis.speak(utt)
   }
 
-  const speak = (text) => {
-    if (!('speechSynthesis' in window) || !text?.trim()) return
+  // ── Google Neural TTS via backend (primary path) ─────────────────
+  const playBackend = async (text, langCode) => {
+    const resp = await api.tts(text, langCode)
+    if (!resp.ok) throw new Error(await resp.text())
+    const blob    = await resp.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    const audio   = new Audio(blobUrl)
+    audio._blobUrl     = blobUrl
+    audioRef.current   = audio
+    audio.onended = () => { URL.revokeObjectURL(blobUrl); setSpeaking(false) }
+    audio.onerror = () => { URL.revokeObjectURL(blobUrl); setSpeaking(false) }
+    await audio.play()
+  }
 
-    // Cancel any ongoing speech
-    cancelledRef.current = true
-    window.speechSynthesis.cancel()
+  const speak = async (text) => {
+    if (!text?.trim()) return
+    stopAll()
+    cancelRef.current = false
 
     const langCode = LANG_CODES[lang] || 'en-IN'
-    const chunks   = chunkText(text)
-    if (!chunks.length) return
-
-    chunksRef.current = chunks
-    indexRef.current  = 0
-    cancelledRef.current = false
     setSpeaking(true)
 
-    // Chrome loads voices asynchronously — wait if needed
-    if (window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.addEventListener(
-        'voiceschanged',
-        () => speakNextChunk(langCode),
-        { once: true }
-      )
-    } else {
-      // Small delay ensures cancel() has fully cleared before we start
-      setTimeout(() => speakNextChunk(langCode), 80)
+    try {
+      // Try ElevenLabs Neural TTS via backend — best quality, consistent on all devices
+      await playBackend(text, langCode)
+    } catch (err) {
+      console.warn('[TTS] Backend failed, falling back to Web Speech:', err?.message)
+      // Backend not configured or offline — fall back to Web Speech API
+      const chunks = chunkText(text)
+      if (!chunks.length) { setSpeaking(false); return }
+      chunksRef.current = chunks
+      idxRef.current    = 0
+      if (!('speechSynthesis' in window)) { setSpeaking(false); return }
+      window.speechSynthesis.cancel()
+      // Speak synchronously to satisfy desktop Chrome's gesture requirement
+      if (!window.speechSynthesis.getVoices().length) {
+        window.speechSynthesis.addEventListener(
+          'voiceschanged',
+          () => { if (!cancelRef.current) wsFallback(langCode) },
+          { once: true }
+        )
+      } else {
+        wsFallback(langCode)
+      }
     }
   }
 
-  const stopSpeaking = () => {
-    cancelledRef.current = true
-    window.speechSynthesis.cancel()
-    setSpeaking(false)
-  }
+  const stopSpeaking = () => { stopAll(); setSpeaking(false) }
 
   return { speaking, speak, stopSpeaking }
 }
 
 // ─── Speech to Text ───────────────────────────────────────────────
-// Uses continuous:true so Chrome never hard-cuts mid-sentence.
-// Auto-submits after SILENCE_MS of no new words.
-// Stop button submits immediately.
-const SILENCE_MS = 2500
+// Desktop: continuous:true so Chrome never hard-cuts mid-sentence.
+// Mobile:  continuous:false — mobile browsers don't support continuous
+//          reliably; each utterance auto-submits on silence.
+const isMobile  = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+const SILENCE_MS        = 2500   // desktop — wait longer before auto-submit
+const SILENCE_MS_MOBILE = 1500   // mobile  — submit faster after speech ends
 
-export function useSpeechToText(onResult) {
-  const { lang } = useLang()
+export function useSpeechToText(onResult, langOverride, onInterim) {
+  const { lang: globalLang } = useLang()
   const [listening, setListening]     = useState(false)
   const [interimText, setInterimText] = useState('')
-  const recognitionRef = useRef(null)
-  const finalRef       = useRef('')
-  const stoppedRef     = useRef(false)
-  const flushedRef     = useRef(false)
-  const silenceTimer   = useRef(null)
-  const SR_ref         = useRef(null)
-  const langRef        = useRef('en-IN')
-  const onResultRef    = useRef(onResult)
-  onResultRef.current  = onResult
+  const recognitionRef  = useRef(null)
+  const finalRef        = useRef('')
+  const lastLiveRef     = useRef('')   // fallback: last interim text seen (iOS never finalises)
+  const stoppedRef      = useRef(false)
+  const flushedRef      = useRef(false)
+  const silenceTimer    = useRef(null)
+  const SR_ref          = useRef(null)
+  const langRef         = useRef('en-IN')
+  const onResultRef     = useRef(onResult)
+  const onInterimRef    = useRef(onInterim)
+  // Track highest result index already committed — prevents Chrome from
+  // re-delivering old final results (e.resultIndex can be 0 for old items)
+  const lastFinalIdxRef = useRef(-1)
+  onResultRef.current   = onResult
+  onInterimRef.current  = onInterim
 
   const clearSilenceTimer = () => {
     if (silenceTimer.current) { clearTimeout(silenceTimer.current); silenceTimer.current = null }
@@ -197,83 +186,149 @@ export function useSpeechToText(onResult) {
     try { recognitionRef.current?.stop() } catch {}
     setListening(false)
     setInterimText('')
-    const text = finalRef.current.trim()
-    finalRef.current = ''
+    // Use final result if available; fall back to last interim text.
+    // iOS Safari often never fires isFinal:true — without this fallback the
+    // transcript is silently discarded and form.topic stays empty.
+    const text = (finalRef.current || lastLiveRef.current).trim()
+    finalRef.current  = ''
+    lastLiveRef.current = ''
+    // Always clear the interim preview so the connected input is never left locked
+    if (onInterimRef.current) onInterimRef.current('')
     if (text) onResultRef.current(text)
   }
 
   const armSilenceTimer = () => {
     clearSilenceTimer()
-    silenceTimer.current = setTimeout(flush, SILENCE_MS)
+    const ms = isMobile() ? SILENCE_MS_MOBILE : SILENCE_MS
+    silenceTimer.current = setTimeout(flush, ms)
   }
 
   const startSession = () => {
     if (stoppedRef.current || !SR_ref.current) return
+    // Reset per-session index so each new recognition instance starts clean
+    lastFinalIdxRef.current = -1
 
+    const mobile = isMobile()
     const recognition           = new SR_ref.current()
     recognition.lang            = langRef.current
     recognition.interimResults  = true
     recognition.maxAlternatives = 1
-    recognition.continuous      = true   // ← holds the mic open; Chrome never cuts mid-sentence
+    recognition.continuous      = !mobile  // mobile browsers don't support continuous reliably
 
     recognition.onresult = (e) => {
       let interim = '', newFinal = ''
+
       for (let i = e.resultIndex; i < e.results.length; i++) {
-        if (e.results[i].isFinal) newFinal += e.results[i][0].transcript
-        else                      interim  += e.results[i][0].transcript
+        if (e.results[i].isFinal) {
+          // FIX 1: Only process a final result if its index is strictly newer
+          // than the last one we committed. Chrome sometimes fires resultIndex=0
+          // for events that include already-finalized earlier results.
+          if (i > lastFinalIdxRef.current) {
+            newFinal += e.results[i][0].transcript
+            lastFinalIdxRef.current = i
+          }
+        } else {
+          interim += e.results[i][0].transcript
+        }
       }
+
       if (newFinal) {
-        finalRef.current = (finalRef.current + (finalRef.current ? ' ' : '') + newFinal).trim()
+        const trimmed  = newFinal.trim()
+        const existing = finalRef.current
+        // FIX 2: Cross-session guard — Chrome sometimes replays the last phrase
+        // when a session restarts. Skip if it's identical to what we just appended.
+        if (trimmed && !existing.endsWith(trimmed)) {
+          finalRef.current = (existing + (existing ? ' ' : '') + trimmed).trim()
+        }
       }
-      // Reset timer on ANY speech activity — interim keeps it alive while
-      // you're still mid-word, final resets it after the word lands
+
+      // Reset timer on ANY speech activity
       if (newFinal || interim) armSilenceTimer()
-      setInterimText(interim || finalRef.current)
+      const live = (finalRef.current + (interim ? ' ' + interim : '')).trim()
+      if (live) lastLiveRef.current = live   // keep latest for flush() fallback
+      setInterimText(live)
+      // Live-update the connected input field so user sees their speech in real-time
+      if (onInterimRef.current) onInterimRef.current(live || interim)
     }
 
     recognition.onend = () => {
-      // Only fires if Chrome times out (~60s) or we called stop()
       if (stoppedRef.current) { flush(); return }
-      // Chrome timed out — restart transparently, silence timer still running
-      setTimeout(startSession, 80)
+      if (mobile) {
+        // On mobile, onend fires after each utterance — flush immediately
+        flush()
+      } else {
+        // Desktop: Chrome timed out (~60s) — restart, silence timer still running
+        setTimeout(startSession, 80)
+      }
     }
 
     recognition.onerror = (e) => {
-      if (e.error === 'not-allowed') {
-        alert('Microphone permission denied.')
+      // Permission denied — hard stop, show guidance
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        alert('Microphone access denied. Please allow microphone permission in your browser settings and try again.')
         stoppedRef.current = true
         setListening(false); setInterimText('')
         clearSilenceTimer()
         return
       }
+      // No microphone hardware
+      if (e.error === 'audio-capture') {
+        alert('No microphone found. Please connect a microphone and try again.')
+        stoppedRef.current = true
+        setListening(false); setInterimText('')
+        clearSilenceTimer()
+        return
+      }
+      // Silent errors — just ignore
       if (e.error === 'aborted' || e.error === 'interrupted') return
+      // No speech detected on mobile — flush gracefully (don't restart)
+      if (e.error === 'no-speech' && isMobile()) { flush(); return }
+      // Desktop: restart on transient errors
       if (!stoppedRef.current) setTimeout(startSession, 200)
     }
 
     recognitionRef.current = recognition
-    try { recognition.start() } catch {}
+    try {
+      recognition.start()
+    } catch (err) {
+      // recognition.start() threw synchronously — reset listening state
+      console.warn('[STT] recognition.start() threw:', err?.message)
+      stoppedRef.current = true
+      setListening(false)
+      setInterimText('')
+    }
   }
 
   const startListening = async () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SR) { alert('Speech recognition requires Chrome or Edge browser.'); return }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      stream.getTracks().forEach(t => t.stop())
-    } catch {
-      alert('Microphone access denied. Please allow mic in browser settings.')
+    if (!SR) {
+      alert('Speech recognition is not supported in this browser. Try Chrome on Android or Safari on iOS 15+.')
       return
+    }
+
+    // Desktop only: pre-check mic permission via getUserMedia.
+    // On mobile this is skipped — the SpeechRecognition API handles
+    // its own permission prompt and getUserMedia can interfere.
+    if (!isMobile()) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        stream.getTracks().forEach(t => t.stop())
+      } catch {
+        alert('Microphone access denied. Please allow mic in browser settings.')
+        return
+      }
     }
 
     try { recognitionRef.current?.abort() } catch {}
     clearSilenceTimer()
 
+    const activeLang   = langOverride || globalLang
     SR_ref.current     = SR
-    langRef.current    = LANG_CODES[lang] || 'en-IN'
-    finalRef.current   = ''
-    stoppedRef.current = false
-    flushedRef.current = false
+    langRef.current    = LANG_CODES[activeLang] || 'en-IN'
+    finalRef.current    = ''
+    lastLiveRef.current = ''
+    stoppedRef.current  = false
+    flushedRef.current  = false
     setListening(true)
     setInterimText('')
     startSession()
@@ -285,43 +340,39 @@ export function useSpeechToText(onResult) {
 }
 
 // ─── Mic Button ───────────────────────────────────────────────────
-export function MicButton({ onResult, style = {} }) {
+// lang prop: optional BCP-47 short code ('hi', 'en', 'es' …)
+//   If provided it overrides the global app UI language for speech recognition.
+// onInterim: optional callback(text) fired on every interim transcript update
+//   so the parent can show live text inside its own input (no floating text).
+export function MicButton({ onResult, onInterim, lang: langProp, style = {} }) {
   const { t } = useLang()
-  const { listening, interimText, startListening, stopListening } = useSpeechToText(onResult)
+  const { listening, interimText, startListening, stopListening } = useSpeechToText(onResult, langProp, onInterim)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-      <button
-        type="button"
-        onClick={listening ? stopListening : startListening}
-        title={listening ? t('voice_listening') : t('voice_speak')}
-        style={{
-          width: 40, height: 40, borderRadius: '50%',
-          border: listening ? '2px solid var(--accent)' : '1px solid var(--border)',
-          background: listening ? 'var(--accent-dim)' : 'var(--surface2)',
-          color: listening ? 'var(--accent)' : 'var(--text-muted)',
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16,
-          animation: listening ? 'pulseGlow 1s ease infinite' : 'none',
-          transition: 'all 0.2s',
-          ...style,
-        }}
-      >
-        {listening ? '⏹' : '🎙'}
-      </button>
-      {listening && (
-        <span style={{
-          fontSize: '0.62rem',
-          color: interimText ? 'var(--text-muted)' : 'var(--accent)',
-          fontFamily: 'var(--font-mono)',
-          maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap', textAlign: 'center',
-        }}>
-          {interimText || t('voice_listening')}
-        </span>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={listening ? stopListening : startListening}
+      title={listening
+        ? (interimText || t('voice_listening'))
+        : t('voice_speak')}
+      style={{
+        width: 44, height: 44, borderRadius: '50%',
+        border: listening ? '2px solid var(--accent)' : '1px solid var(--border)',
+        background: listening ? 'var(--accent-dim)' : 'var(--surface2)',
+        color: listening ? 'var(--accent)' : 'var(--text-muted)',
+        cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 18,
+        flexShrink: 0,
+        touchAction: 'manipulation',   // removes 300ms tap-delay on iOS
+        WebkitTapHighlightColor: 'transparent',
+        animation: listening ? 'pulseGlow 1s ease infinite' : 'none',
+        transition: 'all 0.2s',
+        ...style,
+      }}
+    >
+      {listening ? '⏹' : '🎙'}
+    </button>
   )
 }
 

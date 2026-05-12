@@ -138,9 +138,11 @@ export default function Onboarding() {
   }
 
   const finish = () => {
+    const prefs = { niches, platform, goals }
     localStorage.setItem('vs_onboarded', '1')
-    localStorage.setItem('vs_prefs', JSON.stringify({ niches, platform, goals }))
+    localStorage.setItem('vs_prefs', JSON.stringify(prefs))
     api.markOnboarded().catch(() => {})
+    api.savePrefs(prefs).catch(() => {})   // persist to backend so prefs survive new devices
     setDone(true)
     setTimeout(() => navigate('/dashboard'), 2000)
   }
@@ -268,11 +270,13 @@ export default function Onboarding() {
                 }}
               >
                 <div style={styles.platformIcon}>{p.icon}</div>
-                <div>
+                <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)', marginBottom: 3 }}>{p.label}</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{p.desc}</div>
                 </div>
-                <span className="ob-platform-tag" style={styles.platformTag}>{p.tag}</span>
+                <span className="ob-platform-tag" style={styles.platformTag}>
+                  {p.tag}
+                </span>
                 {platform === p.id && <div style={styles.checkMark}>✓</div>}
               </button>
             ))}
@@ -397,12 +401,12 @@ const styles = {
   card: {
     width: '100%',
     maxWidth: 580,
-    background: 'rgba(15,15,26,0.92)',
+    background: 'var(--surface-card)',
     backdropFilter: 'blur(24px)',
     border: '1px solid var(--border)',
     borderRadius: 24,
     padding: '40px 36px',
-    boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+    boxShadow: 'var(--shadow-glass)',
   },
   stepBadge: {
     display: 'inline-flex',

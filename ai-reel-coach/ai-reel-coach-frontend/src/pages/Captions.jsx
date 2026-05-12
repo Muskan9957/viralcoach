@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { api } from '../api'
 import { MicButton, SpeakButton } from '../components/VoiceAssistant'
+import { useLang } from '../i18n.jsx'
 
 const STYLE_COLORS = {
   Short:    '#00C8FF',
@@ -30,6 +31,7 @@ function PulsingDots() {
 }
 
 export default function Captions() {
+  const { t, lang } = useLang()
   const [topic, setTopic]     = useState('')
   const [niche, setNiche]     = useState('General')
   const [tone, setTone]       = useState('Engaging')
@@ -54,7 +56,7 @@ export default function Captions() {
     setError('')
     setResult(null)
     try {
-      const data = await api.generateCaptions({ topic, niche, tone })
+      const data = await api.generateCaptions({ topic, niche, tone, language: lang })
       setResult(data)
     } catch (err) {
       setError(err.message || 'Something went wrong')
@@ -85,20 +87,20 @@ export default function Captions() {
   return (
     <div className="page-enter">
       <div style={{ marginBottom: 28 }}>
-        <h1 className="page-title">Caption Generator</h1>
-        <p className="page-sub">Turn any topic into platform-ready captions and hashtags.</p>
+        <h1 className="page-title">{t('captions_title')}</h1>
+        <p className="page-sub">{t('captions_sub')}</p>
       </div>
 
       <form onSubmit={handleGenerate} style={{ maxWidth: 720 }}>
         {/* Topic */}
         <div className="field" style={{ marginBottom: 18 }}>
-          <label style={s.label}>Topic</label>
+          <label style={s.label}>{t('generate_topic')}</label>
           <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
             <input
               className="input"
               style={{ flex: 1 }}
               type="text"
-              placeholder="e.g. My morning routine that changed everything"
+              placeholder={t('captions_topic_ph')}
               value={topic}
               onChange={e => setTopic(e.target.value)}
             />
@@ -109,13 +111,13 @@ export default function Captions() {
         {/* Niche + Tone row */}
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 24 }}>
           <div className="field" style={{ flex: '1 1 200px' }}>
-            <label style={s.label}>Niche</label>
+            <label style={s.label}>{t('generate_niche')}</label>
             <select className="input" value={niche} onChange={e => setNiche(e.target.value)}>
               {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
           <div className="field" style={{ flex: '1 1 200px' }}>
-            <label style={s.label}>Tone</label>
+            <label style={s.label}>{t('generate_tone')}</label>
             <select className="input" value={tone} onChange={e => setTone(e.target.value)}>
               {TONES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -134,7 +136,7 @@ export default function Captions() {
           disabled={loading || !topic.trim()}
           style={{ minWidth: 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          {loading ? (<>Generating{<PulsingDots />}</>) : '✦ Generate Captions'}
+          {loading ? (<>{t('captions_generating')}{<PulsingDots />}</>) : t('captions_btn')}
         </button>
       </form>
 
@@ -143,7 +145,7 @@ export default function Captions() {
         <div ref={resultsRef} style={{ marginTop: 40, maxWidth: 720 }}>
           {/* Caption Cards */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h2 style={s.sectionTitle}>Captions</h2>
+            <h2 style={s.sectionTitle}>{t('captions_section')}</h2>
             <SpeakButton text={allCaptionText} />
           </div>
 
@@ -172,7 +174,7 @@ export default function Captions() {
                         borderColor: copied[i] ? 'var(--teal)' : 'var(--border)',
                       }}
                     >
-                      {copied[i] ? '✓ Copied' : 'Copy'}
+                      {copied[i] ? t('captions_copied') : t('captions_copy')}
                     </button>
                   </div>
                   <p style={{ fontSize: '0.92rem', lineHeight: 1.7, color: 'var(--text)', margin: 0 }}>
@@ -187,7 +189,7 @@ export default function Captions() {
           {result.hashtags?.length > 0 && (
             <div style={{ marginTop: 28 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                <h2 style={s.sectionTitle}>Hashtags</h2>
+                <h2 style={s.sectionTitle}>{t('captions_hashtags')}</h2>
                 <button
                   onClick={copyAllHashtags}
                   style={{
@@ -197,7 +199,7 @@ export default function Captions() {
                     background: copiedAll ? 'rgba(0,201,167,0.08)' : 'rgba(255,95,31,0.08)',
                   }}
                 >
-                  {copiedAll ? '✓ Copied All' : 'Copy All Hashtags'}
+                  {copiedAll ? t('captions_copied_all') : t('captions_copy_all')}
                 </button>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>

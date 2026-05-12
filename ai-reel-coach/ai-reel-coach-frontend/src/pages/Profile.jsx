@@ -1,19 +1,68 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getSavedRegion, saveRegion, REGIONS } from '../utils/detectRegion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../store'
 import { useTheme } from '../context/ThemeContext'
 import { useToast } from '../components/Toast'
 import { api } from '../api'
 
-const AVATAR_STYLES = [
-  { id: 'cyberpunk',  label: 'Cyberpunk',  emoji: '🤖', color: '#00C8FF' },
-  { id: 'anime',      label: 'Anime',      emoji: '✨', color: '#FF6EE7' },
-  { id: 'fantasy',    label: 'Fantasy',    emoji: '🧙', color: '#9B72FF' },
-  { id: 'neon',       label: 'Neon',       emoji: '⚡', color: '#00FF88' },
-  { id: 'minimal',    label: 'Minimal',    emoji: '◈',  color: '#A8C4E8' },
-  { id: 'cosmic',     label: 'Cosmic',     emoji: '🌌', color: '#7B5CF0' },
-  { id: 'pixel',      label: 'Pixel Art',  emoji: '🕹️', color: '#FFD60A' },
-  { id: 'watercolor', label: 'Watercolor', emoji: '🎨', color: '#FF9F7F' },
+const PRESET_AVATARS = [
+  // Robots
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=alpha&size=128',           label: 'Alpha'      },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=nova&size=128',            label: 'Nova'       },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=cyber&size=128',           label: 'Cyber'      },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=pixel9&size=128',          label: 'Pixel Bot'  },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=titan&size=128',           label: 'Titan'      },
+  { url: 'https://api.dicebear.com/8.x/bottts/png?seed=zero&size=128',            label: 'Zero'       },
+  { url: 'https://api.dicebear.com/8.x/bottts-neutral/png?seed=steel&size=128',   label: 'Steel'      },
+  { url: 'https://api.dicebear.com/8.x/bottts-neutral/png?seed=matrix&size=128',  label: 'Matrix'     },
+  // Anime / Illustrated
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=sakura&size=128',      label: 'Sakura'     },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=kai&size=128',         label: 'Kai'        },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=luna&size=128',        label: 'Luna'       },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=ryu&size=128',         label: 'Ryu'        },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=hana&size=128',        label: 'Hana'       },
+  { url: 'https://api.dicebear.com/8.x/adventurer/png?seed=storm&size=128',       label: 'Storm'      },
+  { url: 'https://api.dicebear.com/8.x/adventurer-neutral/png?seed=aria&size=128',label: 'Aria'       },
+  { url: 'https://api.dicebear.com/8.x/adventurer-neutral/png?seed=blaze&size=128',label:'Blaze'      },
+  // Pixel Art
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=hero&size=128',         label: 'Hero'       },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=quest&size=128',        label: 'Quest'      },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=blade&size=128',        label: 'Blade'      },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=spark&size=128',        label: 'Spark'      },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=glitch&size=128',       label: 'Glitch'     },
+  { url: 'https://api.dicebear.com/8.x/pixel-art/png?seed=retro&size=128',        label: 'Retro'      },
+  // Soft / Illustrated
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=aurora&size=128',         label: 'Aurora'     },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=mist&size=128',           label: 'Mist'       },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=ember&size=128',          label: 'Ember'      },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=dusk&size=128',           label: 'Dusk'       },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=dawn&size=128',           label: 'Dawn'       },
+  { url: 'https://api.dicebear.com/8.x/lorelei/png?seed=sol&size=128',            label: 'Sol'        },
+  // Fun / Expressive
+  { url: 'https://api.dicebear.com/8.x/fun-emoji/png?seed=joy&size=128',          label: 'Joy'        },
+  { url: 'https://api.dicebear.com/8.x/fun-emoji/png?seed=cool&size=128',         label: 'Cool'       },
+  { url: 'https://api.dicebear.com/8.x/fun-emoji/png?seed=fire&size=128',         label: 'Fire'       },
+  { url: 'https://api.dicebear.com/8.x/fun-emoji/png?seed=chill&size=128',        label: 'Chill'      },
+  // Geometric / Abstract
+  { url: 'https://api.dicebear.com/8.x/rings/png?seed=neon1&size=128',            label: 'Neon Ring'  },
+  { url: 'https://api.dicebear.com/8.x/rings/png?seed=pulse&size=128',            label: 'Pulse'      },
+  { url: 'https://api.dicebear.com/8.x/rings/png?seed=wave&size=128',             label: 'Wave'       },
+  { url: 'https://api.dicebear.com/8.x/rings/png?seed=vibe&size=128',             label: 'Vibe'       },
+  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=zen&size=128',             label: 'Zen'        },
+  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=arc&size=128',             label: 'Arc'        },
+  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=dot&size=128',             label: 'Dot'        },
+  { url: 'https://api.dicebear.com/8.x/shapes/png?seed=flow&size=128',            label: 'Flow'       },
+  // Croodles (Doodle style)
+  { url: 'https://api.dicebear.com/8.x/croodles/png?seed=sketch&size=128',        label: 'Sketch'     },
+  { url: 'https://api.dicebear.com/8.x/croodles/png?seed=doodle&size=128',        label: 'Doodle'     },
+  { url: 'https://api.dicebear.com/8.x/croodles/png?seed=ink&size=128',           label: 'Ink'        },
+  { url: 'https://api.dicebear.com/8.x/croodles/png?seed=brush&size=128',         label: 'Brush'      },
+  // Thumbs (Unique style)
+  { url: 'https://api.dicebear.com/8.x/thumbs/png?seed=ace&size=128',             label: 'Ace'        },
+  { url: 'https://api.dicebear.com/8.x/thumbs/png?seed=bold&size=128',            label: 'Bold'       },
+  { url: 'https://api.dicebear.com/8.x/thumbs/png?seed=vivid&size=128',           label: 'Vivid'      },
+  { url: 'https://api.dicebear.com/8.x/thumbs/png?seed=prime&size=128',           label: 'Prime'      },
 ]
 
 const PLAN_META = {
@@ -31,7 +80,7 @@ function Avatar({ user, size = 80 }) {
     <div style={{
       width: size, height: size,
       borderRadius: '50%',
-      background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
+      background: 'linear-gradient(135deg, #FF5F1F, #FF3CAC)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontFamily: 'var(--font-head)',
       fontWeight: 800,
@@ -39,6 +88,7 @@ function Avatar({ user, size = 80 }) {
       color: '#fff',
       letterSpacing: '-0.02em',
       flexShrink: 0,
+      boxShadow: '0 4px 16px rgba(255,60,172,0.3)',
     }}>
       {initials}
     </div>
@@ -96,18 +146,71 @@ function Row({ icon, label, value, action }) {
   )
 }
 
+const SKIN_COLORS   = ['Tanned','Yellow','Pale','Light','Brown','DarkBrown','Black']
+const MALE_HAIR     = ['ShortHairShortFlat','ShortHairShortCurly','ShortHairShortRound','ShortHairShortWaved','ShortHairDreads01','ShortHairFrizzle','ShortHairTheCaesar','ShortHairSides','NoHair']
+const MALE_LABELS   = ['Flat','Curly','Round','Waved','Dreads','Frizzle','Caesar','Sides','Bald']
+const FEMALE_HAIR   = ['LongHairStraight','LongHairCurly','LongHairBob','LongHairBun','LongHairFro','LongHairBigHair','LongHairMiaWallace','LongHairNotTooLong','LongHairFroBand','Hijab','NoHair']
+const FEMALE_LABELS = ['Straight','Curly','Bob','Bun','Fro','Big Hair','Mia','Medium','Band','Hijab','Bald']
+const HAIR_COLORS   = ['Black','Brown','BrownDark','Auburn','Blonde','BlondeGolden','Red','SilverGray','PastelPink','Platinum']
+const EYE_TYPES     = ['Default','Happy','Wink','Hearts','Squint','Side','Surprised','Close','EyeRoll']
+const MOUTH_TYPES   = ['Smile','Default','Twinkle','Tongue','Serious','Sad','Grimace','Disbelief']
+const CLOTHES       = ['Hoodie','BlazerShirt','GraphicShirt','ShirtCrewNeck','ShirtVNeck','Overall','CollarSweater','BlazerSweater']
+const CLOTHES_LABEL = ['Hoodie','Blazer','Graphic','Crew','V-Neck','Overall','Sweater','Suit']
+const ACCESSORIES   = ['Blank','Sunglasses','Prescription01','Prescription02','Round','Wayfarers','Kurt']
+const ACC_LABELS    = ['None','Sunglasses','Glasses','Oval','Round','Wayfarers','Kurt']
+const CLOTH_COLORS  = ['Blue03','Red','Black','Heather','White','Pink','PastelBlue','PastelGreen','Gray01','PastelYellow']
+
+const SKIN_HEX = { Tanned:'#FD9841', Yellow:'#F9CA5F', Pale:'#FADDBB', Light:'#EDB98A', Brown:'#D08B5B', DarkBrown:'#AE5D29', Black:'#614335' }
+const HAIR_HEX = { Black:'#2C1B18', Brown:'#724133', BrownDark:'#4A312C', Auburn:'#A55728', Blonde:'#B58143', BlondeGolden:'#D6B370', Red:'#C93305', SilverGray:'#E8E1E1', PastelPink:'#F59797', Platinum:'#EFEFEF' }
+const CLOTH_HEX = { Blue03:'#25557C', Red:'#FF5C5C', Black:'#262E33', Heather:'#B7C1DB', White:'#E6E6E6', Pink:'#FF488E', PastelBlue:'#B1E2FF', PastelGreen:'#A7D2A5', Gray01:'#858585', PastelYellow:'#FFDEB5' }
+
+function buildAvatarUrl(opts) {
+  const p = new URLSearchParams({
+    avatarStyle:    'Circle',
+    topType:        opts.hair,
+    hairColor:      opts.hairColor,
+    facialHairType: 'Blank',
+    accessoriesType:opts.accessories,
+    clotheType:     opts.clothes,
+    clotheColor:    opts.clotheColor,
+    eyeType:        opts.eyes,
+    eyebrowType:    'Default',
+    mouthType:      opts.mouth,
+    skinColor:      opts.skin,
+  })
+  return `https://avataaars.io/?${p.toString()}`
+}
+
+const DEFAULT_MALE   = { gender:'male',   skin:'Light', hair:'ShortHairShortFlat', hairColor:'Brown',  eyes:'Default', mouth:'Smile', clothes:'Hoodie', clotheColor:'Blue03', accessories:'Blank' }
+const DEFAULT_FEMALE = { gender:'female', skin:'Light', hair:'LongHairStraight',   hairColor:'Brown',  eyes:'Default', mouth:'Smile', clothes:'BlazerShirt', clotheColor:'Pink', accessories:'Blank' }
+const DEFAULT_CUSTOM = DEFAULT_MALE
+
 export default function Profile() {
   const { user, logout }   = useAuth()
   const { theme, toggle }  = useTheme()
   const navigate           = useNavigate()
   const toast              = useToast()
+  const [liveStreak, setLiveStreak] = useState(null)
+
+  useEffect(() => {
+    api.getUserProfile().then(p => { if (p?.streak != null) setLiveStreak(p.streak) }).catch(() => {})
+  }, [])
+
   const [showDanger, setShowDanger]       = useState(false)
   const [showAvatarGen, setShowAvatarGen] = useState(false)
-  const [avatarStyle, setAvatarStyle]     = useState('cyberpunk')
-  const [genLoading, setGenLoading]       = useState(false)
-  const [previewUrl, setPreviewUrl]       = useState(null)
+  const [avatarTab, setAvatarTab]         = useState('gallery') // 'gallery' | 'custom'
+  const [selectedAvatar, setSelectedAvatar] = useState(null)
+  const [custom, setCustom]               = useState(DEFAULT_CUSTOM)
 
-  const prefs    = (() => { try { return JSON.parse(localStorage.getItem('vs_prefs') || '{}') } catch { return {} } })()
+  const [region, setRegion] = useState(getSavedRegion)
+
+  const handleRegionChange = (e) => {
+    setRegion(e.target.value)
+    saveRegion(e.target.value)
+    toast('Region saved!', 'success')
+  }
+
+  const prefs = (() => { try { return JSON.parse(localStorage.getItem('vs_prefs') || '{}') } catch { return {} } })()
   const planMeta = PLAN_META[user?.plan] || PLAN_META.FREE
   const usagePercent = Math.min(100, Math.round((user?.generationsUsed / planMeta.limit) * 100))
   const joinDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'
@@ -118,26 +221,13 @@ export default function Profile() {
     toast.success('Logged out successfully')
   }
 
-  const handleGenerateAvatar = async () => {
-    setGenLoading(true)
-    setPreviewUrl(null)
-    try {
-      const data = await api.generateAvatar(avatarStyle)
-      setPreviewUrl(data.url)
-    } catch (err) {
-      toast(err.message, 'error')
-    } finally {
-      setGenLoading(false)
-    }
-  }
-
   const handleSaveAvatar = async () => {
-    if (!previewUrl) return
+    if (!selectedAvatar) return
     try {
-      await api.saveAvatar(previewUrl)
+      await api.saveAvatar(selectedAvatar)
       toast('Avatar updated!', 'success')
       setShowAvatarGen(false)
-      setPreviewUrl(null)
+      setSelectedAvatar(null)
       window.location.reload()
     } catch (err) {
       toast(err.message, 'error')
@@ -247,7 +337,7 @@ export default function Profile() {
       {/* Stats row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
         {[
-          { label: 'Day Streak',    value: `${user?.streak || 0}🔥`,    sub: 'Keep posting daily' },
+          { label: 'Day Streak',    value: `${liveStreak ?? user?.streak ?? 0}🔥`,    sub: 'Generate, score or analyse daily' },
           { label: 'Scripts Made',  value: user?.generationsUsed || 0,   sub: 'Total all time' },
           { label: 'Member Since',  value: joinDate.split(' ')[2] || '2025', sub: joinDate.split(' ').slice(0,2).join(' ') },
         ].map(s => (
@@ -279,11 +369,41 @@ export default function Profile() {
         <Section title="Account">
           <Row icon="👤" label="Full name"    value={user?.name || 'Not set'} />
           <Row icon="📧" label="Email"        value={user?.email || '—'} />
-          <Row icon="🌐" label="Language"     value={user?.language === 'hi' ? 'Hindi' : user?.language === 'en-IN' ? 'Hinglish' : 'English'} />
+          <Row icon="🌐" label="Language" value={user?.language === 'hi' ? 'Hindi' : user?.language === 'en-IN' ? 'Hinglish' : 'English'} />
+          <Row
+            icon="📍"
+            label="Content Region"
+            value={REGIONS.find(r => r.value === region)?.label || '— Not set —'}
+            action={
+              <select
+                value={region}
+                onChange={handleRegionChange}
+                style={{
+                  background: 'var(--surface2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                  color: 'var(--text)',
+                  padding: '5px 10px',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                }}
+              >
+                <option value="">— Select —</option>
+                {REGIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
+            }
+          />
           <Row
             icon="🎯"
             label="Niche"
-            value={prefs.niche ? prefs.niche.charAt(0).toUpperCase() + prefs.niche.slice(1) : 'Not set'}
+            value={
+              Array.isArray(prefs.niches) && prefs.niches.length
+                ? prefs.niches.map(n => n.charAt(0).toUpperCase() + n.slice(1)).join(', ')
+                : prefs.niche
+                  ? prefs.niche.charAt(0).toUpperCase() + prefs.niche.slice(1)
+                  : 'Not set'
+            }
             action={
               <button
                 onClick={() => { localStorage.removeItem('vs_onboarded'); navigate('/onboarding') }}
@@ -427,99 +547,211 @@ export default function Profile() {
         </Section>
       </div>
 
-      {/* AI Avatar Generator Modal */}
+      {/* Avatar Picker Modal */}
       {showAvatarGen && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 1000,
-          background: 'rgba(4,5,18,0.85)',
-          backdropFilter: 'blur(16px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: 20,
-        }} onClick={e => { if (e.target === e.currentTarget) setShowAvatarGen(false) }}>
-          <div style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border-bright)',
-            borderRadius: 24,
-            padding: '32px 28px',
-            width: '100%',
-            maxWidth: 480,
-            boxShadow: '0 32px 80px rgba(0,0,0,0.7)',
-          }}>
+        <div style={{ position:'fixed', inset:0, zIndex:1000, background:'rgba(4,5,18,0.88)', backdropFilter:'blur(16px)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
+          onClick={e => { if (e.target === e.currentTarget) { setShowAvatarGen(false); setSelectedAvatar(null) } }}>
+          <div style={{ background:'var(--surface)', border:'1px solid var(--border-bright)', borderRadius:24, padding:'24px 20px', width:'100%', maxWidth:540, boxShadow:'0 32px 80px rgba(0,0,0,0.7)', maxHeight:'90vh', display:'flex', flexDirection:'column' }}>
+
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div>
-                <h2 style={{ fontFamily: 'var(--font-head)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text)', margin: 0 }}>
-                  ✦ AI Avatar Generator
-                </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: 4 }}>
-                  Pick a style and generate your unique avatar
-                </p>
-              </div>
-              <button onClick={() => setShowAvatarGen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer', padding: 4 }}>✕</button>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16, flexShrink:0 }}>
+              <h2 style={{ fontFamily:'var(--font-head)', fontSize:'1.15rem', fontWeight:800, color:'var(--text)', margin:0 }}>✦ Choose Your Avatar</h2>
+              <button onClick={() => { setShowAvatarGen(false); setSelectedAvatar(null) }} style={{ background:'none', border:'none', color:'var(--text-muted)', fontSize:'1.2rem', cursor:'pointer' }}>✕</button>
             </div>
 
-            {/* Style picker */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 }}>
-              {AVATAR_STYLES.map(s => (
-                <button key={s.id} onClick={() => setAvatarStyle(s.id)} style={{
-                  padding: '10px 6px',
-                  borderRadius: 12,
-                  border: avatarStyle === s.id ? `2px solid ${s.color}` : '1px solid var(--border)',
-                  background: avatarStyle === s.id ? `rgba(${s.color === '#00C8FF' ? '0,200,255' : s.color === '#FF6EE7' ? '255,110,231' : '123,92,240'},0.12)` : 'var(--surface2)',
-                  cursor: 'pointer',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                  transition: 'all 0.15s',
+            {/* Tabs */}
+            <div style={{ display:'flex', gap:8, marginBottom:16, flexShrink:0 }}>
+              {['gallery','custom'].map(tab => (
+                <button key={tab} onClick={() => { setAvatarTab(tab); setSelectedAvatar(null) }} style={{
+                  flex:1, padding:'8px', borderRadius:10, border:'none', cursor:'pointer', fontWeight:700, fontSize:'0.82rem', fontFamily:'var(--font-body)',
+                  background: avatarTab === tab ? 'linear-gradient(135deg,#00C8FF,#7B5CF0)' : 'var(--surface2)',
+                  color: avatarTab === tab ? '#fff' : 'var(--text-muted)',
+                  transition:'all 0.15s',
                 }}>
-                  <span style={{ fontSize: '1.2rem' }}>{s.emoji}</span>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 700, color: avatarStyle === s.id ? s.color : 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>
-                    {s.label}
-                  </span>
+                  {tab === 'gallery' ? '🖼 Gallery' : '🎨 Custom'}
                 </button>
               ))}
             </div>
 
-            {/* Preview */}
-            <div style={{
-              height: 200,
-              borderRadius: 16,
-              background: 'var(--surface2)',
-              border: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 16,
-              overflow: 'hidden',
-              position: 'relative',
-            }}>
-              {genLoading ? (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    width: 40, height: 40, borderRadius: '50%',
-                    border: '3px solid var(--border)',
-                    borderTopColor: 'var(--accent)',
-                    animation: 'spin 0.7s linear infinite',
-                    margin: '0 auto 12px',
-                  }} />
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Generating your avatar…</p>
-                </div>
-              ) : previewUrl ? (
-                <img src={previewUrl} alt="Generated avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ textAlign: 'center', color: 'var(--text-faint)' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: 8 }}>✦</div>
-                  <p style={{ fontSize: '0.82rem' }}>Your avatar will appear here</p>
-                </div>
-              )}
-            </div>
+            {/* Gallery Tab */}
+            {avatarTab === 'gallery' && (
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:8, overflowY:'auto', flex:1, paddingRight:2 }}>
+                {PRESET_AVATARS.map((av, i) => (
+                  <button key={i} onClick={() => setSelectedAvatar(av.url)} style={{
+                    padding:6, borderRadius:12, cursor:'pointer', transition:'all 0.15s',
+                    border: selectedAvatar === av.url ? '2px solid var(--accent)' : '2px solid transparent',
+                    background: selectedAvatar === av.url ? 'rgba(0,200,255,0.1)' : 'var(--surface2)',
+                    boxShadow: selectedAvatar === av.url ? '0 0 10px rgba(0,200,255,0.3)' : 'none',
+                    display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+                  }}>
+                    <img src={av.url} alt={av.label} style={{ width:68, height:68, borderRadius:8, objectFit:'cover' }} />
+                    <span style={{ fontSize:'0.6rem', color: selectedAvatar === av.url ? 'var(--accent)' : 'var(--text-faint)', fontFamily:'var(--font-mono)', fontWeight:600 }}>{av.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
-            {/* Actions */}
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={handleGenerateAvatar} disabled={genLoading} className="btn btn-primary" style={{ flex: 1 }}>
-                {genLoading ? 'Generating…' : previewUrl ? '↺ Regenerate' : '✦ Generate'}
+            {/* Custom Tab */}
+            {avatarTab === 'custom' && (
+              <div style={{ display:'flex', gap:16, flex:1, overflow:'hidden', minHeight:0 }}>
+                {/* Preview */}
+                <div style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+                  <div style={{ width:120, height:120, borderRadius:20, overflow:'hidden', background:'var(--surface2)', border:'2px solid var(--border-bright)' }}>
+                    <img src={buildAvatarUrl(custom)} alt="preview" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                  </div>
+                  <button onClick={() => setSelectedAvatar(buildAvatarUrl(custom))} style={{
+                    padding:'7px 14px', borderRadius:10, border: selectedAvatar === buildAvatarUrl(custom) ? '2px solid var(--accent)' : '1px solid var(--border)',
+                    background: selectedAvatar === buildAvatarUrl(custom) ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                    color: selectedAvatar === buildAvatarUrl(custom) ? 'var(--accent)' : 'var(--text-muted)',
+                    cursor:'pointer', fontSize:'0.75rem', fontWeight:700,
+                  }}>
+                    {selectedAvatar === buildAvatarUrl(custom) ? '✓ Selected' : 'Select This'}
+                  </button>
+                </div>
+
+                {/* Options */}
+                <div style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:14 }}>
+                  {/* Gender */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Gender</div>
+                    <div style={{ display:'flex', gap:8 }}>
+                      {['male','female'].map(g => (
+                        <button key={g} onClick={() => setCustom(g === 'male' ? DEFAULT_MALE : DEFAULT_FEMALE)} style={{
+                          flex:1, padding:'7px', borderRadius:10, fontWeight:700, fontSize:'0.78rem', cursor:'pointer', fontFamily:'var(--font-body)',
+                          border: custom.gender===g ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.gender===g ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.gender===g ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>
+                          {g === 'male' ? '👦 Male' : '👧 Female'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Skin */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Skin Tone</div>
+                    <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                      {SKIN_COLORS.map(s => (
+                        <button key={s} onClick={() => setCustom(c => ({...c, skin:s}))} title={s} style={{
+                          width:28, height:28, borderRadius:'50%', border: custom.skin===s ? '3px solid var(--accent)' : '2px solid transparent',
+                          background: SKIN_HEX[s], cursor:'pointer', transition:'all 0.12s',
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Hair Style */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Hair Style</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {(custom.gender === 'female' ? FEMALE_HAIR : MALE_HAIR).map((h,i) => {
+                        const label = custom.gender === 'female' ? FEMALE_LABELS[i] : MALE_LABELS[i]
+                        return (
+                          <button key={h} onClick={() => setCustom(c => ({...c, hair:h}))} style={{
+                            padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                            border: custom.hair===h ? '1px solid var(--accent)' : '1px solid var(--border)',
+                            background: custom.hair===h ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                            color: custom.hair===h ? 'var(--accent)' : 'var(--text-muted)',
+                          }}>{label}</button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Hair Color */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Hair Color</div>
+                    <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                      {HAIR_COLORS.map(c => (
+                        <button key={c} onClick={() => setCustom(cv => ({...cv, hairColor:c}))} title={c} style={{
+                          width:24, height:24, borderRadius:'50%', border: custom.hairColor===c ? '3px solid var(--accent)' : '2px solid transparent',
+                          background: HAIR_HEX[c], cursor:'pointer',
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Eyes */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Eyes</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {EYE_TYPES.map(e => (
+                        <button key={e} onClick={() => setCustom(c => ({...c, eyes:e}))} style={{
+                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                          border: custom.eyes===e ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.eyes===e ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.eyes===e ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>{e}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Mouth */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Mouth</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {MOUTH_TYPES.map(m => (
+                        <button key={m} onClick={() => setCustom(c => ({...c, mouth:m}))} style={{
+                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                          border: custom.mouth===m ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.mouth===m ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.mouth===m ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>{m}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Clothes */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Clothes</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {CLOTHES.map((cl,i) => (
+                        <button key={cl} onClick={() => setCustom(c => ({...c, clothes:cl}))} style={{
+                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                          border: custom.clothes===cl ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.clothes===cl ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.clothes===cl ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>{CLOTHES_LABEL[i]}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Clothes Color */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Clothes Color</div>
+                    <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                      {CLOTH_COLORS.map(c => (
+                        <button key={c} onClick={() => setCustom(cv => ({...cv, clotheColor:c}))} title={c} style={{
+                          width:24, height:24, borderRadius:'50%', border: custom.clotheColor===c ? '3px solid var(--accent)' : '2px solid transparent',
+                          background: CLOTH_HEX[c], cursor:'pointer',
+                        }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Accessories */}
+                  <div>
+                    <div style={{ fontSize:'0.68rem', color:'var(--text-faint)', fontFamily:'var(--font-mono)', textTransform:'uppercase', marginBottom:6 }}>Accessories</div>
+                    <div style={{ display:'flex', gap:5, flexWrap:'wrap' }}>
+                      {ACCESSORIES.map((a,i) => (
+                        <button key={a} onClick={() => setCustom(c => ({...c, accessories:a}))} style={{
+                          padding:'4px 8px', borderRadius:8, fontSize:'0.65rem', fontWeight:600, cursor:'pointer',
+                          border: custom.accessories===a ? '1px solid var(--accent)' : '1px solid var(--border)',
+                          background: custom.accessories===a ? 'rgba(0,200,255,0.12)' : 'var(--surface2)',
+                          color: custom.accessories===a ? 'var(--accent)' : 'var(--text-muted)',
+                        }}>{ACC_LABELS[i]}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Save */}
+            <div style={{ marginTop:16, flexShrink:0 }}>
+              <button onClick={handleSaveAvatar} disabled={!selectedAvatar} className="btn btn-primary" style={{ width:'100%', opacity: selectedAvatar ? 1 : 0.4 }}>
+                {selectedAvatar ? 'Set as Avatar ✓' : 'Select an avatar above'}
               </button>
-              {previewUrl && (
-                <button onClick={handleSaveAvatar} className="btn btn-teal" style={{ flex: 1 }}>
-                  Set as Avatar ✓
-                </button>
-              )}
             </div>
           </div>
         </div>

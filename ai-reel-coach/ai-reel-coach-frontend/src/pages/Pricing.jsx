@@ -24,7 +24,7 @@ const PLANS = [
       { text: 'Hook Library (40 templates)',    ok: true  },
       { text: 'Basic trending topics',          ok: true  },
       { text: 'Content Remix',                  ok: false },
-      { text: 'AI Coach (unlimited chat)',      ok: false },
+      { text: 'Creator Advisor (unlimited chat)', ok: false },
       { text: 'Voice assistant',                ok: false },
       { text: 'Performance analytics',          ok: false },
       { text: 'Priority AI (faster)',           ok: false },
@@ -48,7 +48,7 @@ const PLANS = [
       { text: 'Hook Library (40 templates)',    ok: true  },
       { text: 'Live trending topics',           ok: true  },
       { text: 'Content Remix (all platforms)',  ok: true  },
-      { text: 'AI Coach (unlimited chat)',      ok: true  },
+      { text: 'Creator Advisor (unlimited chat)', ok: true  },
       { text: 'Voice assistant',                ok: true  },
       { text: 'Performance analytics',          ok: true  },
       { text: 'Priority AI (faster)',           ok: false },
@@ -146,7 +146,7 @@ export default function Pricing() {
       const options = {
         key             : data.keyId,
         subscription_id : data.subscriptionId,
-        name            : 'ViralCoach',
+        name            : 'Nuove',
         description     : `${plan.name} Plan — ₹${plan.priceM}/month`,
         image           : '/logo.png',
         prefill         : {
@@ -329,8 +329,8 @@ export default function Pricing() {
               key={plan.id}
               style={{
                 background: isPopular
-                  ? 'linear-gradient(180deg, rgba(0,200,255,0.07) 0%, rgba(11,15,46,0.95) 40%)'
-                  : 'rgba(11,15,46,0.92)',
+                  ? 'linear-gradient(180deg, rgba(0,200,255,0.09) 0%, var(--surface-card) 40%)'
+                  : 'var(--surface-card)',
                 backdropFilter: 'blur(20px)',
                 border: isPopular
                   ? '1.5px solid rgba(0,200,255,0.35)'
@@ -338,7 +338,7 @@ export default function Pricing() {
                 borderRadius: 24,
                 padding: isPopular ? '32px 28px' : '28px 24px',
                 position: 'relative',
-                boxShadow: isPopular ? '0 0 60px rgba(0,200,255,0.12), 0 24px 60px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.3)',
+                boxShadow: isPopular ? 'var(--shadow-accent), var(--shadow-glass)' : 'var(--shadow)',
                 transform: isPopular ? 'translateY(-8px)' : 'none',
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                 animation: `fadeUp 0.4s ease ${i * 0.1}s both`,
@@ -497,49 +497,6 @@ export default function Pricing() {
         })}
       </div>
 
-      {/* Social proof */}
-      <div style={{ maxWidth: 800, margin: '0 auto 72px', textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-faint)', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 28 }}>
-          Trusted by creators worldwide
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          {[
-            { name: 'Priya S.',    handle: '@priyalifestyle', avatar: 'P', text: '"Went from 2K to 47K followers in 3 months using ViralCoach scripts. The hook scorer is insane."', niche: 'Lifestyle' },
-            { name: 'Rohan M.',   handle: '@rohanfinance',   avatar: 'R', text: '"Finally an AI that understands my audience. My finance reels now get 5x more saves."',       niche: 'Finance' },
-            { name: 'Ananya K.',  handle: '@ananyafitness',  avatar: 'A', text: '"The AI Coach helped me fix my CTA game. My first viral reel hit 2.3 million views!"',               niche: 'Fitness' },
-          ].map(t => (
-            <div key={t.name} style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 18,
-              padding: '20px',
-              textAlign: 'left',
-            }}>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #00C8FF, #7B5CF0)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 800, color: '#fff', fontSize: '0.9rem',
-                  fontFamily: 'var(--font-head)',
-                }}>
-                  {t.avatar}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text)' }}>{t.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-faint)' }}>{t.handle} · {t.niche}</div>
-                </div>
-              </div>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>{t.text}</p>
-              <div style={{ display: 'flex', gap: 2, marginTop: 12 }}>
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} style={{ color: '#FFD60A', fontSize: '0.75rem' }}>★</span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* FAQ */}
       <div style={{ maxWidth: 640, margin: '0 auto 72px' }}>

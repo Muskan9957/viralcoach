@@ -4,6 +4,7 @@ import { ToastProvider } from './components/Toast'
 import { LangProvider } from './i18n.jsx'
 import { ThemeProvider } from './context/ThemeContext'
 import Layout from './components/Layout'
+import Logo from './components/Logo'
 import Auth from './pages/Auth'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
@@ -14,30 +15,28 @@ import Calendar from './pages/Calendar'
 import Trending from './pages/Trending'
 import Templates from './pages/Templates'
 import Captions from './pages/Captions'
-import Remix from './pages/Remix'
+import Crosspost from './pages/Crosspost'
 import Coach from './pages/Coach'
-import HookLibrary from './pages/HookLibrary'
 import Onboarding from './pages/Onboarding'
 import Profile from './pages/Profile'
 import Pricing from './pages/Pricing'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import Demo from './pages/Demo'
+import Scripts from './pages/Scripts'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import Terms from './pages/Terms'
+import MyVoice from './pages/MyVoice'
 
 function Protected({ children }) {
   const { user, loading } = useAuth()
   if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <div style={{
-          width: 40, height: 40,
-          background: 'linear-gradient(135deg, #00E5FF, #00C8FF 45%, #7B5CF0)',
-          borderRadius: 10,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 16, color: '#fff',
-          boxShadow: '0 0 24px rgba(0,200,255,0.4)',
-          animation: 'pulseGlow 1.2s ease infinite',
-        }}>▶</div>
-        <p style={{ color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', letterSpacing: '0.08em' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+        <div>
+          <Logo size={52} showWordmark />
+        </div>
+        <p style={{ color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', letterSpacing: '0.12em' }}>
           LOADING
         </p>
       </div>
@@ -75,19 +74,26 @@ export default function App() {
                 <Route path="/pricing"          element={<Pricing />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password"  element={<ResetPassword />} />
+                <Route path="/demo"            element={<Demo />} />
+                <Route path="/privacy"         element={<PrivacyPolicy />} />
+                <Route path="/terms"           element={<Terms />} />
                 <Route path="/onboarding"      element={<OnboardingRoute />} />
                 <Route path="/dashboard"    element={<Protected><Dashboard /></Protected>} />
                 <Route path="/generate"     element={<Protected><Generate /></Protected>} />
+                <Route path="/scripts"      element={<Protected><Scripts /></Protected>} />
                 <Route path="/score"        element={<Protected><Score /></Protected>} />
                 <Route path="/performance"  element={<Protected><Performance /></Protected>} />
                 <Route path="/calendar"     element={<Protected><Calendar /></Protected>} />
                 <Route path="/trending"     element={<Protected><Trending /></Protected>} />
                 <Route path="/templates"    element={<Protected><Templates /></Protected>} />
                 <Route path="/captions"     element={<Protected><Captions /></Protected>} />
-                <Route path="/remix"        element={<Protected><Remix /></Protected>} />
+                <Route path="/crosspost"    element={<Protected><Crosspost /></Protected>} />
+                <Route path="/multiply"     element={<Navigate to="/crosspost" replace />} />
+                <Route path="/remix"        element={<Navigate to="/crosspost" replace />} />
                 <Route path="/coach"        element={<Protected><Coach /></Protected>} />
-                <Route path="/hooks"        element={<Protected><HookLibrary /></Protected>} />
                 <Route path="/profile"      element={<Protected><Profile /></Protected>} />
+                <Route path="/creator-dna"  element={<Protected><MyVoice /></Protected>} />
+                <Route path="/my-voice"     element={<Navigate to="/creator-dna" replace />} />
                 <Route path="*"             element={<Navigate to="/" replace />} />
               </Routes>
             </ToastProvider>

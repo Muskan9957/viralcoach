@@ -2,18 +2,12 @@ import { useState, useRef, useEffect } from 'react'
 import { api } from '../api'
 import { MicButton } from '../components/VoiceAssistant'
 import { usePrefs } from '../hooks/usePrefs'
-
-const STARTER_QUESTIONS = [
-  'Why do my Reels get low views?',
-  'What should I post this week?',
-  'How do I improve my hook score?',
-  'Give me a 30-day content plan',
-]
+import { useLang } from '../i18n.jsx'
 
 function TypingIndicator() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '12px 16px' }}>
-      <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginRight: 4 }}>AI Coach</span>
+      <span style={{ fontSize: '0.75rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginRight: 4 }}>Creator Advisor</span>
       {[0, 1, 2].map(i => (
         <span
           key={i}
@@ -56,7 +50,7 @@ function Message({ msg }) {
       }}>
         {!isUser && (
           <div style={{ fontSize: '0.65rem', color: 'var(--text-faint)', fontFamily: 'var(--font-mono)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            AI Coach
+            Creator Advisor
           </div>
         )}
         <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.65, color: isUser ? '#fff' : 'var(--text)', whiteSpace: 'pre-wrap' }}>
@@ -68,6 +62,7 @@ function Message({ msg }) {
 }
 
 export default function Coach() {
+  const { t, lang } = useLang()
   const [messages, setMessages] = useState([])
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
@@ -107,7 +102,7 @@ export default function Coach() {
     const historyForApi = newMessages.slice(-10).map(m => ({ role: m.role, content: m.content }))
 
     try {
-      const data = await api.coachChat({ message: trimmed, history: historyForApi.slice(0, -1), context: aiContext })
+      const data = await api.coachChat({ message: trimmed, history: historyForApi.slice(0, -1), context: aiContext, language: lang })
       setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
     } catch (err) {
       setMessages(prev => [...prev, {
@@ -133,8 +128,8 @@ export default function Coach() {
     <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)', maxWidth: 720, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: 20, flexShrink: 0 }}>
-        <h1 className="page-title">AI Coach</h1>
-        <p className="page-sub">Your personal content strategist — ask anything.</p>
+        <h1 className="page-title">{t('nav_coach')}</h1>
+        <p className="page-sub">{t('coach_sub')}</p>
       </div>
 
       {/* Chat area */}
@@ -151,44 +146,67 @@ export default function Coach() {
         {/* Messages scroll area */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', minHeight: 0 }}>
           {/* Empty state with starter questions */}
-          {isEmpty && (
-            <div style={{ textAlign: 'center', paddingTop: 20 }}>
-              <div style={{ fontSize: '2rem', marginBottom: 12 }}>💬</div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 20 }}>
-                Ask me anything about growing your content.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 400, margin: '0 auto' }}>
-                {STARTER_QUESTIONS.map((q, i) => (
-                  <button
-                    key={i}
-                    onClick={() => sendMessage(q)}
-                    style={{
-                      padding: '10px 16px',
-                      background: 'var(--surface2)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 10,
-                      color: 'var(--text-muted)',
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.15s',
-                      fontFamily: 'var(--font-body)',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = 'var(--accent)'
-                      e.currentTarget.style.color = 'var(--text)'
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = 'var(--border)'
-                      e.currentTarget.style.color = 'var(--text-muted)'
-                    }}
-                  >
-                    {q}
-                  </button>
-                ))}
+          {isEmpty && (() => {
+            const primaryNiche = niches[0] || ''
+            const nicheLabel = primaryNiche ? primaryNiche.charAt(0).toUpperCase() + primaryNiche.slice(1) : ''
+            // Niche-specific starter questions when niche is set
+            const nicheQuestions = nicheLabel ? [
+              `What type of ${nicheLabel} content is going viral right now?`,
+              `Give me 5 hook ideas for my ${nicheLabel} audience`,
+              `What posting schedule works best for ${nicheLabel} creators?`,
+              `How do I stand out in the ${nicheLabel} niche?`,
+            ] : [t('coach_q1'), t('coach_q2'), t('coach_q3'), t('coach_q4')]
+
+            return (
+              <div style={{ textAlign: 'center', paddingTop: 20 }}>
+                <div style={{ fontSize: '2rem', marginBottom: 12 }}>💬</div>
+                {nicheLabel ? (
+                  <div style={{ marginBottom: 20 }}>
+                    <p style={{ color: 'var(--text)', fontSize: '0.92rem', fontWeight: 600, marginBottom: 4 }}>
+                      I'm set up for your <span style={{ color: 'var(--accent)' }}>{nicheLabel}</span> content
+                    </p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                      Ask me anything — scripts, growth tactics, hook ideas, strategy
+                    </p>
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 20 }}>
+                    {t('coach_empty')}
+                  </p>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420, margin: '0 auto' }}>
+                  {nicheQuestions.map((q, i) => (
+                    <button
+                      key={i}
+                      onClick={() => sendMessage(q)}
+                      style={{
+                        padding: '10px 16px',
+                        background: 'var(--surface2)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 10,
+                        color: 'var(--text-muted)',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.15s',
+                        fontFamily: 'var(--font-body)',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = 'var(--accent)'
+                        e.currentTarget.style.color = 'var(--text)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = 'var(--border)'
+                        e.currentTarget.style.color = 'var(--text-muted)'
+                      }}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* Loading skeleton while history loads */}
           {!historyLoaded && (
@@ -248,7 +266,7 @@ export default function Coach() {
               paddingTop: 10,
               paddingBottom: 10,
             }}
-            placeholder="Ask your AI Coach..."
+            placeholder={t('coach_placeholder')}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
