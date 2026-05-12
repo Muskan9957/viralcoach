@@ -85,8 +85,44 @@ export default function Generate() {
   }, [])
 
   // Song recommendations state
-  const [songs, setSongs]             = useState(null)
+  const [songs, setSongs]               = useState(null)
   const [songsLoading, setSongsLoading] = useState(false)
+  const [playingKey, setPlayingKey]     = useState(null)
+  const [audioProgress, setAudioProgress] = useState(0)
+  const audioRef      = useRef(null)
+  const progressRef   = useRef(null)
+
+  const stopAudio = () => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null }
+    if (progressRef.current) { clearInterval(progressRef.current); progressRef.current = null }
+    setPlayingKey(null)
+    setAudioProgress(0)
+  }
+
+  // Cleanup on unmount
+  useEffect(() => () => stopAudio(), []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const togglePlay = (song) => {
+    const key = song.title + song.artist
+    if (playingKey === key) { stopAudio(); return }
+    stopAudio()
+    if (!song.previewUrl) return
+    const audio = new Audio(song.previewUrl)
+    audio.play().catch(() => {})
+    audioRef.current = audio
+    setPlayingKey(key)
+    setAudioProgress(0)
+    audio.onended = () => {
+      setPlayingKey(null)
+      setAudioProgress(0)
+      if (progressRef.current) { clearInterval(progressRef.current); progressRef.current = null }
+    }
+    progressRef.current = setInterval(() => {
+      if (!audioRef.current) return
+      const pct = (audioRef.current.currentTime / (audioRef.current.duration || 30)) * 100
+      setAudioProgress(isNaN(pct) ? 0 : pct)
+    }, 150)
+  }
 
   // Refinement / re-roll state
   const [versions, setVersions]       = useState([])
@@ -179,7 +215,7 @@ export default function Generate() {
     setVersions([])
     setActiveVer(0)
     setRerollCount(0)
-    setSongs(null)
+    stopAudio(); setSongs(null)
 
     saveRegion(form.audience)
     localStorage.setItem(SCRIPT_LANG_KEY, form.scriptLang)
@@ -324,7 +360,9 @@ export default function Generate() {
 
   const fetchSongs = async () => {
     if (!result?.script) return
+    stopAudio()
     setSongsLoading(true)
+    setSongs(null)
     try {
       const s = result.script
       const data = await api.recommendSongs({
@@ -340,7 +378,28 @@ export default function Generate() {
         audience: form.audience,
         language: form.scriptLang,
       })
-      setSongs(data.songs || [])
+
+      // Enrich each song with a 30-second iTunes preview URL + artwork
+      const country = form.audience === 'India' ? 'in' : 'us'
+      const enriched = await Promise.all(
+        (data.songs || []).map(async song => {
+          try {
+            const r = await fetch(
+              `https://itunes.apple.com/search?term=${encodeURIComponent(song.title + ' ' + song.artist)}&entity=song&limit=1&country=${country}`
+            )
+            const d = await r.json()
+            const hit = d.results?.[0]
+            return {
+              ...song,
+              previewUrl : hit?.previewUrl  || null,
+              artworkUrl : hit?.artworkUrl60?.replace('60x60', '100x100') || null,
+            }
+          } catch {
+            return song
+          }
+        })
+      )
+      setSongs(enriched)
     } catch (err) {
       toast(err.message || 'Could not fetch song picks', 'error')
     } finally {
@@ -910,7 +969,6 @@ export default function Generate() {
                 {/* Song list */}
                 {songs && songs.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {/* Section labels */}
                     {[
                       { label: '🔥 Popular Picks', items: songs.filter(s => !s.royaltyFree) },
                       { label: '🆓 Royalty-Free', items: songs.filter(s => s.royaltyFree) },
@@ -920,74 +978,133 @@ export default function Generate() {
                           {section.label}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {section.items.map((song, i) => (
-                            <div key={i} style={{
-                              background: song.royaltyFree ? 'rgba(29,185,84,0.06)' : 'rgba(255,255,255,0.03)',
-                              border: `1px solid ${song.royaltyFree ? 'rgba(29,185,84,0.2)' : 'var(--border)'}`,
-                              borderRadius: 12,
-                              padding: '12px 14px',
-                              display: 'flex', gap: 12, alignItems: 'flex-start',
-                            }}>
-                              {/* Music note icon */}
-                              <div style={{
-                                width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                                background: song.royaltyFree
-                                  ? 'linear-gradient(135deg, rgba(29,185,84,0.25), rgba(29,185,84,0.1))'
-                                  : 'linear-gradient(135deg, rgba(252,175,69,0.2), rgba(225,48,108,0.15))',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '1.1rem',
+                          {section.items.map((song, i) => {
+                            const key     = song.title + song.artist
+                            const isPlaying = playingKey === key
+                            const canPlay   = !!song.previewUrl
+                            return (
+                              <div key={i} style={{
+                                background: isPlaying
+                                  ? (song.royaltyFree ? 'rgba(29,185,84,0.10)' : 'rgba(252,175,69,0.08)')
+                                  : (song.royaltyFree ? 'rgba(29,185,84,0.04)' : 'rgba(255,255,255,0.02)'),
+                                border: `1px solid ${isPlaying
+                                  ? (song.royaltyFree ? 'rgba(29,185,84,0.45)' : 'rgba(252,175,69,0.45)')
+                                  : (song.royaltyFree ? 'rgba(29,185,84,0.18)' : 'var(--border)')}`,
+                                borderRadius: 12,
+                                padding: '11px 13px',
+                                transition: 'border-color 0.2s, background 0.2s',
+                                overflow: 'hidden',
                               }}>
-                                🎵
-                              </div>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                {/* Title + artist row */}
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
-                                  <span style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>{song.title}</span>
-                                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>— {song.artist}</span>
+                                <div style={{ display: 'flex', gap: 11, alignItems: 'center' }}>
+                                  {/* Artwork / Play button */}
+                                  <div
+                                    onClick={() => canPlay && togglePlay(song)}
+                                    style={{
+                                      width: 42, height: 42, borderRadius: 9, flexShrink: 0,
+                                      position: 'relative', overflow: 'hidden',
+                                      cursor: canPlay ? 'pointer' : 'default',
+                                      background: song.artworkUrl ? 'transparent'
+                                        : (song.royaltyFree
+                                          ? 'linear-gradient(135deg,rgba(29,185,84,0.3),rgba(29,185,84,0.1))'
+                                          : 'linear-gradient(135deg,rgba(252,175,69,0.25),rgba(225,48,108,0.15))'),
+                                    }}
+                                  >
+                                    {song.artworkUrl && (
+                                      <img src={song.artworkUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderRadius: 9 }} />
+                                    )}
+                                    {/* Play/pause overlay */}
+                                    {canPlay && (
+                                      <div style={{
+                                        position: 'absolute', inset: 0, borderRadius: 9,
+                                        background: isPlaying ? 'rgba(0,0,0,0.5)' : (song.artworkUrl ? 'rgba(0,0,0,0.25)' : 'transparent'),
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        opacity: isPlaying ? 1 : (song.artworkUrl ? 0.85 : 1),
+                                        transition: 'background 0.15s, opacity 0.15s',
+                                      }}>
+                                        <span style={{ fontSize: isPlaying ? '0.9rem' : '1rem', lineHeight: 1 }}>
+                                          {isPlaying ? '⏸' : '▶'}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {!canPlay && !song.artworkUrl && (
+                                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🎵</div>
+                                    )}
+                                  </div>
+
+                                  {/* Song info */}
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5, flexWrap: 'wrap' }}>
+                                      <span style={{ fontWeight: 700, fontSize: '0.87rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{song.title}</span>
+                                      <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', flexShrink: 0 }}>· {song.artist}</span>
+                                      {isPlaying && (
+                                        <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '1px 7px', borderRadius: 99, background: song.royaltyFree ? '#1DB954' : '#FCAF45', color: '#000', marginLeft: 2, flexShrink: 0 }}>
+                                          ♪ PLAYING
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Progress bar — shown only while playing */}
+                                    {isPlaying && (
+                                      <div style={{ marginBottom: 6, height: 3, borderRadius: 99, background: 'var(--border)', overflow: 'hidden' }}>
+                                        <div style={{
+                                          height: '100%', borderRadius: 99,
+                                          background: song.royaltyFree
+                                            ? 'linear-gradient(90deg,#1DB954,#17A44A)'
+                                            : 'linear-gradient(90deg,#FCAF45,#E1306C)',
+                                          width: `${audioProgress}%`,
+                                          transition: 'width 0.15s linear',
+                                        }} />
+                                      </div>
+                                    )}
+
+                                    {/* Chips */}
+                                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
+                                      {song.bpm && (
+                                        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 99, background: 'var(--surface2)', color: 'var(--text-faint)' }}>
+                                          ⚡ {song.bpm} BPM
+                                        </span>
+                                      )}
+                                      {song.energy && (
+                                        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 99, background: 'var(--surface2)', color: 'var(--text-faint)' }}>
+                                          {song.energy}
+                                        </span>
+                                      )}
+                                      {song.mood && (
+                                        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 99, background: 'var(--surface2)', color: 'var(--text-faint)' }}>
+                                          {song.mood}
+                                        </span>
+                                      )}
+                                      {song.royaltyFree && song.library && (
+                                        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 99, background: 'rgba(29,185,84,0.12)', color: '#1DB954', border: '1px solid rgba(29,185,84,0.22)' }}>
+                                          🆓 {song.library}
+                                        </span>
+                                      )}
+                                      {canPlay && (
+                                        <span style={{ fontSize: '0.66rem', color: 'var(--text-faint)', marginLeft: 2 }}>30s preview</span>
+                                      )}
+                                      {song.searchUrl && (
+                                        <a
+                                          href={song.searchUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          style={{
+                                            marginLeft: 'auto', fontSize: '0.7rem', fontWeight: 700,
+                                            padding: '2px 9px', borderRadius: 99,
+                                            background: song.royaltyFree ? 'rgba(29,185,84,0.10)' : 'rgba(252,175,69,0.10)',
+                                            color: song.royaltyFree ? '#1DB954' : '#FCAF45',
+                                            border: `1px solid ${song.royaltyFree ? 'rgba(29,185,84,0.28)' : 'rgba(252,175,69,0.28)'}`,
+                                            textDecoration: 'none',
+                                          }}
+                                        >
+                                          Full ↗
+                                        </a>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                                {/* Chips row */}
-                                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                                  {song.bpm && (
-                                    <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'var(--surface2)', color: 'var(--text-faint)' }}>
-                                      ⚡ {song.bpm} BPM
-                                    </span>
-                                  )}
-                                  {song.energy && (
-                                    <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'var(--surface2)', color: 'var(--text-faint)' }}>
-                                      🔥 {song.energy}
-                                    </span>
-                                  )}
-                                  {song.mood && (
-                                    <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'var(--surface2)', color: 'var(--text-faint)' }}>
-                                      💫 {song.mood}
-                                    </span>
-                                  )}
-                                  {song.royaltyFree && song.library && (
-                                    <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px', borderRadius: 99, background: 'rgba(29,185,84,0.12)', color: '#1DB954', border: '1px solid rgba(29,185,84,0.25)' }}>
-                                      🆓 {song.library}
-                                    </span>
-                                  )}
-                                  {song.searchUrl && (
-                                    <a
-                                      href={song.searchUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      style={{
-                                        marginLeft: 'auto', fontSize: '0.72rem', fontWeight: 700,
-                                        padding: '3px 10px', borderRadius: 99,
-                                        background: song.royaltyFree ? 'rgba(29,185,84,0.12)' : 'rgba(252,175,69,0.12)',
-                                        color: song.royaltyFree ? '#1DB954' : '#FCAF45',
-                                        border: `1px solid ${song.royaltyFree ? 'rgba(29,185,84,0.3)' : 'rgba(252,175,69,0.3)'}`,
-                                        textDecoration: 'none',
-                                      }}
-                                    >
-                                      Find ↗
-                                    </a>
-                                  )}
-                                </div>
                               </div>
-                            </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </div>
                     ))}
