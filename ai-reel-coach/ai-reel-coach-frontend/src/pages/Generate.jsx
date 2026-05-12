@@ -870,24 +870,6 @@ export default function Generate() {
                 <span style={{ fontSize: '1.1rem' }}>🎵</span>
                 <h3 style={{ fontFamily: 'var(--font-head)', fontWeight: 800, fontSize: '1rem', margin: 0 }}>Music Vibe</h3>
               </div>
-              {/* Genre / Mood / BPM chips */}
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
-                {[
-                  { icon: '🎸', label: result.script.music.genre },
-                  { icon: '💫', label: result.script.music.mood },
-                  { icon: '⚡', label: `${result.script.music.bpm} BPM` },
-                ].map(chip => (
-                  <span key={chip.label} style={{
-                    padding: '5px 12px', borderRadius: 20,
-                    fontSize: '0.8rem', fontWeight: 600,
-                    background: 'var(--surface2)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text-muted)',
-                  }}>
-                    {chip.icon} {chip.label}
-                  </span>
-                ))}
-              </div>
               {/* Search tip */}
               <div style={{ marginBottom: 14 }}>
                 <div style={visualLabelStyle}>🔍 Search for</div>
