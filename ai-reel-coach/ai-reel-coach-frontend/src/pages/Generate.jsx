@@ -1057,30 +1057,15 @@ export default function Generate() {
                                       </div>
                                     )}
 
-                                    {/* Chips */}
-                                    <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}>
-                                      {song.bpm && (
-                                        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 99, background: 'var(--surface2)', color: 'var(--text-faint)' }}>
-                                          ⚡ {song.bpm} BPM
-                                        </span>
-                                      )}
-                                      {song.energy && (
-                                        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 99, background: 'var(--surface2)', color: 'var(--text-faint)' }}>
-                                          {song.energy}
-                                        </span>
-                                      )}
-                                      {song.mood && (
-                                        <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 99, background: 'var(--surface2)', color: 'var(--text-faint)' }}>
-                                          {song.mood}
-                                        </span>
-                                      )}
+                                    {/* Bottom row: library badge + preview label + full link */}
+                                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                                       {song.royaltyFree && song.library && (
                                         <span style={{ fontSize: '0.68rem', fontWeight: 600, padding: '2px 7px', borderRadius: 99, background: 'rgba(29,185,84,0.12)', color: '#1DB954', border: '1px solid rgba(29,185,84,0.22)' }}>
                                           🆓 {song.library}
                                         </span>
                                       )}
                                       {canPlay && (
-                                        <span style={{ fontSize: '0.66rem', color: 'var(--text-faint)', marginLeft: 2 }}>30s preview</span>
+                                        <span style={{ fontSize: '0.66rem', color: 'var(--text-faint)' }}>30s preview</span>
                                       )}
                                       {song.searchUrl && (
                                         <a
