@@ -26,7 +26,7 @@ import Demo from './pages/Demo'
 import Scripts from './pages/Scripts'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import Terms from './pages/Terms'
-import MyVoice from './pages/MyVoice'
+import ReelReady from './pages/ReelReady'
 
 function Protected({ children }) {
   const { user, loading } = useAuth()
@@ -92,8 +92,9 @@ export default function App() {
                 <Route path="/remix"        element={<Navigate to="/crosspost" replace />} />
                 <Route path="/coach"        element={<Protected><Coach /></Protected>} />
                 <Route path="/profile"      element={<Protected><Profile /></Protected>} />
-                <Route path="/creator-dna"  element={<Protected><MyVoice /></Protected>} />
-                <Route path="/my-voice"     element={<Navigate to="/creator-dna" replace />} />
+                <Route path="/reel-ready"   element={<Protected><ReelReady /></Protected>} />
+                <Route path="/creator-dna"  element={<Navigate to="/reel-ready" replace />} />
+                <Route path="/my-voice"     element={<Navigate to="/reel-ready" replace />} />
                 <Route path="*"             element={<Navigate to="/" replace />} />
               </Routes>
             </ToastProvider>

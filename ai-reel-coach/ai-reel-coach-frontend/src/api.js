@@ -54,6 +54,7 @@ export const api = {
   getScripts:    ()     => req('GET',  '/scripts'),
   getScript:     (id)   => req('GET',  `/scripts/${id}`),
   recommendSongs:(body) => req('POST', '/scripts/songs', body),
+  reelReady:     (body) => req('POST', '/reel-ready/analyze', body),
 
   // Hooks
   scoreHook:    (body) => req('POST', '/hooks/score', body),

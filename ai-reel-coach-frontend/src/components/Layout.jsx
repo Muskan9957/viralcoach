@@ -104,12 +104,11 @@ const CoachIcon = ({ size = 22 }) => (
   </svg>
 )
 
-const VoiceIcon = ({ size = 22 }) => (
+const ReelReadyIcon = ({ size = 22 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-    <line x1="12" y1="19" x2="12" y2="23"/>
-    <line x1="8" y1="23" x2="16" y2="23"/>
+    <rect x="2" y="6" width="20" height="14" rx="2"/>
+    <path d="M7 2l3 4M17 2l-3 4"/>
+    <path d="M10 13l4-2-4-2v4z" fill="currentColor" stroke="none"/>
   </svg>
 )
 
@@ -147,7 +146,7 @@ const NAV_CONFIG = [
   { to: '/generate',    icon: IconGenerate,    labelKey: 'nav_generate'    },
   { to: '/scripts',     icon: IconScripts,     labelKey: 'nav_scripts'     },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'       },
-  { to: '/creator-dna', icon: VoiceIcon,       labelKey: 'nav_my_voice'  },
+  { to: '/reel-ready',  icon: ReelReadyIcon,   labelKey: 'nav_reel_ready' },
   { section: 'Content',  sectionClass: 'nav-section-content'  },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'    },
   { to: '/crosspost',   icon: RemixIcon,       labelKey: 'nav_remix'       },

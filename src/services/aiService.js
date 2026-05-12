@@ -1012,6 +1012,64 @@ Return ONLY valid JSON, no markdown, no code blocks:
   }
 }
 
+// ─────────────────────────────────────────────────────────────────
+// REEL READY — Vision-based complete post package
+// ─────────────────────────────────────────────────────────────────
+const analyzeReelContent = async ({ imageBase64Array, mediaTypes, audience = 'India', language = 'en' }) => {
+  const audienceCtx   = getAudienceContext(audience)
+  const langLabel     = { en: 'English', hi: 'Hindi', es: 'Spanish', fr: 'French', pt: 'Portuguese', de: 'German', ar: 'Arabic', id: 'Bahasa Indonesia', ja: 'Japanese', ko: 'Korean' }[language] || 'English'
+
+  const imageContent = imageBase64Array.map((data, i) => ({
+    type  : 'image',
+    source: { type: 'base64', media_type: mediaTypes[i] || 'image/jpeg', data },
+  }))
+
+  const prompt = `You are a senior social media strategist who builds complete Instagram Reel/Short post packages for creators.
+
+${audienceCtx}
+
+ALL text you generate (script, captions, hashtags) must be written in ${langLabel}.
+
+Carefully analyse the image(s). Understand what is happening, the mood and energy, the likely content niche, and what a creator would want to say about it.
+
+Then return ONLY valid JSON — no markdown, no code fences:
+{
+  "contentUnderstanding": "One sentence: what you see in the content",
+  "niche": "single niche keyword (fitness|food|travel|finance|lifestyle|comedy|fashion|tech|bollywood|education|beauty|motivation)",
+  "topic": "specific short topic phrase for this content",
+  "tone": "one of: motivational|educational|funny|storytelling|controversial|conversational",
+  "mood": "2-3 word mood (e.g. energetic and bold)",
+  "script": "Complete voiceover script the creator would say — hook (first line grabs attention) + body (value/story) + CTA. 80–120 words. Sound natural, not AI-generated.",
+  "captions": [
+    { "style": "punchy",       "label": "One-liner",  "text": "A punchy single-line caption under 12 words with an emoji" },
+    { "style": "storytelling", "label": "Story",      "text": "A 50–70 word story-style caption that hooks, delivers value, ends with a question or CTA" },
+    { "style": "hook",         "label": "Hook + CTA", "text": "Opens with a bold hook statement or question, body in 2-3 lines, ends with a clear CTA" }
+  ],
+  "hashtags": {
+    "niche":    ["exactly 10 niche-specific hashtags — without spaces"],
+    "broad":    ["exactly 10 broad-reach hashtags"],
+    "trending": ["exactly 10 trending/timely hashtags relevant to this niche and region"]
+  },
+  "bestTime": "e.g. 7–9 PM IST",
+  "bestDay":  "e.g. Tuesday or Thursday"
+}`
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const response = await client.messages.create({
+    model     : MODEL,
+    max_tokens: 1600,
+    messages  : [{
+      role   : 'user',
+      content: [...imageContent, { type: 'text', text: prompt }],
+    }],
+  })
+
+  const raw   = response.content[0].text
+  const match = raw.match(/\{[\s\S]*\}/)
+  if (!match) throw new Error('Could not parse vision response')
+  return JSON.parse(match[0])
+}
+
 module.exports = {
   analyzeCreatorStyle,
   viralEdit,
@@ -1030,4 +1088,5 @@ module.exports = {
   remixContent,
   coachChat,
   recommendSongs,
+  analyzeReelContent,
 };

@@ -21,6 +21,7 @@ const creatorScoreRoutes = require('./routes/creatorScore');
 const coachRoutes       = require('./routes/coach');
 const hookLibraryRoutes = require('./routes/hookLibrary');
 const ttsRoutes         = require('./routes/tts');
+const reelReadyRoutes   = require('./routes/reelReady');
 const errorHandler      = require('./middleware/errorHandler');
 
 const app = express();
@@ -53,7 +54,8 @@ app.use(passport.initialize());
 // ─── Body Parsing ─────────────────────────────────────────────────
 // Raw body needed for Stripe webhook signature verification
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
-app.use(express.json());
+// Increased limit for Reel Ready base64 image/video frame payloads
+app.use(express.json({ limit: '20mb' }));
 
 // ─── Health Check ─────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -83,6 +85,7 @@ app.use('/api/score',       creatorScoreRoutes);
 app.use('/api/coach',       coachRoutes);
 app.use('/api/hooks',       hookLibraryRoutes);
 app.use('/api/tts',         ttsRoutes);
+app.use('/api/reel-ready', reelReadyRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────────
 app.use((req, res) => {

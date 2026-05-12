@@ -12,6 +12,7 @@ export const translations = {
     nav_remix: 'Crosspost',
     nav_coach: 'Creator Advisor',
     nav_my_voice: 'Creator DNA',
+    nav_reel_ready: 'Reel Ready',
     nav_hooks: 'Hook Library',
 
     // ── Landing page ────────────────────────────────────────────
@@ -350,6 +351,7 @@ export const translations = {
     nav_remix: 'क्रॉसपोस्ट',
     nav_coach: 'Creator Advisor',
     nav_my_voice: 'Creator DNA',
+    nav_reel_ready: 'रील रेडी',
 
     // ── Landing page ────────────────────────────────────────────
     landing_signin: 'साइन इन',
