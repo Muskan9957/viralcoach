@@ -153,7 +153,6 @@ const NAV_CONFIG = [
   { to: '/generate',    icon: IconGenerate,    labelKey: 'nav_generate'    },
   { to: '/scripts',     icon: IconScripts,     labelKey: 'nav_scripts'     },
   { to: '/coach',       icon: CoachIcon,       labelKey: 'nav_coach'       },
-  { to: '/reel-ready',  icon: ReelReadyIcon,   labelKey: 'nav_reel_ready' },
   { to: '/record',      icon: RecordIcon,      labelKey: 'nav_record'     },
   { section: 'Content',  sectionClass: 'nav-section-content'  },
   { to: '/captions',    icon: CaptionIcon,     labelKey: 'nav_captions'    },
