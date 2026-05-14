@@ -200,7 +200,7 @@ export default function Record() {
         <div style={S.setupWrap}>
           {/* Page header — matches all other feature pages */}
           <div style={{ width: '100%', marginBottom: 8 }}>
-            <h1 className="page-title" style={{ marginBottom: 4 }}>Record</h1>
+            <h1 className="page-title" style={{ marginBottom: 4 }}>Teleprompter &amp; Recorder</h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>
               Script scrolls while you record — no second device needed.
             </p>
