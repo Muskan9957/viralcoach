@@ -202,7 +202,7 @@ export default function Record() {
       {phase === 'setup' && (
         <div style={S.topBar}>
           <button onClick={() => navigate(-1)} style={S.backBtn}>← Back</button>
-          <h1 style={S.topTitle}>Teleprompter &amp; Recorder</h1>
+          <h1 className="gradient-text" style={S.topTitle}>Teleprompter &amp; Recorder</h1>
           <div style={{ width: 60 }} />
         </div>
       )}
@@ -423,7 +423,7 @@ const S = {
     background: 'var(--surface)', position: 'sticky', top: 0, zIndex: 10,
   },
   backBtn: { background: 'none', border: 'none', color: 'var(--text-faint)', fontSize: '0.88rem', cursor: 'pointer', padding: '4px 0', width: 60 },
-  topTitle: { margin: 0, fontWeight: 800, fontSize: '1rem', color: 'var(--text)' },
+  topTitle: { margin: 0, fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-head)' },
 
   setupWrap: {
     display: 'flex', gap: 24, padding: '24px 20px', maxWidth: 960, margin: '0 auto', width: '100%', flexWrap: 'wrap',

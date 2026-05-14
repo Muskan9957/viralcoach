@@ -1,5 +1,5 @@
 /* ─── Google Fonts ───────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Inter:wght@300;400;500;600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Inter:wght@300;400;500;600;700&family=Nunito:wght@400;600;700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@400;500&display=swap');
 
 /* ─── Design Tokens ─────────────────────────────────────────────── */
 :root {
@@ -50,7 +50,7 @@
 
   /* ── Typography ── */
   --font-display: 'Plus Jakarta Sans', sans-serif;
-  --font-head:    'Syne', 'Bricolage Grotesque', sans-serif;
+  --font-head:    'Nunito', 'Bricolage Grotesque', sans-serif;
   --font-body:    'Inter', sans-serif;
   --font-creator: 'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif; /* big-energy moments */
   --font-mono:    'DM Mono', monospace;
@@ -687,18 +687,23 @@ h1, h2, h3, h4 {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ─── Page titles ────────────────────────────────────────────────── */
+/* shared gradient — reuse anywhere with className="gradient-text" */
+.gradient-text,
 .page-title {
-  font-family: var(--font-head);
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin-bottom: 8px;
-  background: linear-gradient(120deg, #FCAF45 0%, #F77737 28%, #E1306C 58%, #C13584 80%, #833AB4 100%);
+  background: linear-gradient(120deg, #FCAF45 0%, #F77737 25%, #E1306C 55%, #C13584 78%, #833AB4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   display: inline-block;
+}
+
+.page-title {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 8px;
 }
 .page-sub {
   color: var(--text-muted);
