@@ -694,7 +694,7 @@ h1, h2, h3, h4 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  display: inline-block;
+  color: transparent;       /* fallback so inline color: var(--text) can't override */
 }
 
 .page-title {
@@ -704,6 +704,7 @@ h1, h2, h3, h4 {
   letter-spacing: 0.01em;
   line-height: 1.15;
   margin-bottom: 8px;
+  display: block;
 }
 .page-sub {
   color: var(--text-muted);

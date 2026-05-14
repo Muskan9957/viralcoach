@@ -285,14 +285,7 @@ export default function Profile() {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-            <h1 style={{
-              fontFamily: 'var(--font-head)',
-              fontSize: '1.5rem',
-              fontWeight: 800,
-              letterSpacing: '-0.03em',
-              color: 'var(--text)',
-              margin: 0,
-            }}>
+            <h1 className="page-title" style={{ fontSize: '1.5rem', margin: 0, marginBottom: 0 }}>
               {user?.name || 'Creator'}
             </h1>
             <span style={{

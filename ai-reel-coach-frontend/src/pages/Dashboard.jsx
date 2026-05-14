@@ -548,18 +548,8 @@ export default function Dashboard() {
           </span>
         </div>
 
-        <h1 style={{
-          fontFamily: 'var(--font-creator)', fontWeight: 800,
-          fontSize: 'clamp(2rem, 4vw, 2.8rem)',
-          letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 8,
-        }}>
-          {t('dash_greeting_' + mood.key)},{' '}
-          <span style={{
-            background: `linear-gradient(135deg, ${C.cyan} 0%, ${C.pink} 50%, ${C.amber} 100%)`,
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-          }}>
-            {firstName}
-          </span>
+        <h1 className="page-title">
+          {t('dash_greeting_' + mood.key)}, {firstName}
         </h1>
         <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', maxWidth: 600, lineHeight: 1.55, margin: 0 }}>
           {t('dash_overview')}

@@ -171,18 +171,8 @@ export default function Crosspost() {
             {t('crosspost_pill')}
           </span>
         </div>
-        <h1 style={{
-          fontFamily: 'var(--font-creator)', fontWeight: 800,
-          fontSize: 'clamp(1.8rem, 3.5vw, 2.4rem)',
-          letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 8,
-        }}>
-          {t('crosspost_title_pre')}{' '}
-          <span style={{
-            background: `linear-gradient(135deg, ${C.cyan} 0%, ${C.pink} 50%, ${C.amber} 100%)`,
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-          }}>
-            {t('crosspost_title_post')}
-          </span>
+        <h1 className="page-title">
+          {t('crosspost_title_pre')} {t('crosspost_title_post')}
         </h1>
         <p style={{ fontSize: '0.92rem', color: 'var(--text-muted)', lineHeight: 1.55, margin: 0 }}>
           {t('crosspost_sub')}
